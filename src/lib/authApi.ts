@@ -55,34 +55,48 @@ export async function getKakaoAuthorizeUrl(): Promise<string> {
 }
 
 // AUTH-02 카카오 로그인·가입 — POST /api/auth/kakao
-// 성공: 로그인/가입 처리 후 토큰 발급.
-// 409: 같은 이메일의 자체 계정이 이미 있음 → linkToken 받아서 kakaoLink()로 연동 필요.
-// 403: 카카오 이메일 제공 동의를 안 함.
-export interface KakaoLoginConflict {
-  type: 'ACCOUNT_LINK_REQUIRED';
-  linkToken: string;
+// - LOGIN: 이미 가입한 회원 → tokens로 바로 로그인.
+// - SIGNUP_REQUIRED: 처음 온 회원 → signup 정보로 가입 화면(개인정보 동의·닉네임)을 띄우고
+//   signupSocial()로 가입을 마친다. signupToken은 10분 뒤 만료된다.
+// 카카오 이메일은 선택 동의라 없어도 가입할 수 있다.
+export interface SocialSignupInfo {
+  signupToken: string;
+  nickname: string | null; // 카카오 닉네임(기본값). 없을 수 있다.
+  nicknameAvailable: boolean; // false면 새 닉네임을 입력받는다.
+  email: string | null;
+  profileImageUrl: string | null;
 }
 
-export async function exchangeKakaoCode(
-  code: string,
-): Promise<AuthResponse | KakaoLoginConflict> {
-  try {
-    const { data } = await api.post<AuthResponse>('/api/auth/kakao', { code });
-    return data;
-  } catch (err) {
-    if (isAxiosErrorWithStatus(err, 409)) {
-      const linkToken = (err.response?.data as { linkToken?: string })?.linkToken;
-      if (linkToken) {
-        return { type: 'ACCOUNT_LINK_REQUIRED', linkToken };
-      }
-    }
-    throw err;
+export type SocialLoginResult =
+  | { status: 'LOGIN'; tokens: AuthResponse }
+  | { status: 'SIGNUP_REQUIRED'; signup: SocialSignupInfo };
+
+export async function exchangeKakaoCode(code: string): Promise<SocialLoginResult> {
+  const { data } = await api.post<SocialLoginResult>('/api/auth/kakao', { code });
+  return data;
+}
+
+// AUTH-02 소셜 최초 가입 — POST /api/auth/signup/social (201 + 토큰)
+// 409 DUPLICATE_NICKNAME: 닉네임 중복 / 401 INVALID_SIGNUP_TOKEN: 가입 토큰 만료 → 카카오 로그인부터 다시.
+export async function signupSocial(payload: {
+  signupToken: string;
+  nickname: string;
+  privacyAgreed: boolean;
+}): Promise<AuthResponse> {
+  const { data } = await api.post<AuthResponse>('/api/auth/signup/social', payload);
+  return data;
+}
+
+// 백엔드 에러 응답 { code, message } 에서 code를 꺼낸다.
+export function getErrorCode(err: unknown): string | undefined {
+  if (typeof err === 'object' && err !== null && 'response' in err) {
+    return (err as { response?: { data?: { code?: string } } }).response?.data?.code;
   }
+  return undefined;
 }
 
-// AUTH-02 카카오 계정 연동 확인 — POST /api/auth/kakao/link
-// TODO(AUTH-08): 연동 비밀번호 입력 UI는 아직 없음. exchangeKakaoCode가
-// ACCOUNT_LINK_REQUIRED를 반환했을 때 이 함수로 연동을 마무리해야 한다.
+// AUTH-08 카카오 계정 연동 확인 — POST /api/auth/kakao/link
+// TODO(AUTH-08, P1): 백엔드 미구현. 자체 가입(AUTH-01)이 생긴 뒤 연동 비밀번호 입력 UI와 함께 붙인다.
 export async function kakaoLink(
   linkToken: string,
   password: string,
@@ -92,16 +106,4 @@ export async function kakaoLink(
     password,
   });
   return data;
-}
-
-function isAxiosErrorWithStatus(
-  err: unknown,
-  status: number,
-): err is { response?: { status: number; data?: unknown } } {
-  return (
-    typeof err === 'object' &&
-    err !== null &&
-    'response' in err &&
-    (err as { response?: { status?: number } }).response?.status === status
-  );
 }
