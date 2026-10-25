@@ -6,17 +6,18 @@ import { exchangeKakaoCode } from '../lib/authApi';
 import './Auth.css';
 
 // 카카오가 이 경로로 code를 돌려준다 (GET /api/auth/kakao/authorize-url 의 redirect_uri).
-// AUTH-02: code를 백엔드로 넘겨 로그인/가입을 완료한다.
-// TODO(AUTH-08): 409(ACCOUNT_LINK_REQUIRED) 시 비밀번호 입력 후 kakaoLink() 호출하는
-// 계정 연동 화면이 아직 없다 — 지금은 안내 메시지만 보여준다.
+// AUTH-02: code를 백엔드로 넘겨 로그인한다. 처음 온 회원이면 카카오 가입 화면(/signup/kakao)으로 보낸다.
+// TODO(AUTH-08): 같은 이메일의 자체 가입 회원과 연동하는 흐름은 자체 가입(P1) 구현 후 추가.
 export default function KakaoCallback() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { signIn } = useAuth();
   const code = searchParams.get('code');
+  // 사용자가 카카오 동의 화면에서 취소하면 code 없이 error 파라미터로 돌아온다.
   const [error, setError] = useState<string | null>(
-    code ? null : '카카오 인증 정보가 없습니다. 로그인 화면에서 다시 시도해주세요.',
+    code ? null : '카카오 로그인이 취소되었거나 인증 정보가 없습니다. 다시 시도해주세요.',
   );
+  // 인가 코드는 한 번만 쓸 수 있어서 StrictMode의 이중 실행을 막는다.
   const hasRun = useRef(false);
 
   useEffect(() => {
@@ -25,14 +26,11 @@ export default function KakaoCallback() {
 
     exchangeKakaoCode(code)
       .then((result) => {
-        if ('type' in result) {
-          // 같은 이메일의 자체 계정이 이미 있는 경우.
-          setError(
-            '이미 같은 이메일로 가입된 계정이 있어요. 계정 연동 화면은 아직 준비 중입니다 — 이메일 로그인을 이용해주세요.',
-          );
+        if (result.status === 'SIGNUP_REQUIRED') {
+          navigate('/signup/kakao', { replace: true, state: result.signup });
           return;
         }
-        signIn(result);
+        signIn(result.tokens);
         navigate('/', { replace: true });
       })
       .catch(() => {
