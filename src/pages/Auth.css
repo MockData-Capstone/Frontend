@@ -72,6 +72,20 @@
   color: var(--danger);
 }
 
+.auth-field__hint {
+  margin: 6px 0 0;
+  font-size: 12px;
+  color: var(--text);
+}
+
+.auth-field__hint--ok {
+  color: var(--success);
+}
+
+.auth-field__hint--bad {
+  color: var(--danger);
+}
+
 .auth-error {
   margin: 0 0 16px;
   padding: 10px 12px;

@@ -2,7 +2,9 @@ import { useState, type FormEvent } from 'react';
 import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom';
 import Header from '../components/Header';
 import { useAuth } from '../app/providers/useAuth';
-import { getErrorCode, signupSocial, type SocialSignupInfo } from '../lib/authApi';
+import { getErrorCode, getFieldErrors, signupSocial, type FieldError, type SocialSignupInfo } from '../lib/authApi';
+import { useNicknameAvailability } from '../hooks/useNicknameAvailability';
+import NicknameHint from '../components/NicknameHint';
 import './Auth.css';
 
 const NICKNAME_MIN = 2;
@@ -26,6 +28,12 @@ export default function KakaoSignup() {
       : null,
   );
   const [expired, setExpired] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState<FieldError[]>([]);
+  const nicknameStatus = useNicknameAvailability(nickname);
+
+  function fieldError(field: string) {
+    return fieldErrors.find((e) => e.field === field)?.message;
+  }
 
   // 새로고침 등으로 가입 정보가 없으면 카카오 로그인부터 다시 한다.
   if (!signup) {
@@ -36,6 +44,7 @@ export default function KakaoSignup() {
     const trimmed = nickname.trim();
     if (trimmed.length < NICKNAME_MIN || trimmed.length > NICKNAME_MAX)
       return `닉네임은 ${NICKNAME_MIN}~${NICKNAME_MAX}자로 입력해주세요.`;
+    if (nicknameStatus === 'unavailable') return '이미 사용 중인 닉네임이에요.';
     if (!agreedToTerms || !agreedToPrivacy) return '필수 약관에 모두 동의해주세요.';
     return null;
   }
@@ -50,6 +59,7 @@ export default function KakaoSignup() {
 
     setIsSubmitting(true);
     setError(null);
+    setFieldErrors([]);
     try {
       const tokens = await signupSocial({
         signupToken: signup!.signupToken,
@@ -65,6 +75,8 @@ export default function KakaoSignup() {
       } else if (code === 'INVALID_SIGNUP_TOKEN' || code === 'ALREADY_REGISTERED') {
         setExpired(true);
         setError('가입 정보가 만료되었어요. 카카오 로그인부터 다시 진행해주세요.');
+      } else if (code === 'INVALID_INPUT') {
+        setFieldErrors(getFieldErrors(err));
       } else {
         setError('가입에 실패했습니다. 잠시 후 다시 시도해주세요.');
       }
@@ -110,6 +122,11 @@ export default function KakaoSignup() {
                   onChange={(e) => setNickname(e.target.value)}
                   autoComplete="nickname"
                 />
+                {fieldError('nickname') ? (
+                  <p className="auth-field__error">{fieldError('nickname')}</p>
+                ) : (
+                  <NicknameHint status={nicknameStatus} />
+                )}
               </label>
 
               {signup.email && (

@@ -2,7 +2,9 @@ import { useState, type FormEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import Header from '../components/Header';
 import { useAuth } from '../app/providers/useAuth';
-import { signUp, login, getKakaoAuthorizeUrl } from '../lib/authApi';
+import { signUp, getKakaoAuthorizeUrl, getErrorCode, getFieldErrors, type FieldError } from '../lib/authApi';
+import { useNicknameAvailability } from '../hooks/useNicknameAvailability';
+import NicknameHint from '../components/NicknameHint';
 import './Auth.css';
 
 // AUTH-01 자체 회원가입 + AUTH-02 카카오 가입
@@ -18,9 +20,16 @@ export default function Signup() {
   const [agreedToPrivacy, setAgreedToPrivacy] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<FieldError[]>([]);
+  const nicknameStatus = useNicknameAvailability(nickname);
+
+  function fieldError(field: string) {
+    return fieldErrors.find((e) => e.field === field)?.message;
+  }
 
   function validate(): string | null {
     if (!nickname.trim()) return '닉네임을 입력해주세요.';
+    if (nicknameStatus === 'unavailable') return '이미 사용 중인 닉네임이에요.';
     if (!email.trim()) return '이메일을 입력해주세요.';
     if (password.length < 8) return '비밀번호는 8자 이상이어야 합니다.';
     if (password !== passwordConfirm) return '비밀번호가 일치하지 않습니다.';
@@ -39,15 +48,30 @@ export default function Signup() {
 
     setIsSubmitting(true);
     setError(null);
+    setFieldErrors([]);
     try {
-      // POST /api/auth/signup 응답에 토큰 발급이 명시돼 있지 않아(API명세서 설명 기준),
-      // 가입 직후 별도로 로그인을 호출해 토큰을 받는다.
-      await signUp({ email, password, nickname });
-      const tokens = await login({ email, password });
+      // 가입 성공(201) 응답에 토큰이 바로 온다 (실제 호출로 확인).
+      const tokens = await signUp({
+        email,
+        password,
+        nickname,
+        privacyAgreed: agreedToPrivacy,
+      });
       signIn(tokens);
       navigate('/signup/complete');
-    } catch {
-      setError('회원가입에 실패했습니다. 이메일 또는 닉네임이 이미 사용 중일 수 있어요.');
+    } catch (err) {
+      const code = getErrorCode(err);
+      if (code === 'DUPLICATE_EMAIL') {
+        setError('이미 가입된 이메일입니다.');
+      } else if (code === 'DUPLICATE_NICKNAME') {
+        setError('이미 사용 중인 닉네임이에요. 다른 닉네임을 입력해주세요.');
+      } else if (code === 'PRIVACY_AGREEMENT_REQUIRED') {
+        setError('개인정보 수집·이용에 동의해야 가입할 수 있어요.');
+      } else if (code === 'INVALID_INPUT') {
+        setFieldErrors(getFieldErrors(err));
+      } else {
+        setError('회원가입에 실패했습니다. 잠시 후 다시 시도해주세요.');
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -94,6 +118,11 @@ export default function Signup() {
                 onChange={(e) => setNickname(e.target.value)}
                 autoComplete="nickname"
               />
+              {fieldError('nickname') ? (
+                <p className="auth-field__error">{fieldError('nickname')}</p>
+              ) : (
+                <NicknameHint status={nicknameStatus} />
+              )}
             </label>
 
             <label className="auth-field">
@@ -106,6 +135,7 @@ export default function Signup() {
                 onChange={(e) => setEmail(e.target.value)}
                 autoComplete="email"
               />
+              {fieldError('email') && <p className="auth-field__error">{fieldError('email')}</p>}
             </label>
 
             <label className="auth-field">
@@ -118,6 +148,7 @@ export default function Signup() {
                 onChange={(e) => setPassword(e.target.value)}
                 autoComplete="new-password"
               />
+              {fieldError('password') && <p className="auth-field__error">{fieldError('password')}</p>}
             </label>
 
             <label className="auth-field">

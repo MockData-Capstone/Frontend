@@ -5,6 +5,7 @@ import Signup from './pages/Signup';
 import SignupComplete from './pages/SignupComplete';
 import KakaoCallback from './pages/KakaoCallback';
 import KakaoSignup from './pages/KakaoSignup';
+import LinkAccount from './pages/LinkAccount';
 import './App.css';
 
 function App() {
@@ -12,6 +13,7 @@ function App() {
     <Routes>
       <Route path="/" element={<Home />} />
       <Route path="/login" element={<Login />} />
+      <Route path="/login/link-account" element={<LinkAccount />} />
       <Route path="/signup" element={<Signup />} />
       <Route path="/signup/complete" element={<SignupComplete />} />
       <Route path="/signup/kakao" element={<KakaoSignup />} />

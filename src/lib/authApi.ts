@@ -8,6 +8,9 @@ export interface SignUpRequest {
   email: string;
   password: string;
   nickname: string;
+  // 백엔드 SignupRequest의 boolean 필드. 빠뜨리면 Jackson이 "null을 boolean에 못 넣는다"며
+  // 400을 던진다(실측 확인) — 절대 optional로 두지 말 것.
+  privacyAgreed: boolean;
 }
 
 export interface LoginRequest {
@@ -18,13 +21,15 @@ export interface LoginRequest {
 export interface AuthResponse {
   accessToken: string;
   refreshToken: string;
+  accessTokenExpiresIn: number; // 초 단위
+  tokenType: string; // "Bearer"
 }
 
 // AUTH-01 회원가입 — POST /api/auth/signup
-// 설명에 토큰 발급 언급이 없어, 가입 후 토큰이 바로 오는지는 불확실하다.
-// (호출부에서 가입 성공 후 별도로 login()을 호출해 토큰을 받는다.)
-export async function signUp(payload: SignUpRequest): Promise<void> {
-  await api.post('/api/auth/signup', payload);
+// 실제 호출로 확인: 가입 성공(201) 응답에 토큰이 바로 온다. 별도 login() 호출 불필요.
+export async function signUp(payload: SignUpRequest): Promise<AuthResponse> {
+  const { data } = await api.post<AuthResponse>('/api/auth/signup', payload);
+  return data;
 }
 
 // AUTH-01 보조 — GET /api/auth/email-availability?email=
@@ -32,6 +37,15 @@ export async function checkEmailAvailability(email: string): Promise<boolean> {
   const { data } = await api.get<{ available: boolean }>(
     '/api/auth/email-availability',
     { params: { email } },
+  );
+  return data.available;
+}
+
+// AUTH-01·02 보조 — GET /api/auth/nickname-availability?nickname=
+export async function checkNicknameAvailability(nickname: string): Promise<boolean> {
+  const { data } = await api.get<{ available: boolean }>(
+    '/api/auth/nickname-availability',
+    { params: { nickname } },
   );
   return data.available;
 }
@@ -87,21 +101,56 @@ export async function signupSocial(payload: {
   return data;
 }
 
-// 백엔드 에러 응답 { code, message } 에서 code를 꺼낸다.
-export function getErrorCode(err: unknown): string | undefined {
+interface ErrorResponseData {
+  code?: string;
+  message?: string;
+  errors?: { field: string; message: string }[];
+  linkToken?: string;
+  email?: string;
+}
+
+function getErrorData(err: unknown): ErrorResponseData | undefined {
   if (typeof err === 'object' && err !== null && 'response' in err) {
-    return (err as { response?: { data?: { code?: string } } }).response?.data?.code;
+    return (err as { response?: { data?: ErrorResponseData } }).response?.data;
   }
   return undefined;
 }
 
-// AUTH-08 카카오 계정 연동 확인 — POST /api/auth/kakao/link
-// TODO(AUTH-08, P1): 백엔드 미구현. 자체 가입(AUTH-01)이 생긴 뒤 연동 비밀번호 입력 UI와 함께 붙인다.
-export async function kakaoLink(
+// 백엔드 에러 응답 { code, message } 에서 code를 꺼낸다.
+export function getErrorCode(err: unknown): string | undefined {
+  return getErrorData(err)?.code;
+}
+
+export interface FieldError {
+  field: string;
+  message: string;
+}
+
+// code가 INVALID_INPUT일 때만 내려오는 필드별 검증 에러. 그 외엔 빈 배열.
+export function getFieldErrors(err: unknown): FieldError[] {
+  return getErrorData(err)?.errors ?? [];
+}
+
+export interface AccountLinkRequiredInfo {
+  linkToken: string;
+  email: string;
+}
+
+// 409 ACCOUNT_LINK_REQUIRED 응답에서 연동에 필요한 정보를 꺼낸다. 아니면 null.
+export function getAccountLinkInfo(err: unknown): AccountLinkRequiredInfo | null {
+  if (getErrorCode(err) !== 'ACCOUNT_LINK_REQUIRED') return null;
+  const data = getErrorData(err);
+  if (!data?.linkToken || !data.email) return null;
+  return { linkToken: data.linkToken, email: data.email };
+}
+
+// AUTH-08 소셜 계정 연동 확인 — POST /api/auth/{provider}/link (백엔드 구현 확인됨)
+export async function linkSocialAccount(
+  provider: 'kakao' | 'google',
   linkToken: string,
   password: string,
 ): Promise<AuthResponse> {
-  const { data } = await api.post<AuthResponse>('/api/auth/kakao/link', {
+  const { data } = await api.post<AuthResponse>(`/api/auth/${provider}/link`, {
     linkToken,
     password,
   });
