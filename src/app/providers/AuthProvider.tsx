@@ -1,31 +1,31 @@
-import { useCallback, useMemo, useRef, useState, type ReactNode } from 'react';
-import { setAccessToken as setApiAccessToken } from '../../lib/api';
+import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
+import { getTokens, setTokens, subscribeTokens } from '../../lib/api';
 import { logout as logoutApi } from '../../lib/authApi';
 import { AuthContext, type AuthContextValue, type AuthTokens } from './AuthContext';
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [accessToken, setAccessToken] = useState<string | null>(null);
-  // refreshToken은 렌더와 무관해서 state로 둘 필요 없음 — signOut 시점에만 읽는다.
-  const refreshTokenRef = useRef<string | null>(null);
+  const [accessToken, setAccessTokenState] = useState<string | null>(
+    () => getTokens()?.accessToken ?? null,
+  );
+
+  // api.ts가 토큰의 단일 source다 — 401 인터셉터가 거기서 바로 로그아웃시킬 수 있어서다.
+  // 여기서는 렌더에 쓸 accessToken만 거울처럼 맞춘다.
+  useEffect(() => subscribeTokens((tokens) => setAccessTokenState(tokens?.accessToken ?? null)), []);
 
   const signIn = useCallback((tokens: AuthTokens) => {
-    setAccessToken(tokens.accessToken);
-    refreshTokenRef.current = tokens.refreshToken;
-    setApiAccessToken(tokens.accessToken);
+    setTokens(tokens);
   }, []);
 
   const signOut = useCallback(async () => {
-    const refreshToken = refreshTokenRef.current;
-    if (refreshToken) {
+    const current = getTokens();
+    if (current) {
       try {
-        await logoutApi(refreshToken);
+        await logoutApi(current.refreshToken);
       } catch {
         // 서버 로그아웃 실패해도 클라이언트 상태는 지운다.
       }
     }
-    setAccessToken(null);
-    refreshTokenRef.current = null;
-    setApiAccessToken(null);
+    setTokens(null);
   }, []);
 
   const value = useMemo<AuthContextValue>(

@@ -2,12 +2,13 @@ import { useEffect, useRef, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import Header from '../components/Header';
 import { useAuth } from '../app/providers/useAuth';
-import { exchangeKakaoCode } from '../lib/authApi';
+import { exchangeKakaoCode, getAccountLinkInfo } from '../lib/authApi';
 import './Auth.css';
 
 // 카카오가 이 경로로 code를 돌려준다 (GET /api/auth/kakao/authorize-url 의 redirect_uri).
-// AUTH-02: code를 백엔드로 넘겨 로그인한다. 처음 온 회원이면 카카오 가입 화면(/signup/kakao)으로 보낸다.
-// TODO(AUTH-08): 같은 이메일의 자체 가입 회원과 연동하는 흐름은 자체 가입(P1) 구현 후 추가.
+// AUTH-02: code를 백엔드로 넘겨 로그인한다.
+// - 처음 온 회원 → 카카오 가입 화면(/signup/kakao)
+// - 같은 이메일의 자체 가입 회원이 있음(409 ACCOUNT_LINK_REQUIRED) → 계정 연동 화면(/login/link-account)
 export default function KakaoCallback() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -33,7 +34,12 @@ export default function KakaoCallback() {
         signIn(result.tokens);
         navigate('/', { replace: true });
       })
-      .catch(() => {
+      .catch((err) => {
+        const linkInfo = getAccountLinkInfo(err);
+        if (linkInfo) {
+          navigate('/login/link-account', { replace: true, state: { provider: 'kakao', ...linkInfo } });
+          return;
+        }
         setError('카카오 로그인에 실패했습니다. 다시 시도해주세요.');
       });
   }, [code, signIn, navigate]);

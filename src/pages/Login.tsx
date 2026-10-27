@@ -2,7 +2,7 @@ import { useState, type FormEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import Header from '../components/Header';
 import { useAuth } from '../app/providers/useAuth';
-import { login, getKakaoAuthorizeUrl } from '../lib/authApi';
+import { login, getKakaoAuthorizeUrl, getErrorCode, getFieldErrors, type FieldError } from '../lib/authApi';
 import './Auth.css';
 
 // AUTH-03 자체 로그인 + AUTH-02 카카오 로그인
@@ -14,6 +14,11 @@ export default function Login() {
   const [password, setPassword] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<FieldError[]>([]);
+
+  function fieldError(field: string) {
+    return fieldErrors.find((e) => e.field === field)?.message;
+  }
 
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -24,13 +29,19 @@ export default function Login() {
 
     setIsSubmitting(true);
     setError(null);
+    setFieldErrors([]);
     try {
       const tokens = await login({ email, password });
       signIn(tokens);
       navigate('/');
-    } catch {
-      // AUTH-03 예외 규칙: 어느 쪽이 틀렸는지 밝히지 않는다.
-      setError('이메일 또는 비밀번호가 올바르지 않습니다.');
+    } catch (err) {
+      const code = getErrorCode(err);
+      if (code === 'INVALID_INPUT') {
+        setFieldErrors(getFieldErrors(err));
+      } else {
+        // AUTH-03 예외 규칙: 어느 쪽이 틀렸는지 밝히지 않는다.
+        setError('이메일 또는 비밀번호가 올바르지 않습니다.');
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -67,6 +78,7 @@ export default function Login() {
                 onChange={(e) => setEmail(e.target.value)}
                 autoComplete="email"
               />
+              {fieldError('email') && <p className="auth-field__error">{fieldError('email')}</p>}
             </label>
 
             <label className="auth-field">
@@ -79,6 +91,7 @@ export default function Login() {
                 onChange={(e) => setPassword(e.target.value)}
                 autoComplete="current-password"
               />
+              {fieldError('password') && <p className="auth-field__error">{fieldError('password')}</p>}
             </label>
 
             <button type="submit" className="auth-button" disabled={isSubmitting}>
