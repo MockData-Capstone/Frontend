@@ -1,4 +1,9 @@
 import { createContext } from 'react';
+import type { WorkspaceDetail } from '../../types';
 
-// TODO(F-01): 현재 워크스페이스/멤버 목록 상태 관리
-export const WorkspaceContext = createContext<null>(null);
+export interface WorkspaceContextValue {
+  workspace: WorkspaceDetail;
+}
+
+// WorkspaceLayout(그룹 라우트) 안에서만 값이 있다.
+export const WorkspaceContext = createContext<WorkspaceContextValue | null>(null);

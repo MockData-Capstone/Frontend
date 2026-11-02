@@ -1,4 +1,5 @@
 import { api } from './api';
+import type { MeResponse } from '../types';
 
 // 엔드포인트는 노션 ZIPFIT API명세서(auth 카테고리) 기준. 전부 "시작 전" 상태라
 // 아직 백엔드에 실제로 존재하지 않을 수 있다. 요청/응답 JSON 필드명은 API명세서에
@@ -48,6 +49,12 @@ export async function checkNicknameAvailability(nickname: string): Promise<boole
     { params: { nickname } },
   );
   return data.available;
+}
+
+// AUTH-04 내 정보 조회 — GET /api/users/me
+export async function getMe(): Promise<MeResponse> {
+  const { data } = await api.get<MeResponse>('/api/users/me');
+  return data;
 }
 
 // AUTH-03 로그인 — POST /api/auth/login
@@ -119,6 +126,11 @@ function getErrorData(err: unknown): ErrorResponseData | undefined {
 // 백엔드 에러 응답 { code, message } 에서 code를 꺼낸다.
 export function getErrorCode(err: unknown): string | undefined {
   return getErrorData(err)?.code;
+}
+
+// 백엔드 message는 화면에 그대로 보여줄 문구다 (Backend README 공통 규약). 응답이 없으면 fallback.
+export function getErrorMessage(err: unknown, fallback: string): string {
+  return getErrorData(err)?.message ?? fallback;
 }
 
 export interface FieldError {

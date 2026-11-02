@@ -1,0 +1,191 @@
+.candidate-detail {
+  max-width: 1360px;
+  margin: 0 auto;
+  padding: 40px 40px 64px;
+  box-sizing: border-box;
+}
+
+.candidate-detail__heading {
+  margin-bottom: 28px;
+}
+
+.candidate-detail__title {
+  margin: 0;
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: -0.4px;
+  color: var(--text-h);
+}
+
+.candidate-detail__subtitle {
+  margin: 8px 0 0;
+  font-size: 14px;
+  color: var(--text);
+}
+
+.candidate-detail__rename {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.candidate-detail__rename-input {
+  flex: 1;
+  max-width: 420px;
+  padding: 9px 12px;
+  font: inherit;
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text-h);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+
+.candidate-detail__rename-input:focus-visible {
+  outline: 2px solid var(--success);
+  outline-offset: 1px;
+}
+
+.candidate-detail__columns {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 24px;
+  align-items: start;
+}
+
+.candidate-detail__map {
+  height: 500px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+}
+
+.candidate-detail__map-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 192px));
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.candidate-detail__card {
+  padding: 28px 24px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+}
+
+.candidate-detail__card-title,
+.candidate-detail__section-title {
+  margin: 0 0 16px;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text-h);
+}
+
+.candidate-detail__section-title {
+  margin-top: 32px;
+}
+
+.candidate-detail__destination {
+  margin: 0 0 20px;
+  font-size: 14px;
+  color: var(--text);
+}
+
+.candidate-detail__numbers {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 14px;
+}
+
+.candidate-detail__number-label {
+  margin: 0 0 6px;
+  font-size: 12px;
+  color: var(--text);
+}
+
+.candidate-detail__number {
+  margin: 0;
+  font-size: 30px;
+  font-weight: 700;
+  color: var(--text-h);
+}
+
+.candidate-detail__grade {
+  display: inline-block;
+  padding: 4px 10px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--success);
+  background: var(--selected-bg);
+  border-radius: 6px;
+}
+
+.candidate-detail__estimated {
+  margin: 14px 0 0;
+  padding: 8px 12px;
+  font-size: 12px;
+  color: var(--text);
+  background: var(--info-bg);
+  border-radius: 8px;
+}
+
+.candidate-detail__vehicle {
+  margin: 0 0 10px;
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text-h);
+}
+
+.candidate-detail__reason,
+.candidate-detail__empty {
+  margin: 0;
+  font-size: 13px;
+  color: var(--text);
+}
+
+.candidate-detail__note {
+  margin: 20px 0 0;
+  font-size: 12px;
+  color: var(--text);
+}
+
+.candidate-detail__card-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.candidate-detail__remove {
+  width: 100%;
+  margin-top: 12px;
+}
+
+.candidate-detail__error {
+  margin: 0 0 16px;
+  font-size: 13px;
+  color: var(--danger);
+}
+
+.candidate-detail__hint {
+  margin: 0;
+  font-size: 14px;
+  color: var(--text);
+}
+
+@media (max-width: 900px) {
+  .candidate-detail {
+    padding: 24px 16px 48px;
+  }
+
+  .candidate-detail__columns {
+    grid-template-columns: 1fr;
+  }
+
+  .candidate-detail__map {
+    height: 280px;
+  }
+}
