@@ -6,7 +6,7 @@ import { HomeIcon } from '../Header';
 import '../Header/Header.css';
 import './WorkspaceHeader.css';
 
-// 헤더 C (UI v0.4 §3). 함께 찾기(11)·집보기(19~)는 화면이 아직 없어 비활성.
+// 헤더 C (UI v0.4 §3). 함께 찾기(11)는 화면이 아직 없어 비활성. 집보기는 미니게임(19~22)으로 간다.
 export default function WorkspaceHeader({ workspace }: { workspace: WorkspaceDetail }) {
   const { me } = useAuth();
 
@@ -29,14 +29,14 @@ export default function WorkspaceHeader({ workspace }: { workspace: WorkspaceDet
         >
           후보지
         </NavLink>
-        <button
-          type="button"
-          className="site-header__nav-link workspace-header__tab-disabled"
-          disabled
-          title="준비 중인 화면이에요."
+        <NavLink
+          to={`/workspaces/${workspace.id}/minigame`}
+          className={({ isActive }) =>
+            `site-header__nav-link${isActive ? ' is-active' : ''}`
+          }
         >
           집보기
-        </button>
+        </NavLink>
       </nav>
 
       <Link to="/" className="site-header__logo">
