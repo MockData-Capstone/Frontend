@@ -191,45 +191,9 @@
   color: var(--text);
 }
 
-.minigame-players {
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
 .minigame-players__group {
   margin: 12px 0 4px;
   font-size: 13px;
-  color: var(--text);
-}
-
-.minigame-player {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  min-height: 56px;
-  padding: 0 12px;
-}
-
-.minigame-player__text {
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-}
-
-.minigame-player__name {
-  font-size: 14px;
-  color: var(--text-h);
-}
-
-.minigame-player__status {
-  font-size: 12px;
-  color: var(--text);
-}
-
-.minigame-player__tag {
-  margin-left: auto;
-  font-size: 12px;
   color: var(--text);
 }
 
@@ -447,11 +411,22 @@
   margin-right: 8px;
 }
 
+.minigame-result__status {
+  margin: 28px 0 0;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-h);
+}
+
 .minigame-result__actions {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 12px;
   margin-top: 28px;
+}
+
+.minigame-result__status + .minigame-result__actions {
+  margin-top: 16px;
 }
 
 .minigame-result__note {

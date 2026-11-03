@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { getErrorMessage } from '../../lib/authApi';
 import type { GameParticipant, MiniGame } from '../../types';
-import GamePlayers from './GamePlayers';
+import PlayerList from '../../components/PlayerList';
 
 // 바퀴 칸 색 (채움, 글씨) — 시안 21의 4칸 순서
 const SLICE_COLORS: [string, string][] = [
@@ -191,7 +191,7 @@ export default function Roulette({
 
         <aside className="minigame__card minigame__side">
           <h2 className="minigame__side-title">참여 멤버</h2>
-          <GamePlayers rows={game.participants.map(rowOf)} />
+          <PlayerList rows={game.participants.map(rowOf)} />
           <p className="minigame__info">게임 중 연결이 끊긴 멤버는 결과에서 제외돼요.</p>
         </aside>
       </div>

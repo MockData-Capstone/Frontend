@@ -26,6 +26,9 @@
   --selected-bg: #e6eeeb;
   --info-bg: #f2f3f0;
   --dim: rgba(0, 0, 0, 0.25);
+  /* 집보기 영상 화면 (23 영상 영역, 24 송출 화면) */
+  --video-bg: #202224;
+  --video-screen: #2d2f31;
 
   --shadow:
     rgba(0, 0, 0, 0.1) 0 10px 15px -3px, rgba(0, 0, 0, 0.05) 0 4px 6px -2px;

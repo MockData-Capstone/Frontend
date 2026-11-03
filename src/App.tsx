@@ -11,6 +11,8 @@ import CandidateList from './pages/candidates/CandidateList';
 import CandidateDetail from './pages/candidates/CandidateDetail';
 import MiniGamePage from './pages/minigame/MiniGamePage';
 import GameResultPage from './pages/minigame/GameResult';
+import TourViewerPage from './pages/tour/TourViewer';
+import TourVisitorPage from './pages/tour/TourVisitor';
 import RequireAuth from './components/RequireAuth';
 import WorkspaceLayout, { WorkspaceIndexRedirect } from './components/WorkspaceLayout';
 import './App.css';
@@ -36,6 +38,15 @@ function App() {
           </RequireAuth>
         }
       />
+      {/* 24 방문자 송출 — 휴대폰 전체 화면이라 그룹 헤더(레이아웃) 없이 띄운다 */}
+      <Route
+        path="/workspaces/:workspaceId/tour/broadcast"
+        element={
+          <RequireAuth>
+            <TourVisitorPage />
+          </RequireAuth>
+        }
+      />
       {/* 그룹 안(11 그룹 홈은 이번 범위 밖 — 들어가면 바로 14 후보지로 보낸다) */}
       <Route
         path="/workspaces/:workspaceId"
@@ -52,6 +63,8 @@ function App() {
         <Route path="minigame" element={<MiniGamePage />} />
         {/* 22 방문자 선정 결과 */}
         <Route path="minigame/:gameId" element={<GameResultPage />} />
+        {/* 23 실시간 집보기 시청 */}
+        <Route path="tour" element={<TourViewerPage />} />
       </Route>
     </Routes>
   );
