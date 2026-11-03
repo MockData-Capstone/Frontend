@@ -5,7 +5,7 @@ export interface Tokens {
   refreshToken: string;
 }
 
-const BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8080';
+export const BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8080';
 
 export const api = axios.create({
   baseURL: BASE_URL,
@@ -34,11 +34,32 @@ export function subscribeTokens(listener: (tokens: Tokens | null) => void): () =
   return () => listeners.delete(listener);
 }
 
-function forceLogout() {
+export function forceLogout() {
   setTokens(null);
   if (typeof window !== 'undefined' && window.location.pathname !== '/login') {
     window.location.href = '/login';
   }
+}
+
+let refreshing: Promise<Tokens> | null = null;
+
+// 접근 토큰 재발급. 401 인터셉터와 Workspace 소켓(4402)이 동시에 불러도 요청은 한 번만 보낸다.
+export function refreshTokens(): Promise<Tokens> {
+  const refreshToken = tokens?.refreshToken;
+  if (!refreshToken) {
+    return Promise.reject(new Error('refresh token이 없습니다.'));
+  }
+  // 인터셉터 재귀를 피하려고 `api` 대신 별도 axios 인스턴스로 호출한다.
+  refreshing ??= axios
+    .post<Tokens>(`${BASE_URL}/api/auth/token/refresh`, { refreshToken })
+    .then(({ data }) => {
+      setTokens(data);
+      return data;
+    })
+    .finally(() => {
+      refreshing = null;
+    });
+  return refreshing;
 }
 
 api.interceptors.request.use((config) => {
@@ -66,17 +87,12 @@ api.interceptors.response.use(
     }
 
     const isExpired = code === 'AUTH_TOKEN_EXPIRED';
-    const currentRefreshToken = tokens?.refreshToken;
 
-    if (isExpired && currentRefreshToken && !original._retried) {
+    if (isExpired && tokens?.refreshToken && !original._retried) {
       original._retried = true;
       try {
-        // 인터셉터 재귀를 피하려고 `api` 대신 별도 axios 인스턴스로 호출한다.
-        const { data } = await axios.post<Tokens>(`${BASE_URL}/api/auth/token/refresh`, {
-          refreshToken: currentRefreshToken,
-        });
-        setTokens(data);
-        original.headers.Authorization = `Bearer ${data.accessToken}`;
+        const next = await refreshTokens();
+        original.headers.Authorization = `Bearer ${next.accessToken}`;
         return api(original);
       } catch (refreshError) {
         forceLogout();

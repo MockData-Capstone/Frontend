@@ -1,5 +1,5 @@
 import { api } from './api';
-import type { WorkspaceDetail, WorkspaceSummary } from '../types';
+import type { WorkspaceDetail, WorkspaceMember, WorkspaceSummary } from '../types';
 
 // WS-02 내 Workspace 목록 (최근 활동순) — GET /api/workspaces
 export async function getMyWorkspaces(): Promise<WorkspaceSummary[]> {
@@ -11,4 +11,12 @@ export async function getMyWorkspaces(): Promise<WorkspaceSummary[]> {
 export async function getWorkspace(workspaceId: number): Promise<WorkspaceDetail> {
   const { data } = await api.get<WorkspaceDetail>(`/api/workspaces/${workspaceId}`);
   return data;
+}
+
+// MEM-03 멤버 목록 (참여 순) — GET /api/workspaces/{workspaceId}/members
+export async function getMembers(workspaceId: number): Promise<WorkspaceMember[]> {
+  const { data } = await api.get<{ items: WorkspaceMember[] }>(
+    `/api/workspaces/${workspaceId}/members`,
+  );
+  return data.items;
 }

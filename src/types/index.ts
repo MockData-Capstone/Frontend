@@ -1,4 +1,4 @@
-// 백엔드 DTO 소스(feature/candidate 브랜치) 기준 — 노션 API명세서와 다른 곳이 있다.
+// 백엔드 DTO 소스(feature/candidate·feature/minigame 브랜치) 기준 — 노션 API명세서와 다른 곳이 있다.
 
 export interface MemberProfile {
   userId: number;
@@ -26,6 +26,15 @@ export interface WorkspaceDetail {
   memberCount: number;
   myRole: WorkspaceRole;
   createdAt: string;
+}
+
+// MEM-03 멤버 목록 항목 — GET /api/workspaces/{workspaceId}/members
+export interface WorkspaceMember {
+  userId: number;
+  nickname: string;
+  profileImageUrl: string | null;
+  role: WorkspaceRole;
+  joinedAt: string;
 }
 
 // AUTH-04 — GET /api/users/me
@@ -86,4 +95,86 @@ export interface Candidate {
   createdAt: string;
   location: LocationInfo;
   votes: VoteSummary;
+}
+
+// GAME — Backend minigame/entity/GameEnums
+export type GameType = 'ROULETTE' | 'ROCK_PAPER_SCISSORS';
+// 가위바위보에서 다음 라운드에 남는 쪽. 마지막 1명이 방문자다.
+export type VisitorRule = 'WINNER' | 'LOSER';
+export type GameStatus = 'IN_PROGRESS' | 'FINISHED' | 'ABORTED';
+export type AbortReason = 'STOPPED_BY_STARTER' | 'NOT_ENOUGH_PLAYERS' | 'WORKSPACE_DELETED';
+// 진행 중 / 라운드에서 탈락 / 나감·연결 끊김으로 제외
+export type PlayerStatus = 'PLAYING' | 'ELIMINATED' | 'LEFT';
+export type Hand = 'ROCK' | 'PAPER' | 'SCISSORS';
+
+export interface GamePlayer {
+  userId: number;
+  nickname: string;
+}
+
+export interface GameParticipant {
+  userId: number;
+  nickname: string;
+  status: PlayerStatus;
+  // 탈락하거나 빠진 라운드
+  outRound: number | null;
+}
+
+export interface GameChoice {
+  userId: number;
+  nickname: string | null;
+  choice: Hand;
+  // 제한 시간 안에 내지 않아 서버가 무작위로 골랐다
+  auto: boolean;
+}
+
+export interface GameRound {
+  roundNo: number;
+  // 세 가지가 모두 나오거나 전원이 같으면 무승부로 같은 멤버가 다시 한다
+  draw: boolean;
+  choices: GameChoice[];
+  eliminatedUserIds: number[];
+}
+
+// GAME-03·05 — GameResponse. Workspace 소켓 GAME_STARTED의 data도 같다.
+export interface MiniGame {
+  gameId: number;
+  workspaceId: number;
+  type: GameType;
+  visitorRule: VisitorRule | null;
+  status: GameStatus;
+  startedBy: GamePlayer;
+  participants: GameParticipant[];
+  // 가위바위보의 현재 라운드. 룰렛은 0
+  currentRound: number;
+  // 현재 라운드 제출 마감. 지나면 서버가 대신 고른다
+  roundDeadline: string | null;
+  // 현재 라운드에 낸 참가자. 무엇을 냈는지는 라운드가 끝나야 공개된다
+  submittedUserIds: number[];
+  // 끝난 라운드
+  rounds: GameRound[];
+  // 결과가 확정되기 전에는 null
+  visitor: GamePlayer | null;
+  abortReason: AbortReason | null;
+  startedAt: string;
+  finishedAt: string | null;
+}
+
+// SIG-06 미니게임 진행 통지의 data — Backend minigame/dto/GameEvents.
+// ROUND_OPENED·ROUND_RESULT·GAME_PLAYER_LEFT는 화면이 게임을 다시 조회하므로 gameId만 쓴다.
+export interface GameEventData {
+  gameId: number;
+}
+
+export interface GamePlayerLeftData extends GameEventData {
+  userId: number;
+  nickname: string;
+}
+
+export interface GameFinishedData extends GameEventData {
+  visitor: GamePlayer;
+}
+
+export interface GameAbortedData extends GameEventData {
+  reason: AbortReason;
 }
