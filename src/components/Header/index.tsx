@@ -1,11 +1,12 @@
 import { Link, NavLink } from 'react-router-dom';
 import { useAuth } from '../../app/providers/useAuth';
+import Avatar from '../Avatar';
 import './Header.css';
 
-// 상단바: 동네 찾기 탭 / zipfit 로고 / 로그인·회원가입(또는 로그아웃)
-// TODO(AUTH-04, MEM-03): 로그인 상태 우측을 "내 그룹" 선택 + 프로필 아바타로 교체 (지금은 로그아웃 버튼만)
+// 상단바: 동네 찾기 탭 / zipfit 로고 / 로그인·회원가입(로그인 후에는 내 그룹·아바타)
+// TODO(AUTH-04): 내 정보(13) 화면이 생기면 아바타를 그 화면 링크로 바꾸고 로그아웃 버튼을 그쪽으로 옮긴다.
 export default function Header() {
-  const { accessToken, signOut } = useAuth();
+  const { accessToken, me, signOut } = useAuth();
 
   return (
     <header className="site-header">
@@ -27,9 +28,20 @@ export default function Header() {
       </Link>
 
       {accessToken ? (
-        <button type="button" className="site-header__signout" onClick={signOut}>
-          로그아웃
-        </button>
+        <div className="site-header__member">
+          <NavLink
+            to="/workspaces"
+            className={({ isActive }) =>
+              `site-header__member-link${isActive ? ' is-active' : ''}`
+            }
+          >
+            내 그룹
+          </NavLink>
+          {me && <Avatar nickname={me.nickname} profileImageUrl={me.profileImageUrl} />}
+          <button type="button" className="site-header__signout" onClick={signOut}>
+            로그아웃
+          </button>
+        </div>
       ) : (
         <div className="site-header__auth">
           <NavLink
@@ -55,7 +67,7 @@ export default function Header() {
   );
 }
 
-function HomeIcon() {
+export function HomeIcon() {
   return (
     <svg
       width="18"
