@@ -1,0 +1,487 @@
+/* 19~22 미니게임 공통 (UI v0.4 §6, 데스크톱 1440 기준 본문 1160px) */
+.minigame {
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 40px 40px 64px;
+  box-sizing: border-box;
+}
+
+.minigame--result {
+  max-width: 1120px;
+}
+
+.minigame__heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 28px;
+}
+
+.minigame__title {
+  margin: 0;
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: -0.4px;
+  color: var(--text-h);
+}
+
+.minigame__subtitle {
+  margin: 8px 0 0;
+  font-size: 14px;
+  color: var(--text);
+}
+
+.minigame__notice {
+  margin: 0 0 16px;
+  padding: 10px 14px;
+  font-size: 13px;
+  color: var(--text-h);
+  background: var(--info-bg);
+  border-radius: 8px;
+}
+
+.minigame__error {
+  margin: 12px 0 0;
+  font-size: 13px;
+  color: var(--danger);
+}
+
+.minigame__hint {
+  margin: 12px 0 0;
+  font-size: 13px;
+  color: var(--text);
+}
+
+.minigame__columns {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 376px;
+  gap: 24px;
+  align-items: start;
+}
+
+.minigame__card {
+  padding: 28px 24px 24px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+}
+
+.minigame__card--wide {
+  padding: 32px;
+}
+
+.minigame__wide {
+  width: 100%;
+  margin-top: 16px;
+}
+
+/* 19 게임 설정 */
+.minigame__label {
+  margin: 20px 0 10px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-h);
+}
+
+.minigame__label:first-child {
+  margin-top: 0;
+}
+
+.minigame__label-hint {
+  margin: -6px 0 8px;
+  font-size: 12px;
+  color: var(--text);
+}
+
+.minigame__options {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.minigame-option {
+  height: 48px;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-h);
+  background: var(--code-bg);
+  border: 1px solid transparent;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.minigame-option--small {
+  height: 38px;
+}
+
+.minigame-option[aria-pressed='true'] {
+  color: var(--success);
+  background: var(--selected-bg);
+  border-color: var(--success);
+}
+
+.minigame-option:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.minigame-members {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.minigame-member {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  min-height: 48px;
+  cursor: pointer;
+}
+
+.minigame-member input {
+  width: 16px;
+  height: 16px;
+  margin: 0 12px 0 2px;
+  accent-color: var(--success);
+}
+
+.minigame-member__name {
+  font-size: 14px;
+  color: var(--text-h);
+}
+
+.minigame-member__tag {
+  margin-left: auto;
+  padding-right: 20px;
+  font-size: 12px;
+  color: var(--text);
+}
+
+/* 오른쪽 안내·참가자 패널 */
+.minigame__side-title {
+  margin: 0 0 16px;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text-h);
+}
+
+.minigame__side-text {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--text);
+}
+
+.minigame__info {
+  margin: 16px 0 0;
+  padding: 12px 14px;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--text);
+  background: var(--info-bg);
+  border-radius: 6px;
+}
+
+.minigame__side-note {
+  margin: 24px 0 0;
+  font-size: 12px;
+  color: var(--text);
+}
+
+.minigame-players {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.minigame-players__group {
+  margin: 12px 0 4px;
+  font-size: 13px;
+  color: var(--text);
+}
+
+.minigame-player {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 56px;
+  padding: 0 12px;
+}
+
+.minigame-player__text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.minigame-player__name {
+  font-size: 14px;
+  color: var(--text-h);
+}
+
+.minigame-player__status {
+  font-size: 12px;
+  color: var(--text);
+}
+
+.minigame-player__tag {
+  margin-left: auto;
+  font-size: 12px;
+  color: var(--text);
+}
+
+/* 20 가위바위보 */
+.rps-timer {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+.rps-timer__label {
+  font-size: 13px;
+  color: var(--text);
+}
+
+.rps-timer__value {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text-h);
+}
+
+.rps-timer__track {
+  height: 4px;
+  margin: 14px 0 28px;
+  overflow: hidden;
+  background: var(--code-bg);
+  border-radius: 2px;
+}
+
+.rps-timer__fill {
+  height: 100%;
+  background: var(--accent);
+  transition: width 0.2s linear;
+}
+
+.rps__title {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text-h);
+}
+
+.rps__desc {
+  margin: 12px 0 24px;
+  font-size: 13px;
+  color: var(--text);
+}
+
+.rps-hands {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.rps-hand {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  height: 160px;
+  font: inherit;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-h);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  cursor: pointer;
+  transition:
+    border-color 0.15s,
+    background-color 0.15s;
+}
+
+.rps-hand:hover:not(:disabled) {
+  border-color: var(--accent-border);
+}
+
+.rps-hand.is-picked {
+  background: var(--selected-bg);
+  border-color: var(--success);
+}
+
+.rps-hand:disabled {
+  cursor: default;
+}
+
+/* 내가 낸 뒤에는 시안처럼 나머지 카드를 그대로 두고, 낼 수 없는 사람(탈락·참가자 아님)에게만 흐리게 보인다. */
+.rps-hands:not(.rps-hands--picked) .rps-hand:disabled {
+  opacity: 0.55;
+}
+
+.rps__status {
+  margin: 20px 0 0;
+  font-size: 13px;
+  color: var(--text);
+}
+
+.rps__result {
+  margin-top: 32px;
+}
+
+/* 21 룰렛 */
+.roulette-card {
+  text-align: center;
+}
+
+.roulette {
+  position: relative;
+  width: 320px;
+  max-width: 100%;
+  margin: 0 auto;
+  padding-top: 28px;
+}
+
+.roulette__pointer {
+  position: absolute;
+  top: 4px;
+  left: 50%;
+  z-index: 1;
+  width: 0;
+  height: 0;
+  border-top: 22px solid var(--text-h);
+  border-right: 12px solid transparent;
+  border-left: 12px solid transparent;
+  transform: translateX(-50%);
+}
+
+.roulette__wheel {
+  display: block;
+  width: 100%;
+  height: auto;
+  /* Roulette.tsx SPIN_MS와 맞춘다 */
+  transition: transform 4.5s cubic-bezier(0.15, 0.85, 0.25, 1);
+}
+
+.roulette__label {
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.roulette__rim {
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 1;
+}
+
+.roulette__hub {
+  fill: #fff;
+  stroke: var(--accent);
+  stroke-width: 1;
+}
+
+.roulette__status {
+  margin-top: 40px;
+}
+
+.roulette__title {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text-h);
+}
+
+.roulette__desc {
+  margin: 12px 0 0;
+  font-size: 13px;
+  color: var(--text);
+}
+
+.roulette__button {
+  width: 220px;
+  margin-top: 28px;
+}
+
+/* 22 결과 */
+.minigame-result {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 32px;
+  box-sizing: border-box;
+}
+
+.minigame-result__avatar .avatar {
+  width: 64px;
+  height: 64px;
+  font-size: 16px;
+}
+
+.minigame-result__title {
+  margin: 28px 0 0;
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: -0.4px;
+  color: var(--text-h);
+}
+
+.minigame-result__meta {
+  margin: 18px 0 0;
+  font-size: 13px;
+  color: var(--text);
+}
+
+.minigame-result__rounds {
+  margin: 16px 0 0;
+  padding: 14px;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--text);
+  background: var(--info-bg);
+  border-radius: 6px;
+}
+
+.minigame-result__round-no {
+  margin-right: 8px;
+}
+
+.minigame-result__actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-top: 28px;
+}
+
+.minigame-result__note {
+  margin: 18px 0 0;
+  font-size: 12px;
+  color: var(--text);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* 0초로 두면 transitionend가 오지 않아 [결과 확인]이 켜지지 않는다. */
+  .roulette__wheel {
+    transition-duration: 1ms;
+  }
+}
+
+@media (max-width: 900px) {
+  .minigame {
+    padding: 24px 16px 48px;
+  }
+
+  .minigame__columns {
+    grid-template-columns: 1fr;
+  }
+
+  .minigame__card--wide,
+  .minigame-result {
+    padding: 24px 20px;
+  }
+
+  .rps-hand {
+    height: 120px;
+  }
+}
