@@ -1,4 +1,4 @@
-// 백엔드 DTO 소스(feature/candidate·feature/minigame 브랜치) 기준 — 노션 API명세서와 다른 곳이 있다.
+// 백엔드 DTO 소스(feature/candidate·feature/minigame·feature/signaling 브랜치) 기준 — 노션 API명세서와 다른 곳이 있다.
 
 export interface MemberProfile {
   userId: number;
@@ -177,4 +177,71 @@ export interface GameFinishedData extends GameEventData {
 
 export interface GameAbortedData extends GameEventData {
   reason: AbortReason;
+}
+
+// TOUR — Backend tour/entity/TourEnums
+export type TourStatus = 'IN_PROGRESS' | 'ENDED';
+// 방문자가 종료 / 방문자가 대기 시간(3분) 안에 돌아오지 않음 / 방문자가 그룹을 나감 / 그룹 삭제
+export type TourEndReason =
+  | 'VISITOR_ENDED'
+  | 'VISITOR_TIMEOUT'
+  | 'VISITOR_LEFT_WORKSPACE'
+  | 'WORKSPACE_DELETED';
+// 방문자는 영상을 송출하고, 시청자는 받는다.
+export type TourRole = 'VISITOR' | 'VIEWER';
+// 참여자가 보고하는 WebRTC 연결 상태 (SIG-04)
+export type TourConnectionState = 'CONNECTING' | 'CONNECTED' | 'DISCONNECTED';
+
+export interface TourParticipant {
+  userId: number;
+  nickname: string;
+  role: TourRole;
+  connectionState: TourConnectionState;
+  joinedAt: string;
+}
+
+// TOUR-03 — TourResponse. Workspace 소켓 TOUR_STARTED의 data도 같다.
+export interface Tour {
+  tourId: number;
+  workspaceId: number;
+  gameId: number;
+  status: TourStatus;
+  visitor: { userId: number; nickname: string };
+  // false면 "방문자 연결 끊김"을 표시한다
+  visitorConnected: boolean;
+  // 지금 참여 중인 사람 (방문자 포함)
+  participants: TourParticipant[];
+  participantCount: number;
+  maxParticipants: number;
+  startedAt: string;
+  endedAt: string | null;
+  endReason: TourEndReason | null;
+}
+
+// TOUR-02 보조 — STUN·TURN 서버. TURN 자격증명은 expiresAt까지만 쓸 수 있다.
+export interface IceServers {
+  iceServers: { urls: string[]; username?: string; credential?: string }[];
+  expiresAt: string;
+}
+
+// TOUR-01·02·05 시작·참여·재참여 응답. signalingPath 뒤에 &token=을 붙여 시그널링 소켓에 접속한다.
+export interface TourJoin {
+  tour: Tour;
+  signalingPath: string;
+  ice: IceServers;
+}
+
+// TOUR-06 — TourHistoryResponse
+export interface TourHistoryItem {
+  tourId: number;
+  visitor: { userId: number; nickname: string };
+  startedAt: string;
+  endedAt: string | null;
+  endReason: TourEndReason | null;
+}
+
+// Workspace 소켓·시그널링 소켓 TOUR_ENDED의 data
+export interface TourEndedData {
+  tourId: number;
+  reason: TourEndReason;
 }

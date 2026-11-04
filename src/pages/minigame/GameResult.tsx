@@ -1,7 +1,9 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import { Link, Navigate, useParams } from 'react-router-dom';
+import { useAuth } from '../../app/providers/useAuth';
 import { useWorkspace } from '../../app/providers/useWorkspace';
 import Avatar from '../../components/Avatar';
+import { tourHeldFor, useTourStatus } from '../../hooks/useTourStatus';
 import { getErrorMessage } from '../../lib/authApi';
 import { getGame } from '../../lib/minigameApi';
 import type { MiniGame } from '../../types';
@@ -14,13 +16,15 @@ export default function GameResultPage() {
   return <GameResult key={gameId} gameId={Number(gameId)} />;
 }
 
-// 22 방문자 선정 결과 (GAME-03). [집보기 참여]는 투어 화면(23)이 아직 없어 비활성,
-// [게임으로 돌아가기]는 19로 간다(UI명세 Q9). 시안의 "OO 님이 집보기를 시작했어요"는 투어 상태라 넣지 않았다.
+// 22 방문자 선정 결과 (GAME-03). 방문자에게는 [집보기 시작](→ 24 송출), 다른 멤버에게는 집보기가 시작되면
+// [집보기 참여](→ 23 시청)를 보여준다. [게임으로 돌아가기]는 19로 간다(UI명세 Q9).
 function GameResult({ gameId }: { gameId: number }) {
   const { workspace } = useWorkspace();
+  const { me } = useAuth();
   const gamePath = `/workspaces/${workspace.id}/minigame`;
   const [game, setGame] = useState<MiniGame | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const tourStatus = useTourStatus(workspace.id);
 
   useEffect(() => {
     let cancelled = false;
@@ -72,6 +76,51 @@ function GameResult({ gameId }: { gameId: number }) {
     .filter(Boolean)
     .join(' · ');
 
+  // 시안: "OO 님이 집보기를 시작했어요." + [집보기 참여]. 방문자 본인에게는 [집보기 시작]으로 바꿔 보여준다.
+  const liveTour = tourStatus.tour;
+  const viewerPath = `/workspaces/${workspace.id}/tour`;
+  const broadcastPath = `/workspaces/${workspace.id}/tour/broadcast`;
+  let tourLine: string | null = null;
+  let tourAction: ReactNode = null;
+  if (visitor && liveTour) {
+    tourLine = `${liveTour.visitor.nickname} 님이 집보기를 시작했어요.`;
+    tourAction =
+      liveTour.visitor.userId === me?.id ? (
+        <Link to={broadcastPath} className="button button--primary">
+          송출 화면으로
+        </Link>
+      ) : (
+        <Link to={viewerPath} className="button button--primary">
+          집보기 참여
+        </Link>
+      );
+  } else if (visitor && liveTour === null) {
+    const held = tourHeldFor(tourStatus, game);
+    if (visitor.userId === me?.id && !held) {
+      tourLine = '휴대폰에서 [집보기 시작]을 누르면 카메라가 켜지고 집보기가 시작돼요.';
+      tourAction = (
+        <Link to={broadcastPath} className="button button--primary">
+          집보기 시작
+        </Link>
+      );
+    } else {
+      tourLine = held
+        ? '이 결과로 한 집보기는 끝났어요.'
+        : '방문자가 집보기를 시작하면 참여할 수 있어요.';
+      tourAction = (
+        <button type="button" className="button button--primary" disabled>
+          집보기 참여
+        </button>
+      );
+    }
+  } else if (visitor) {
+    tourAction = (
+      <button type="button" className="button button--primary" disabled>
+        집보기 참여
+      </button>
+    );
+  }
+
   return (
     <div className="minigame minigame--result">
       <div className="minigame__heading">
@@ -116,15 +165,9 @@ function GameResult({ gameId }: { gameId: number }) {
           )}
         </div>
 
+        {tourLine && <p className="minigame-result__status">{tourLine}</p>}
         <div className="minigame-result__actions">
-          <button
-            type="button"
-            className="button button--primary"
-            disabled
-            title="준비 중인 화면이에요."
-          >
-            집보기 참여
-          </button>
+          {tourAction}
           <Link to={gamePath} className="button button--secondary">
             게임으로 돌아가기
           </Link>

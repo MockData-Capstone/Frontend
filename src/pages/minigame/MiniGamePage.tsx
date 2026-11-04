@@ -24,6 +24,7 @@ import type {
   VisitorRule,
   WorkspaceMember,
 } from '../../types';
+import TourBanner from '../../components/Tour';
 import GameSetup from './GameSetup';
 import RockPaperScissors from './RockPaperScissors';
 import Roulette from './Roulette';
@@ -162,21 +163,27 @@ export default function MiniGamePage() {
     );
   }
 
+  // 진행 중인 집보기 참여, 또는 방금 뽑힌 방문자의 집보기 시작 안내
+  const tourBanner = <TourBanner workspaceId={workspace.id} meId={meId} />;
+
   if (game === null) {
     return (
-      <GameSetup
-        members={members}
-        meId={meId}
-        notice={notice}
-        onStart={async (payload: {
-          type: GameType;
-          participantUserIds: number[];
-          visitorRule: VisitorRule | null;
-        }) => {
-          setNotice(null);
-          await sync(startGame(workspace.id, payload));
-        }}
-      />
+      <>
+        {tourBanner}
+        <GameSetup
+          members={members}
+          meId={meId}
+          notice={notice}
+          onStart={async (payload: {
+            type: GameType;
+            participantUserIds: number[];
+            visitorRule: VisitorRule | null;
+          }) => {
+            setNotice(null);
+            await sync(startGame(workspace.id, payload));
+          }}
+        />
+      </>
     );
   }
 
@@ -195,13 +202,18 @@ export default function MiniGamePage() {
   };
 
   // 새 게임이 시작되면 key로 다시 마운트해 이전 게임의 선택·회전 상태를 버린다.
-  return game.type === 'ROULETTE' ? (
-    <Roulette key={game.gameId} {...shared} onDraw={() => sync(drawRoulette(game.gameId))} />
-  ) : (
-    <RockPaperScissors
-      key={game.gameId}
-      {...shared}
-      onSubmit={(hand: Hand) => sync(submitChoice(game.gameId, game.currentRound, hand))}
-    />
+  return (
+    <>
+      {tourBanner}
+      {game.type === 'ROULETTE' ? (
+        <Roulette key={game.gameId} {...shared} onDraw={() => sync(drawRoulette(game.gameId))} />
+      ) : (
+        <RockPaperScissors
+          key={game.gameId}
+          {...shared}
+          onSubmit={(hand: Hand) => sync(submitChoice(game.gameId, game.currentRound, hand))}
+        />
+      )}
+    </>
   );
 }

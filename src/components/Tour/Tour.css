@@ -1,0 +1,36 @@
+/* 19 위 집보기 안내. 아래 .minigame과 같은 폭에 맞춘다. */
+.tour-banner {
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 24px 40px 0;
+  box-sizing: border-box;
+}
+
+.tour-banner__box {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 12px 16px;
+  background: var(--selected-bg);
+  border: 1px solid var(--success);
+  border-radius: 8px;
+}
+
+.tour-banner__text {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--success);
+}
+
+@media (max-width: 900px) {
+  .tour-banner {
+    padding: 16px 16px 0;
+  }
+
+  .tour-banner__box {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}

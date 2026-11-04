@@ -10,20 +10,40 @@ export interface WsMessage<T = unknown> {
 }
 
 // 서버가 연결을 닫을 때 쓰는 close code (Backend WsCloseCodes)
-const CLOSE_BAD_REQUEST = 4400;
-const CLOSE_UNAUTHORIZED = 4401;
-const CLOSE_TOKEN_EXPIRED = 4402;
-const CLOSE_FORBIDDEN = 4403;
-const CLOSE_NOT_FOUND = 4404;
+export const WsClose = {
+  BAD_REQUEST: 4400,
+  // 토큰이 없거나 유효하지 않다. 다시 로그인한다.
+  UNAUTHORIZED: 4401,
+  // 접근 토큰이 만료됐다(연결 중에 만료돼도 닫힌다). 재발급받아 다시 접속한다.
+  TOKEN_EXPIRED: 4402,
+  // 멤버·참여자가 아니거나, 나가거나 내보내졌다.
+  FORBIDDEN: 4403,
+  // 대상(Workspace·투어)이 없거나 삭제·종료됐다.
+  NOT_FOUND: 4404,
+  // 같은 회원이 다른 탭에서 시그널링에 새로 접속했다. 이 연결로는 다시 접속하지 않는다.
+  REPLACED: 4409,
+} as const;
 
-const WS_BASE_URL = BASE_URL.replace(/^http/, 'ws');
+// API와 같은 서버. VITE_API_BASE_URL이 비어 있으면(폰 테스트 모드의 Vite 프록시) 지금 페이지 주소로 접속한다.
+export const WS_BASE_URL = (BASE_URL || window.location.origin).replace(/^http/, 'ws');
+
 const RETRY_DELAYS_MS = [1000, 2000, 4000, 8000];
 
-// 서버 시각 − 내 기기 시각. 가위바위보 마감 카운트다운이 기기 시계와 어긋나지 않게 메시지의 sentAt으로 맞춘다.
+// 끊긴 연결을 몇 번째로 다시 시도하는지에 따라 기다릴 시간
+export function retryDelay(attempt: number): number {
+  return RETRY_DELAYS_MS[Math.min(attempt, RETRY_DELAYS_MS.length - 1)];
+}
+
+// 서버 시각 − 내 기기 시각. 가위바위보 마감·투어 진행 시간이 기기 시계와 어긋나지 않게 메시지의 sentAt으로 맞춘다.
 let clockOffsetMs = 0;
 
 export function serverNow(): number {
   return Date.now() + clockOffsetMs;
+}
+
+export function syncServerClock(sentAt: string | undefined) {
+  const serverTime = sentAt ? parseInstant(sentAt) : NaN;
+  if (!Number.isNaN(serverTime)) clockOffsetMs = serverTime - Date.now();
 }
 
 export interface WorkspaceSocketHandlers {
@@ -66,8 +86,7 @@ export function connectWorkspaceSocket(
       } catch {
         return;
       }
-      const sentAt = message.sentAt ? parseInstant(message.sentAt) : NaN;
-      if (!Number.isNaN(sentAt)) clockOffsetMs = sentAt - Date.now();
+      syncServerClock(message.sentAt);
       handlers.onMessage(message);
     };
 
@@ -76,19 +95,19 @@ export function connectWorkspaceSocket(
       if (closed) return;
       handlers.onOpenChange(false);
       switch (event.code) {
-        case CLOSE_UNAUTHORIZED:
+        case WsClose.UNAUTHORIZED:
           forceLogout();
           return;
-        case CLOSE_TOKEN_EXPIRED:
+        case WsClose.TOKEN_EXPIRED:
           refreshTokens().then(open, forceLogout);
           return;
-        case CLOSE_BAD_REQUEST:
-        case CLOSE_FORBIDDEN:
-        case CLOSE_NOT_FOUND:
+        case WsClose.BAD_REQUEST:
+        case WsClose.FORBIDDEN:
+        case WsClose.NOT_FOUND:
           handlers.onRejected(event.code);
           return;
         default:
-          timer = setTimeout(open, RETRY_DELAYS_MS[Math.min(attempt++, RETRY_DELAYS_MS.length - 1)]);
+          timer = setTimeout(open, retryDelay(attempt++));
       }
     };
   };
