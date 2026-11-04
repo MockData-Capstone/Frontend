@@ -34,7 +34,7 @@
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  color: var(--text-h);
+  color: var(--brand);
   text-decoration: none;
   font-size: 20px;
   font-weight: 600;
@@ -72,6 +72,30 @@
 .site-header__auth-divider {
   width: 1px;
   background: var(--border);
+}
+
+.site-header__member {
+  justify-self: end;
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.site-header__member-link {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text);
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.site-header__member-link:hover,
+.site-header__member-link.is-active {
+  color: var(--text-h);
+}
+
+.site-header__member-link.is-active {
+  font-weight: 700;
 }
 
 .site-header__signout {
