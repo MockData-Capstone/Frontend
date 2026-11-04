@@ -22,6 +22,12 @@ export async function getCurrentGame(workspaceId: number): Promise<MiniGame | nu
   return data.game;
 }
 
+// GAME-06 끝나거나 중단된 게임 (최신순) — GET /api/workspaces/{workspaceId}/minigames
+export async function getGameHistory(workspaceId: number): Promise<MiniGame[]> {
+  const { data } = await api.get<{ items: MiniGame[] }>(`/api/workspaces/${workspaceId}/minigames`);
+  return data.items;
+}
+
 // GAME-03 미니게임 결과 (확정 전에는 visitor가 null, 진행 중인 라운드의 선택은 비공개)
 // — GET /api/minigames/{gameId}
 export async function getGame(gameId: number): Promise<MiniGame> {

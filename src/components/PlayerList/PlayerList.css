@@ -1,0 +1,35 @@
+.player-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.player-list__item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 56px;
+  padding: 0 12px;
+}
+
+.player-list__text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.player-list__name {
+  font-size: 14px;
+  color: var(--text-h);
+}
+
+.player-list__status {
+  font-size: 12px;
+  color: var(--text);
+}
+
+.player-list__tag {
+  margin-left: auto;
+  font-size: 12px;
+  color: var(--text);
+}

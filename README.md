@@ -94,6 +94,19 @@ npm run lint       # ESLint
 npm run preview    # 빌드 결과 로컬 미리보기
 ```
 
+### 폰으로 실시간 집보기 시험 (`npm run dev:mobile`)
+
+방문자 카메라(24)는 HTTPS에서만 켜진다. `npm run dev:mobile`은 개발용 인증서로 HTTPS를 켜고, API·소켓 요청을 Vite가 백엔드(`http://localhost:8080`)로 넘겨준다(`.env.mobile`, `vite.config.ts`).
+
+1. 맥에서 백엔드(`feature/signaling` 이후 브랜치)를 띄우고 `npm run dev:mobile` 실행
+2. 같은 와이파이의 폰에서 터미널에 찍힌 `Network: https://<맥 IP>:5173` 주소로 접속 → 인증서 경고에서 "계속" 선택
+3. 시청은 PC의 `npm run dev`(http://localhost:5173)나 같은 https 주소로 접속
+
+**측정용 설정** — 새로고침하면 로그아웃되므로 로그인 화면 주소에 붙여 연다(이 브라우저에 기억, `=0`이면 끔).
+
+- `?debug=1`: 23·24 구석에 연결 방식(P2P/TURN)·연결 시간·끊김 횟수·재연결 시간 표시
+- `?relay=1`: TURN 중계만 사용 (TURN 서버가 설정된 백엔드에서 TURN 강제 시험)
+
 ---
 
 ## 환경 변수

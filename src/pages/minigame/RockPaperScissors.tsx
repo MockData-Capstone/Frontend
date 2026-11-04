@@ -4,7 +4,7 @@ import { getErrorMessage } from '../../lib/authApi';
 import { parseInstant } from '../../lib/time';
 import { serverNow } from '../../lib/websocket';
 import type { GameParticipant, Hand, MiniGame } from '../../types';
-import GamePlayers, { type GamePlayerRow } from './GamePlayers';
+import PlayerList, { type PlayerRow } from '../../components/PlayerList';
 import { HANDS, handLabel, roundSummary, visitorRuleLabel } from './format';
 
 // Backend game.round-timeout 기본값. 막대 길이에만 쓰고, 마감 판단은 서버가 한다.
@@ -84,7 +84,7 @@ export default function RockPaperScissors({
   }
 
   const submittedIds = new Set(game.submittedUserIds);
-  const rowOf = (p: GameParticipant, playerStatus: string, tag: string): GamePlayerRow => ({
+  const rowOf = (p: GameParticipant, playerStatus: string, tag: string): PlayerRow => ({
     userId: p.userId,
     nickname: p.nickname,
     profileImageUrl: profileImageOf(p.userId),
@@ -204,11 +204,11 @@ export default function RockPaperScissors({
 
         <aside className="minigame__card minigame__side">
           <h2 className="minigame__side-title">{inProgress ? '이번 라운드' : '참여 멤버'}</h2>
-          <GamePlayers rows={playingRows} />
+          <PlayerList rows={playingRows} />
           {outRounds.map((roundNo) => (
             <div key={roundNo}>
               <p className="minigame-players__group">라운드 {roundNo}에서 제외</p>
-              <GamePlayers
+              <PlayerList
                 rows={game.participants
                   .filter((p) => p.status === 'ELIMINATED' && p.outRound === roundNo)
                   .map((p) => rowOf(p, '제외', '멤버'))}
@@ -218,7 +218,7 @@ export default function RockPaperScissors({
           {left.length > 0 && (
             <>
               <p className="minigame-players__group">게임에서 빠짐</p>
-              <GamePlayers rows={left.map((p) => rowOf(p, '나감·연결 끊김', '멤버'))} />
+              <PlayerList rows={left.map((p) => rowOf(p, '나감·연결 끊김', '멤버'))} />
             </>
           )}
           {lastRound && (
