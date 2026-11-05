@@ -25,9 +25,6 @@ export interface AppNotification {
   createdAt: string;
   // 묶음 알림은 마지막 메시지 시각
   updatedAt: string;
-  // 임시(api.md): 예시 데이터에만 있는 행동한 사람 닉네임과 후보지 이름. 실제 서버에는 없다.
-  tempActorNickname?: string;
-  tempTargetName?: string;
 }
 
 // 알림함 — GET /api/notifications
