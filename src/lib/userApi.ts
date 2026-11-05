@@ -3,6 +3,7 @@ import { api } from './api';
 
 // 내 정보 수정·연결·탈퇴 (api.md "내 정보·인증"). 내 정보 조회·로그아웃·카카오 연결 시작 주소는
 // lib/authApi.ts의 getMe·logout·getKakaoAuthorizeUrl을 쓴다.
+// 닉네임 중복 확인은 lib/authApi.ts의 checkNicknameAvailability 하나만 둔다 — 화면에서는 hooks/useNicknameAvailability를 쓴다.
 
 // 닉네임 수정 (2~20자) — PATCH /api/users/me
 export async function updateNickname(nickname: string): Promise<MeResponse> {
@@ -14,14 +15,6 @@ export async function updateNickname(nickname: string): Promise<MeResponse> {
 export async function changePassword(currentPassword: string, newPassword: string): Promise<MeResponse> {
   const { data } = await api.patch<MeResponse>('/api/users/me', { currentPassword, newPassword });
   return data;
-}
-
-// 닉네임 중복 확인 (로그인 없이) — GET /api/users/nickname-availability?nickname=
-export async function checkNicknameAvailable(nickname: string): Promise<boolean> {
-  const { data } = await api.get<{ available: boolean }>('/api/users/nickname-availability', {
-    params: { nickname },
-  });
-  return data.available;
 }
 
 // 프로필 사진 변경 — PATCH /api/users/me/profile-image (multipart/form-data, 파일 필드 image)
