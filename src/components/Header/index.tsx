@@ -1,69 +1,76 @@
 import { Link, NavLink } from 'react-router-dom';
 import { useAuth } from '../../app/providers/useAuth';
 import Avatar from '../Avatar';
+import ConnectionBanner from '../ConnectionBanner';
+import NotificationBell from '../Notification/NotificationBell';
 import './Header.css';
 
-// 상단바: 동네 찾기 탭 / zipfit 로고 / 로그인·회원가입(로그인 후에는 내 그룹·아바타)
+// 상단바: 동네 찾기 탭 / zipfit 로고 / 로그인·회원가입(로그인 후에는 내 그룹·알림 종·아바타)
+// 상단바 바로 아래에 실시간 끊김 안내 띠(알림 연결이 3초 넘게 끊겼을 때)를 둔다.
 // TODO(AUTH-04): 내 정보(13) 화면이 생기면 아바타를 그 화면 링크로 바꾸고 로그아웃 버튼을 그쪽으로 옮긴다.
 export default function Header() {
   const { accessToken, me, signOut } = useAuth();
 
   return (
-    <header className="site-header">
-      <nav className="site-header__nav">
-        <NavLink
-          to="/"
-          end
-          className={({ isActive }) =>
-            `site-header__nav-link${isActive ? ' is-active' : ''}`
-          }
-        >
-          동네 찾기
-        </NavLink>
-      </nav>
+    <>
+      <header className="site-header">
+        <nav className="site-header__nav">
+          <NavLink
+            to="/"
+            end
+            className={({ isActive }) =>
+              `site-header__nav-link${isActive ? ' is-active' : ''}`
+            }
+          >
+            동네 찾기
+          </NavLink>
+        </nav>
 
-      <Link to="/" className="site-header__logo">
-        <HomeIcon />
-        <span>zipfit</span>
-      </Link>
+        <Link to="/" className="site-header__logo">
+          <HomeIcon />
+          <span>zipfit</span>
+        </Link>
 
-      {accessToken ? (
-        <div className="site-header__member">
-          <NavLink
-            to="/workspaces"
-            className={({ isActive }) =>
-              `site-header__member-link${isActive ? ' is-active' : ''}`
-            }
-          >
-            내 그룹
-          </NavLink>
-          {me && <Avatar nickname={me.nickname} profileImageUrl={me.profileImageUrl} />}
-          <button type="button" className="site-header__signout" onClick={signOut}>
-            로그아웃
-          </button>
-        </div>
-      ) : (
-        <div className="site-header__auth">
-          <NavLink
-            to="/login"
-            className={({ isActive }) =>
-              `site-header__auth-link${isActive ? ' is-active' : ''}`
-            }
-          >
-            로그인
-          </NavLink>
-          <span className="site-header__auth-divider" aria-hidden="true" />
-          <NavLink
-            to="/signup"
-            className={({ isActive }) =>
-              `site-header__auth-link${isActive ? ' is-active' : ''}`
-            }
-          >
-            회원가입
-          </NavLink>
-        </div>
-      )}
-    </header>
+        {accessToken ? (
+          <div className="site-header__member">
+            <NavLink
+              to="/workspaces"
+              className={({ isActive }) =>
+                `site-header__member-link${isActive ? ' is-active' : ''}`
+              }
+            >
+              내 그룹
+            </NavLink>
+            <NotificationBell />
+            {me && <Avatar nickname={me.nickname} profileImageUrl={me.profileImageUrl} />}
+            <button type="button" className="site-header__signout" onClick={signOut}>
+              로그아웃
+            </button>
+          </div>
+        ) : (
+          <div className="site-header__auth">
+            <NavLink
+              to="/login"
+              className={({ isActive }) =>
+                `site-header__auth-link${isActive ? ' is-active' : ''}`
+              }
+            >
+              로그인
+            </NavLink>
+            <span className="site-header__auth-divider" aria-hidden="true" />
+            <NavLink
+              to="/signup"
+              className={({ isActive }) =>
+                `site-header__auth-link${isActive ? ' is-active' : ''}`
+              }
+            >
+              회원가입
+            </NavLink>
+          </div>
+        )}
+      </header>
+      <ConnectionBanner />
+    </>
   );
 }
 
