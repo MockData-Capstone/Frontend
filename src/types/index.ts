@@ -35,6 +35,10 @@ export interface WorkspaceMember {
   profileImageUrl: string | null;
   role: WorkspaceRole;
   joinedAt: string;
+  // 지금 그룹 연결(Workspace 소켓)에 접속 중인지. 미니게임은 접속 중인 멤버만 참여할 수 있다(GAME-01).
+  // 백엔드 feature/notification부터 온다 — 값이 없는 서버에서는 접속 중으로 본다.
+  // 바뀌면 그룹 연결의 MEMBER_ONLINE·MEMBER_OFFLINE({ userId })으로 알려준다.
+  online?: boolean;
 }
 
 // AUTH-04 — GET /api/users/me
