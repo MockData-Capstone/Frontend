@@ -119,6 +119,7 @@ Vite는 `VITE_` 접두사가 붙은 변수만 클라이언트에 노출한다. `
 | `VITE_KAKAO_JS_KEY` | 카카오맵 JavaScript 키 (도메인 제한 설정) | ✅ (REC, LOC) |
 | `VITE_KAKAO_LOGIN_JS_KEY` | 카카오 로그인 JavaScript 키 | ✅ (AUTH-02) |
 | `VITE_WEB_PUSH_VAPID_PUBLIC_KEY` | 웹 푸시 구독용 VAPID 공개 키 | ⬜ (NOTI-04, P2) |
+| `VITE_NOTIFICATIONS` | `on`이면 알림 연결(`/ws/notifications`)과 안 읽은 개수를 켠다. 알림 백엔드가 준비되기 전까지 비워 둔다(꺼짐) | ⬜ (NOTI-01) |
 
 > ⚠️ 카카오 REST API 키, OpenAI 등 외부 LLM 키는 **서버 전용**이라 프론트엔드 환경 변수로 두지 않는다.
 
