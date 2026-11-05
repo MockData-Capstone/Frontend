@@ -118,7 +118,12 @@ function HomeMap({ loggedIn }: { loggedIn: boolean }) {
 
           <div className="home-panel__body">
             {!KAKAO_JS_KEY ? (
-              <p className="home-panel__hint">지도 키가 없어 검색할 수 없어요. (.env.local의 VITE_KAKAO_JS_KEY)</p>
+              <p className="home-panel__hint">
+                {/* 설정 방법은 개발 중에만 보여준다 */}
+                {import.meta.env.DEV
+                  ? '지도 키가 없어 검색할 수 없어요. (.env.local의 VITE_KAKAO_JS_KEY)'
+                  : '지금은 지도 검색을 쓸 수 없어요.'}
+              </p>
             ) : search.status === 'idle' ? (
               <p className="home-panel__hint">검색하면 지도에 위치를 표시해요.</p>
             ) : search.status === 'searching' ? (
