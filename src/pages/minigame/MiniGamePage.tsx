@@ -20,6 +20,7 @@ import type {
   GamePlayerLeftData,
   GameType,
   Hand,
+  MemberOnlineChangedData,
   MiniGame,
   VisitorRule,
   WorkspaceMember,
@@ -149,7 +150,7 @@ export default function MiniGamePage() {
       // 접속 상태가 바뀌면 그 멤버만 고친다. 미접속 멤버는 19에서 고를 수 없다.
       case 'MEMBER_ONLINE':
       case 'MEMBER_OFFLINE': {
-        const { userId } = message.data as { userId: number };
+        const { userId } = message.data as MemberOnlineChangedData;
         const online = message.type === 'MEMBER_ONLINE';
         setMembers((list) => list?.map((m) => (m.userId === userId ? { ...m, online } : m)) ?? list);
         return;

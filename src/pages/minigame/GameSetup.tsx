@@ -150,7 +150,8 @@ export default function GameSetup({
           )}
 
           {error && <p className="minigame__error">{error}</p>}
-          {!connected && <p className="minigame__hint">실시간 연결 중이에요. 잠시 후 시작할 수 있어요.</p>}
+          {/* 연결 상태 자체는 상단바 아래 끊김 안내 띠가 알려주므로, 여기서는 [게임 시작]이 꺼진 이유만 말한다. */}
+          {!connected && <p className="minigame__hint">실시간 연결이 되면 게임을 시작할 수 있어요.</p>}
           <button
             type="button"
             className="button button--primary minigame__wide"
