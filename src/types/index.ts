@@ -37,8 +37,13 @@ export interface WorkspaceMember {
   joinedAt: string;
   // 지금 그룹 연결(Workspace 소켓)에 접속 중인지. 미니게임은 접속 중인 멤버만 참여할 수 있다(GAME-01).
   // 백엔드 feature/notification부터 온다 — 값이 없는 서버에서는 접속 중으로 본다.
-  // 바뀌면 그룹 연결의 MEMBER_ONLINE·MEMBER_OFFLINE({ userId })으로 알려준다.
+  // 바뀌면 그룹 연결의 MEMBER_ONLINE·MEMBER_OFFLINE(MemberOnlineChangedData)으로 알려준다.
   online?: boolean;
+}
+
+// 그룹 연결 MEMBER_ONLINE·MEMBER_OFFLINE의 data. 같은 회원이 여러 탭이면 첫 연결·마지막 해제 때만 온다.
+export interface MemberOnlineChangedData {
+  userId: number;
 }
 
 // AUTH-04 — GET /api/users/me
