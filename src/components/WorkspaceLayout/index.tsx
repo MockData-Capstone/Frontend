@@ -1,9 +1,9 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useEffectEvent, useRef, useState } from 'react';
 import { Link, Navigate, Outlet, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../../app/providers/useAuth';
 import { WorkspaceProvider } from '../../app/providers/WorkspaceProvider';
 import { WorkspaceSocketProvider } from '../../app/providers/WorkspaceSocketProvider';
-import { useWorkspaceMessages } from '../../app/providers/useWorkspaceSocket';
+import { useWorkspaceMessages, useWorkspaceSocket } from '../../app/providers/useWorkspaceSocket';
 import { getErrorMessage } from '../../lib/authApi';
 import { getWorkspace } from '../../lib/workspaceApi';
 import type { MiniGame, WorkspaceDetail } from '../../types';
@@ -74,7 +74,7 @@ function WorkspaceShell({ workspaceId }: { workspaceId: number }) {
         >
           {/* 헤더도 그룹 연결 안에 둔다 — 상단바 아래 끊김 안내 띠가 그룹 연결 상태를 받는다. */}
           <WorkspaceHeader workspace={workspace} />
-          <WorkspaceDetailSync onChange={setWorkspace} />
+          <WorkspaceDetailSync workspaceId={workspace.id} onChange={setWorkspace} />
           <GameStartRedirect workspaceId={workspace.id} />
           <main className="workspace-layout__main">
             <Outlet />
@@ -104,12 +104,34 @@ function GameStartRedirect({ workspaceId }: { workspaceId: number }) {
 
 // 그룹 연결 통지로 그룹 상세(상단바 이름·인원, 내 역할)를 바로 맞춘다. 들어올 때 한 번만 불러오기 때문에,
 // 이게 없으면 다른 멤버가 들어오고 나가거나 그룹 이름이 바뀌어도 새로고침 전까지 상단바가 그대로다.
+// 통지만으로 맞출 수 없을 때는 상세를 새로 불러온다:
+// - 연결이 다시 붙은 직후: 끊긴 동안 놓친 통지(입장·퇴장·이름 변경)가 있을 수 있다.
+// - HOST_CHANGED: 통지에는 사용자 ID만 있어서 host(닉네임·사진)를 채울 수 없다.
 function WorkspaceDetailSync({
+  workspaceId,
   onChange,
 }: {
+  workspaceId: number;
   onChange: (update: (current: WorkspaceDetail | null) => WorkspaceDetail | null) => void;
 }) {
   const { me } = useAuth();
+  const { connected } = useWorkspaceSocket();
+  const openedBefore = useRef(false);
+
+  // 실패하면 지금 값을 그대로 둔다 — 다음 재연결이나 통지 때 다시 맞춘다.
+  const resync = () => {
+    getWorkspace(workspaceId)
+      .then((data) => onChange(() => data))
+      .catch(() => {});
+  };
+  const resyncAfterReconnect = useEffectEvent(resync);
+
+  // 다시 붙은 직후에만 새로 불러온다. 첫 연결은 WorkspaceShell이 막 불러온 직후라 건너뛴다.
+  useEffect(() => {
+    if (!connected) return;
+    if (openedBefore.current) resyncAfterReconnect();
+    openedBefore.current = true;
+  }, [connected]);
 
   useWorkspaceMessages((message) => {
     const update = (fn: (current: WorkspaceDetail) => WorkspaceDetail) =>
@@ -134,8 +156,10 @@ function WorkspaceDetailSync({
       }
       case 'HOST_CHANGED': {
         const data = message.data as HostChangedData;
+        // 내 역할은 바로 바꾸고, 새 호스트의 닉네임·사진(host)은 상세를 새로 불러와 채운다.
         if (data.newHostUserId === me?.id) update((w) => ({ ...w, myRole: 'HOST' }));
         else if (data.previousHostUserId === me?.id) update((w) => ({ ...w, myRole: 'MEMBER' }));
+        resync();
         return;
       }
     }
