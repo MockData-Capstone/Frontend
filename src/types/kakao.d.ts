@@ -39,6 +39,32 @@ declare namespace kakao.maps {
   }
 }
 
+// 장소 검색 (SDK 주소에 libraries=services를 붙여야 생긴다). 첫 화면의 지역·지하철역·학교 검색에 쓴다.
+declare namespace kakao.maps.services {
+  // SDK의 Status 값은 문자열이다.
+  type Status = 'OK' | 'ZERO_RESULT' | 'ERROR';
+
+  interface PlacesSearchResultItem {
+    id: string;
+    place_name: string;
+    category_group_name: string;
+    address_name: string;
+    road_address_name: string;
+    // 경도(x)·위도(y)가 문자열로 온다.
+    x: string;
+    y: string;
+  }
+
+  class Places {
+    constructor();
+    keywordSearch(
+      keyword: string,
+      callback: (result: PlacesSearchResultItem[], status: Status) => void,
+      options?: { size?: number; page?: number },
+    ): void;
+  }
+}
+
 interface Window {
   kakao?: typeof kakao;
 }
