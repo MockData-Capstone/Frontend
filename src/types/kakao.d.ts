@@ -47,6 +47,8 @@ declare namespace kakao.maps.services {
   interface PlacesSearchResultItem {
     id: string;
     place_name: string;
+    // 카테고리 그룹 코드 (SW8 지하철역, SC4 학교 …). 그룹이 없는 장소는 빈 문자열
+    category_group_code: string;
     category_group_name: string;
     address_name: string;
     road_address_name: string;
@@ -61,6 +63,22 @@ declare namespace kakao.maps.services {
       keyword: string,
       callback: (result: PlacesSearchResultItem[], status: Status) => void,
       options?: { size?: number; page?: number },
+    ): void;
+  }
+
+  interface AddressSearchResultItem {
+    address_name: string;
+    // REGION: 지역명(시·군·구·동)만 맞은 결과. 나머지는 도로명·지번 주소다.
+    address_type: 'REGION' | 'ROAD' | 'REGION_ADDR' | 'ROAD_ADDR';
+    x: string;
+    y: string;
+  }
+
+  class Geocoder {
+    constructor();
+    addressSearch(
+      address: string,
+      callback: (result: AddressSearchResultItem[], status: Status) => void,
     ): void;
   }
 }
