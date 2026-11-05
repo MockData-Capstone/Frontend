@@ -11,7 +11,8 @@ export function loadKakaoMaps(appKey: string): Promise<void> {
         script.remove();
         reject(new Error(message));
       };
-      script.src = `https://dapi.kakao.com/v2/maps/sdk.js?appkey=${encodeURIComponent(appKey)}&autoload=false`;
+      // libraries=services: 첫 화면의 장소 검색(kakao.maps.services.Places)
+      script.src = `https://dapi.kakao.com/v2/maps/sdk.js?appkey=${encodeURIComponent(appKey)}&autoload=false&libraries=services`;
       script.async = true;
       script.onload = () => {
         if (window.kakao?.maps) window.kakao.maps.load(() => resolve());
@@ -22,4 +23,41 @@ export function loadKakaoMaps(appKey: string): Promise<void> {
     });
   }
   return sdk;
+}
+
+export interface PlaceResult {
+  id: string;
+  name: string;
+  category: string;
+  // 도로명 주소가 없으면 지번 주소
+  address: string;
+  latitude: number;
+  longitude: number;
+}
+
+// 카카오 장소 검색 (지역·지하철역·학교 등 키워드). 결과가 없으면 빈 배열, 검색 자체가 실패하면 reject.
+// 클라이언트에서 카카오맵 JS SDK를 직접 부르는 건 허용된 범위다(README "카카오맵 JS SDK").
+export async function searchPlaces(appKey: string, keyword: string, size = 10): Promise<PlaceResult[]> {
+  await loadKakaoMaps(appKey);
+  return new Promise((resolve, reject) => {
+    new kakao.maps.services.Places().keywordSearch(
+      keyword,
+      (result, status) => {
+        if (status === 'ZERO_RESULT') resolve([]);
+        else if (status !== 'OK') reject(new Error('장소 검색 실패'));
+        else
+          resolve(
+            result.map((item) => ({
+              id: item.id,
+              name: item.place_name,
+              category: item.category_group_name,
+              address: item.road_address_name || item.address_name,
+              latitude: Number(item.y),
+              longitude: Number(item.x),
+            })),
+          );
+      },
+      { size },
+    );
+  });
 }
