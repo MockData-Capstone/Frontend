@@ -78,12 +78,37 @@ export interface LocationInfo {
   vehicleAccess: VehicleInfo | null;
 }
 
+// VOTE — Backend vote/entity/VoteChoice
+export type VoteChoice = 'AGREE' | 'DISAGREE';
+
 // CAND-02·VOTE-02 — CandidateResponse.votes
 export interface VoteSummary {
   agreeCount: number;
   disagreeCount: number;
   split: boolean;
-  myChoice: 'AGREE' | 'DISAGREE' | null;
+  myChoice: VoteChoice | null;
+}
+
+// VOTE-03 — CandidateVotesResponse. 그룹 연결 VOTE_UPDATED의 data로도 온다.
+// 통지는 받는 멤버마다 내 표가 달라 myChoice가 null이므로, 내 표는 votes에서 찾는다.
+export interface CandidateVotes {
+  candidateId: number;
+  candidateName: string;
+  agreeCount: number;
+  disagreeCount: number;
+  split: boolean;
+  myChoice: VoteChoice | null;
+  votes: { userId: number; nickname: string; profileImageUrl: string | null; choice: VoteChoice }[];
+}
+
+// 그룹 연결 CANDIDATE_UPDATED(이름 수정)·CANDIDATE_REMOVED의 data. CANDIDATE_ADDED는 Candidate 전체가 온다.
+export interface CandidateRenamedData {
+  candidateId: number;
+  name: string;
+}
+
+export interface CandidateRemovedData {
+  candidateId: number;
 }
 
 // CAND-02 — CandidateResponse (목록·상세 공용)
