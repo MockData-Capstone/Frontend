@@ -1,6 +1,6 @@
 import type { NicknameStatus } from '../hooks/useNicknameAvailability';
 
-// 닉네임 입력 아래에 실시간 중복확인 상태를 보여준다 (GET /api/auth/nickname-availability).
+// 닉네임 입력 아래에 실시간 중복확인 상태를 보여준다 (GET /api/users/nickname-availability).
 export default function NicknameHint({ status }: { status: NicknameStatus }) {
   if (status === 'checking') {
     return <p className="auth-field__hint">확인 중...</p>;

@@ -42,10 +42,10 @@ export async function checkEmailAvailability(email: string): Promise<boolean> {
   return data.available;
 }
 
-// AUTH-01·02 보조 — GET /api/auth/nickname-availability?nickname=
+// AUTH-01·02 보조 — GET /api/users/nickname-availability?nickname=
 export async function checkNicknameAvailability(nickname: string): Promise<boolean> {
   const { data } = await api.get<{ available: boolean }>(
-    '/api/auth/nickname-availability',
+    '/api/users/nickname-availability',
     { params: { nickname } },
   );
   return data.available;
