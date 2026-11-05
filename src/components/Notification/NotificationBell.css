@@ -1,0 +1,71 @@
+.notification-bell {
+  position: relative;
+  display: inline-flex;
+}
+
+.notification-bell__button {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  color: var(--text-h);
+  background: transparent;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.15s;
+}
+
+.notification-bell__button:hover,
+.notification-bell__button.is-open {
+  background: var(--code-bg);
+}
+
+.notification-bell__badge {
+  position: absolute;
+  top: 1px;
+  right: 0;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  box-sizing: border-box;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 14px;
+  letter-spacing: 0;
+  color: var(--bg);
+  background: var(--danger);
+  border: 2px solid var(--bg);
+  border-radius: 999px;
+  text-align: center;
+}
+
+.notification-bell__panel {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: -8px;
+  z-index: 50;
+  width: 380px;
+  min-height: 240px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: var(--shadow);
+}
+
+/* 좁은 화면에서는 종 대신 상단바(.site-header, Header.css에서 position: relative) 기준으로 양옆 16px을 띄워 편다.
+   종 오른쪽에 아바타·로그아웃이 있어 380px 패널이 화면 왼쪽 밖으로 나가기 때문이다. */
+@media (max-width: 640px) {
+  .notification-bell {
+    position: static;
+  }
+
+  .notification-bell__panel {
+    left: 16px;
+    right: 16px;
+    width: auto;
+  }
+}

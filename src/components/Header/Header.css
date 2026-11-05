@@ -118,6 +118,8 @@
 
 @media (max-width: 640px) {
   .site-header {
+    /* 알림 패널(NotificationBell.css)이 좁은 화면에서는 상단바를 기준으로 펼쳐진다. */
+    position: relative;
     grid-template-columns: auto 1fr auto;
     padding: 12px 16px;
   }

@@ -7,6 +7,11 @@ import { useWorkspaceMessages } from '../../app/providers/useWorkspaceSocket';
 import { getErrorMessage } from '../../lib/authApi';
 import { getWorkspace } from '../../lib/workspaceApi';
 import type { MiniGame, WorkspaceDetail } from '../../types';
+import type {
+  HostChangedData,
+  MemberRemovedData,
+  WorkspaceUpdatedData,
+} from '../../types/workspaceSettings';
 import WorkspaceHeader from '../WorkspaceHeader';
 import './WorkspaceLayout.css';
 
@@ -61,19 +66,21 @@ function WorkspaceShell({ workspaceId }: { workspaceId: number }) {
 
   return (
     <div className="page page--workspace">
-      <WorkspaceHeader workspace={workspace} />
-      <main className="workspace-layout__main">
-        <WorkspaceProvider value={{ workspace }}>
-          {/* 나가거나 내보내졌거나(4403) 그룹이 삭제되면(4404) 서버가 소켓을 닫는다 — 내 그룹 목록으로 보낸다. */}
-          <WorkspaceSocketProvider
-            workspaceId={workspace.id}
-            onRejected={() => navigate('/workspaces', { replace: true })}
-          >
-            <GameStartRedirect workspaceId={workspace.id} />
+      <WorkspaceProvider value={{ workspace }}>
+        {/* 나가거나 내보내졌거나(4403) 그룹이 삭제되면(4404) 서버가 소켓을 닫는다 — 내 그룹 목록으로 보낸다. */}
+        <WorkspaceSocketProvider
+          workspaceId={workspace.id}
+          onRejected={() => navigate('/workspaces', { replace: true })}
+        >
+          {/* 헤더도 그룹 연결 안에 둔다 — 상단바 아래 끊김 안내 띠가 그룹 연결 상태를 받는다. */}
+          <WorkspaceHeader workspace={workspace} />
+          <WorkspaceDetailSync onChange={setWorkspace} />
+          <GameStartRedirect workspaceId={workspace.id} />
+          <main className="workspace-layout__main">
             <Outlet />
-          </WorkspaceSocketProvider>
-        </WorkspaceProvider>
-      </main>
+          </main>
+        </WorkspaceSocketProvider>
+      </WorkspaceProvider>
     </div>
   );
 }
@@ -90,6 +97,48 @@ function GameStartRedirect({ workspaceId }: { workspaceId: number }) {
     if (message.type !== 'GAME_STARTED' || !me || pathname === gamePath) return;
     const game = message.data as MiniGame;
     if (game.participants.some((p) => p.userId === me.id)) navigate(gamePath);
+  });
+
+  return null;
+}
+
+// 그룹 연결 통지로 그룹 상세(상단바 이름·인원, 내 역할)를 바로 맞춘다. 들어올 때 한 번만 불러오기 때문에,
+// 이게 없으면 다른 멤버가 들어오고 나가거나 그룹 이름이 바뀌어도 새로고침 전까지 상단바가 그대로다.
+function WorkspaceDetailSync({
+  onChange,
+}: {
+  onChange: (update: (current: WorkspaceDetail | null) => WorkspaceDetail | null) => void;
+}) {
+  const { me } = useAuth();
+
+  useWorkspaceMessages((message) => {
+    const update = (fn: (current: WorkspaceDetail) => WorkspaceDetail) =>
+      onChange((current) => (current ? fn(current) : current));
+    switch (message.type) {
+      case 'WORKSPACE_UPDATED': {
+        const data = message.data as WorkspaceUpdatedData;
+        update((w) => (w.id === data.workspaceId ? { ...w, name: data.name, description: data.description } : w));
+        return;
+      }
+      case 'MEMBER_JOINED':
+        update((w) => ({ ...w, memberCount: w.memberCount + 1 }));
+        return;
+      case 'MEMBER_LEFT':
+        update((w) => ({ ...w, memberCount: Math.max(0, w.memberCount - 1) }));
+        return;
+      case 'MEMBER_KICKED': {
+        // 내가 대상이면 아무것도 하지 않는다(곧 4403으로 닫혀 내 그룹 목록으로 간다).
+        if ((message.data as MemberRemovedData).userId === me?.id) return;
+        update((w) => ({ ...w, memberCount: Math.max(0, w.memberCount - 1) }));
+        return;
+      }
+      case 'HOST_CHANGED': {
+        const data = message.data as HostChangedData;
+        if (data.newHostUserId === me?.id) update((w) => ({ ...w, myRole: 'HOST' }));
+        else if (data.previousHostUserId === me?.id) update((w) => ({ ...w, myRole: 'MEMBER' }));
+        return;
+      }
+    }
   });
 
   return null;
