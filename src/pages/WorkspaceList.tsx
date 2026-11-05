@@ -58,14 +58,9 @@ export default function WorkspaceList() {
             <p className="workspace-card__eyebrow">새로운 시작</p>
             <h2 className="workspace-card__name">새 그룹 만들기</h2>
             <p className="workspace-card__meta">함께 집을 찾을 멤버들과 그룹을 시작하세요.</p>
-            <button
-              type="button"
-              className="button button--primary workspace-card__button"
-              disabled
-              title="준비 중인 화면이에요."
-            >
+            <Link to="/workspaces/new" className="button button--primary workspace-card__button">
               새 그룹 만들기
-            </button>
+            </Link>
           </section>
         </div>
 
