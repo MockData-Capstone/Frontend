@@ -8,8 +8,9 @@ import { gameTypeLabel, visitorRuleLabel } from './format';
 const GAME_TYPES: GameType[] = ['ROCK_PAPER_SCISSORS', 'ROULETTE'];
 const VISITOR_RULES: VisitorRule[] = ['LOSER', 'WINNER'];
 
-// 19 집 보러 갈 사람 정하기 (GAME-01). 시안의 "접속 중/미접속"은 백엔드에 조회 API가 없어 표시하지 않는다 —
-// 미접속 멤버를 고르면 서버가 거절하고, 그 안내 문구를 그대로 보여준다.
+// 19 집 보러 갈 사람 정하기 (GAME-01). 서버는 그룹 연결에 접속 중인 멤버만 참여시킨다(PLAYER_NOT_AVAILABLE).
+// 멤버 목록의 online으로 미접속 멤버는 고를 수 없게 하고 "미접속"으로 표시한다. online을 주지 않는 서버에서는
+// 모두 고를 수 있고, 미접속 멤버를 고르면 서버의 거절 문구를 그대로 보여준다.
 export default function GameSetup({
   members,
   meId,
@@ -35,8 +36,12 @@ export default function GameSetup({
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // 그사이 나간 멤버가 선택에 남지 않게 지금 멤버 기준으로 센다.
-  const participantUserIds = members.map((m) => m.userId).filter((id) => selected.has(id));
+  // 그사이 나가거나 접속이 끊긴 멤버가 선택에 남지 않게 지금 멤버 기준으로 센다.
+  const participantUserIds = members
+    .filter((m) => selected.has(m.userId) && m.online !== false)
+    .map((m) => m.userId);
+  // 서버가 접속 상태를 주면 시안처럼 "접속 중인 N명"으로 보여준다.
+  const knowsOnline = members.some((m) => m.online !== undefined);
   const isRps = type === 'ROCK_PAPER_SCISSORS';
 
   const toggle = (userId: number) =>
@@ -106,28 +111,41 @@ export default function GameSetup({
             ))}
           </div>
 
-          <p className="minigame__label">참여 멤버 · {participantUserIds.length}명 선택</p>
+          <p className="minigame__label">
+            참여 멤버 · {knowsOnline && '접속 중인 '}
+            {participantUserIds.length}명 선택
+          </p>
           <p className="minigame__label-hint">그룹 화면을 열어 둔 멤버만 참여할 수 있어요.</p>
           {members.length === 0 ? (
             <p className="minigame__hint">멤버 목록을 불러오지 못했어요.</p>
           ) : (
             <ul className="minigame-members">
-              {members.map((member) => (
-                <li key={member.userId}>
-                  <label className="minigame-member">
-                    <input
-                      type="checkbox"
-                      checked={selected.has(member.userId)}
-                      onChange={() => toggle(member.userId)}
-                    />
-                    <Avatar nickname={member.nickname} profileImageUrl={member.profileImageUrl} />
-                    <span className="minigame-member__name">{member.nickname}</span>
-                    <span className="minigame-member__tag">
-                      {member.userId === meId ? '나' : member.role === 'HOST' ? '호스트' : '멤버'}
-                    </span>
-                  </label>
-                </li>
-              ))}
+              {members.map((member) => {
+                const offline = member.online === false;
+                return (
+                  <li key={member.userId}>
+                    <label className={`minigame-member${offline ? ' is-offline' : ''}`}>
+                      <input
+                        type="checkbox"
+                        checked={!offline && selected.has(member.userId)}
+                        onChange={() => toggle(member.userId)}
+                        disabled={offline}
+                      />
+                      <Avatar nickname={member.nickname} profileImageUrl={member.profileImageUrl} />
+                      <span className="minigame-member__name">{member.nickname}</span>
+                      <span className="minigame-member__tag">
+                        {offline
+                          ? '미접속'
+                          : member.userId === meId
+                            ? '나'
+                            : member.role === 'HOST'
+                              ? '호스트'
+                              : '멤버'}
+                      </span>
+                    </label>
+                  </li>
+                );
+              })}
             </ul>
           )}
 

@@ -160,6 +160,12 @@
   color: var(--text);
 }
 
+/* 그룹 화면을 열어 두지 않은 멤버 — 고를 수 없다 (GAME-01) */
+.minigame-member.is-offline {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
 /* 오른쪽 안내·참가자 패널 */
 .minigame__side-title {
   margin: 0 0 16px;

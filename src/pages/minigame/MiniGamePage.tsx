@@ -31,7 +31,8 @@ import Roulette from './Roulette';
 import { abortNotice } from './format';
 import './MiniGame.css';
 
-// 다른 멤버가 냈는지(선택 완료/고르는 중)는 소켓 통지가 없어서, 가위바위보 진행 중에는 이 간격으로 다시 조회한다.
+// 다른 멤버가 냈는지(선택 완료/고르는 중)는 ROUND_CHOICE_SUBMITTED 통지로 바로 다시 조회한다. 그 통지가 없는
+// 서버(백엔드 feature/notification 이전)도 있어서, 가위바위보 진행 중에는 이 간격으로도 다시 조회한다.
 const POLL_INTERVAL_MS = 1000;
 
 // 19 방문자 정하기 · 20 가위바위보 · 21 룰렛 (UI v0.4 §6).
@@ -110,7 +111,8 @@ export default function MiniGamePage() {
         apply(message.data as MiniGame);
         return;
       case 'ROUND_OPENED':
-      case 'ROUND_RESULT': {
+      case 'ROUND_RESULT':
+      case 'ROUND_CHOICE_SUBMITTED': {
         const { gameId } = message.data as GameEventData;
         if (game?.gameId === gameId) refresh(gameId);
         return;
@@ -144,6 +146,14 @@ export default function MiniGamePage() {
           .then(setMembers)
           .catch(() => {});
         return;
+      // 접속 상태가 바뀌면 그 멤버만 고친다. 미접속 멤버는 19에서 고를 수 없다.
+      case 'MEMBER_ONLINE':
+      case 'MEMBER_OFFLINE': {
+        const { userId } = message.data as { userId: number };
+        const online = message.type === 'MEMBER_ONLINE';
+        setMembers((list) => list?.map((m) => (m.userId === userId ? { ...m, online } : m)) ?? list);
+        return;
+      }
     }
   });
 
