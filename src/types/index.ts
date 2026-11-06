@@ -55,6 +55,15 @@ export interface WorkspaceMember {
   profileImageUrl: string | null;
   role: WorkspaceRole;
   joinedAt: string;
+  // 지금 그룹 연결(Workspace 소켓)에 접속 중인지. 미니게임은 접속 중인 멤버만 참여할 수 있다(GAME-01).
+  // 백엔드 feature/notification부터 온다 — 값이 없는 서버에서는 접속 중으로 본다.
+  // 바뀌면 그룹 연결의 MEMBER_ONLINE·MEMBER_OFFLINE(MemberOnlineChangedData)으로 알려준다.
+  online?: boolean;
+}
+
+// 그룹 연결 MEMBER_ONLINE·MEMBER_OFFLINE의 data. 같은 회원이 여러 탭이면 첫 연결·마지막 해제 때만 온다.
+export interface MemberOnlineChangedData {
+  userId: number;
 }
 
 // AUTH-04 — GET /api/users/me
@@ -94,12 +103,37 @@ export interface LocationInfo {
   vehicleAccess: VehicleInfo | null;
 }
 
+// VOTE — Backend vote/entity/VoteChoice
+export type VoteChoice = 'AGREE' | 'DISAGREE';
+
 // CAND-02·VOTE-02 — CandidateResponse.votes
 export interface VoteSummary {
   agreeCount: number;
   disagreeCount: number;
   split: boolean;
-  myChoice: 'AGREE' | 'DISAGREE' | null;
+  myChoice: VoteChoice | null;
+}
+
+// VOTE-03 — CandidateVotesResponse. 그룹 연결 VOTE_UPDATED의 data로도 온다.
+// 통지는 받는 멤버마다 내 표가 달라 myChoice가 null이므로, 내 표는 votes에서 찾는다.
+export interface CandidateVotes {
+  candidateId: number;
+  candidateName: string;
+  agreeCount: number;
+  disagreeCount: number;
+  split: boolean;
+  myChoice: VoteChoice | null;
+  votes: { userId: number; nickname: string; profileImageUrl: string | null; choice: VoteChoice }[];
+}
+
+// 그룹 연결 CANDIDATE_UPDATED(이름 수정)·CANDIDATE_REMOVED의 data. CANDIDATE_ADDED는 Candidate 전체가 온다.
+export interface CandidateRenamedData {
+  candidateId: number;
+  name: string;
+}
+
+export interface CandidateRemovedData {
+  candidateId: number;
 }
 
 // CAND-02 — CandidateResponse (목록·상세 공용)

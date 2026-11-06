@@ -1,16 +1,20 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../../app/providers/useAuth';
 import { useWorkspace } from '../../app/providers/useWorkspace';
+import { useWorkspaceMessages } from '../../app/providers/useWorkspaceSocket';
 import MapView from '../../components/Map';
 import { getErrorMessage } from '../../lib/authApi';
 import { getCandidates } from '../../lib/candidateApi';
 import type { Candidate } from '../../types';
 import { badgeLetter, slopeSummary, toMarkers, vehicleSummary } from './format';
+import { applyCandidateMessage, isCandidateMessage } from './realtime';
 import './CandidateList.css';
 
 // 14 후보지 목록 (UI v0.4 §6). 대화 탭과 비교·투표·조건 확정은 해당 화면이 생기면 연결한다.
 export default function CandidateList() {
   const { workspace } = useWorkspace();
+  const { me } = useAuth();
   const navigate = useNavigate();
   const [candidates, setCandidates] = useState<Candidate[] | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -29,6 +33,12 @@ export default function CandidateList() {
       cancelled = true;
     };
   }, [workspace.id]);
+
+  // 다른 멤버의 후보지 추가·이름 수정·제외, 투표를 바로 반영한다. 불러오기 전이면 불러온 목록이 최신이다.
+  useWorkspaceMessages((message) => {
+    if (!isCandidateMessage(message)) return;
+    setCandidates((list) => list && applyCandidateMessage(list, message, me?.id ?? null));
+  });
 
   const markers = useMemo(() => toMarkers(candidates ?? []), [candidates]);
   // 떠날 때는 지금 강조된 게 자기일 때만 지운다 — 마커→카드로 빠르게 옮기면 마커의

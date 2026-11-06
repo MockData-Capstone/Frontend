@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState, type FormEvent } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
+import { useAuth } from '../../app/providers/useAuth';
 import { useWorkspace } from '../../app/providers/useWorkspace';
+import { useWorkspaceMessages } from '../../app/providers/useWorkspaceSocket';
 import MapView from '../../components/Map';
 import { getErrorMessage } from '../../lib/authApi';
 import {
@@ -9,8 +11,9 @@ import {
   removeCandidate,
   renameCandidate,
 } from '../../lib/candidateApi';
-import type { Candidate } from '../../types';
+import type { Candidate, CandidateRemovedData } from '../../types';
 import { badgeLetter, formatPercent, gradeLabel, toMarkers, vehicleLabel } from './format';
+import { applyCandidateMessage, isCandidateMessage } from './realtime';
 import './CandidateDetail.css';
 
 const NAME_MAX_LENGTH = 50; // Backend Candidate.NAME_MAX_LENGTH
@@ -24,6 +27,7 @@ export default function CandidateDetailPage() {
 // 15 후보지 상세·입지 분석 (UI v0.4 §6). 경사 그래프·도보 시간은 API에 값이 없어 넣지 않았다.
 function CandidateDetail({ candidateId }: { candidateId: number }) {
   const { workspace } = useWorkspace();
+  const { me } = useAuth();
   const navigate = useNavigate();
   const listPath = `/workspaces/${workspace.id}/candidates`;
 
@@ -34,6 +38,8 @@ function CandidateDetail({ candidateId }: { candidateId: number }) {
   const [nameDraft, setNameDraft] = useState('');
   const [busy, setBusy] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
+  // 보고 있는 후보지를 다른 멤버가 제외했다.
+  const [removed, setRemoved] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -52,7 +58,43 @@ function CandidateDetail({ candidateId }: { candidateId: number }) {
     };
   }, [candidateId, workspace.id]);
 
+  // 다른 멤버의 이름 수정·제외·투표와 새 후보지를 바로 반영한다(지도 마커·배지 글자도 같이 바뀐다).
+  useWorkspaceMessages((message) => {
+    if (!isCandidateMessage(message)) return;
+    const meId = me?.id ?? null;
+    setAll((list) => applyCandidateMessage(list, message, meId));
+    // 내가 [후보지 제외]를 누른 중이면(busy) 곧 목록으로 가므로 안내를 띄우지 않는다.
+    if (
+      message.type === 'CANDIDATE_REMOVED' &&
+      (message.data as CandidateRemovedData).candidateId === candidateId &&
+      !busy
+    ) {
+      setRemoved(true);
+      return;
+    }
+    // 이 후보지에 대한 이름 수정·투표만 바뀌고, 다른 후보지 통지면 그대로 둔다.
+    setCandidate(
+      (current) =>
+        current &&
+        (applyCandidateMessage([current], message, meId).find(
+          (c) => c.candidateId === current.candidateId,
+        ) ??
+          current),
+    );
+  });
+
   const markers = useMemo(() => toMarkers(all), [all]);
+
+  if (removed) {
+    return (
+      <div className="candidate-detail">
+        <p className="candidate-detail__hint">다른 멤버가 이 후보지를 제외했어요.</p>
+        <Link to={listPath} className="button button--secondary">
+          후보지 목록으로
+        </Link>
+      </div>
+    );
+  }
 
   if (error) {
     return (
