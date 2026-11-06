@@ -53,8 +53,7 @@ function Invite({ token }: { token: string }) {
     };
   }, [token]);
 
-  // 로그인 전이면 이 링크를 기억해 둔다. 이메일 회원은 상단바의 로그인·회원가입으로 가도 로그인 뒤 참여가 이어진다
-  // (흐름도 02에는 카카오 버튼만 있다).
+  // 로그인 전이면 이 링크를 기억해 둔다. 상단바의 로그인·회원가입으로 가도 로그인 뒤 참여가 이어진다.
   useEffect(() => {
     if (preview && !loggedIn) rememberInvite(token);
   }, [preview, loggedIn, token]);
@@ -92,6 +91,11 @@ function Invite({ token }: { token: string }) {
     } catch (err) {
       setError(inviteError(err, '카카오 로그인을 시작하지 못했어요.'));
     }
+  };
+
+  const loginWithEmail = () => {
+    rememberInvite(token);
+    navigate('/login');
   };
 
   const others = preview ? preview.memberCount - 1 : 0;
@@ -134,18 +138,26 @@ function Invite({ token }: { token: string }) {
                 {others > 0 && <span>외 {others}명</span>}
               </div>
 
-              <button
-                type="button"
-                className="button button--primary group-card__submit"
-                onClick={loggedIn ? join : loginWithKakao}
-                disabled={joining}
-              >
-                {loggedIn
-                  ? joining
-                    ? '참여하는 중...'
-                    : '그룹 참여하기'
-                  : '카카오로 로그인하고 참여하기'}
-              </button>
+              {loggedIn ? (
+                <button
+                  type="button"
+                  className="button button--primary group-card__submit"
+                  onClick={join}
+                  disabled={joining}
+                >
+                  {joining ? '참여하는 중...' : '그룹 참여하기'}
+                </button>
+              ) : (
+                // 시안(흐름도 02)에는 카카오 버튼만 있지만, 이메일로 가입한 회원도 바로 찾을 수 있게 보조 버튼을 둔다.
+                <div className="group-login">
+                  <button type="button" className="button button--primary" onClick={loginWithKakao}>
+                    카카오로 로그인하고 참여하기
+                  </button>
+                  <button type="button" className="button button--secondary" onClick={loginWithEmail}>
+                    이메일로 로그인하고 참여하기
+                  </button>
+                </div>
+              )}
               <p className="group-note">초대 링크를 이용한 참여는 로그인 후 완료돼요.</p>
             </>
           )}

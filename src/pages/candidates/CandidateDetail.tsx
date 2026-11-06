@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState, type FormEvent } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../../app/providers/useAuth';
 import { useWorkspace } from '../../app/providers/useWorkspace';
-import { useWorkspaceMessages } from '../../app/providers/useWorkspaceSocket';
+import { useWorkspaceMessages, useWorkspaceReconnect } from '../../app/providers/useWorkspaceSocket';
 import MapView from '../../components/Map';
 import { getErrorMessage } from '../../lib/authApi';
 import {
@@ -83,6 +83,23 @@ function CandidateDetail({ candidateId }: { candidateId: number }) {
     );
   });
 
+  // 연결이 끊긴 동안 놓친 통지가 있을 수 있어 다시 붙으면 새로 불러온다. 목록과 상세는 같은 응답(CandidateResponse)이라
+  // 목록 하나로 둘 다 맞추고, 목록에 이 후보지가 없으면 그사이 다른 멤버가 제외한 것이다.
+  useWorkspaceReconnect(() => {
+    getCandidates(workspace.id)
+      .then((list) => {
+        setAll(list);
+        const latest = list.find((c) => c.candidateId === candidateId);
+        if (latest) {
+          setCandidate(latest);
+          setError(null);
+        } else if (candidate && !busy) {
+          setRemoved(true);
+        }
+      })
+      .catch(() => {});
+  });
+
   const markers = useMemo(() => toMarkers(all), [all]);
 
   if (removed) {
@@ -150,6 +167,11 @@ function CandidateDetail({ candidateId }: { candidateId: number }) {
       setBusy(false);
     }
   };
+
+  // CAND-03 제외는 후보지를 추가한 멤버와 호스트만 할 수 있다(서버 NOT_CANDIDATE_OWNER).
+  // 다른 멤버에게는 확인창 뒤에 거절당하지 않게 버튼을 끄고 이유를 툴팁으로 알린다.
+  const canRemove =
+    workspace.myRole === 'HOST' || (candidate.addedBy !== null && candidate.addedBy.userId === me?.id);
 
   const handleRemove = async () => {
     if (!window.confirm('이 후보지를 제외할까요? 이 후보지의 투표도 함께 지워져요.')) return;
@@ -301,7 +323,8 @@ function CandidateDetail({ candidateId }: { candidateId: number }) {
             type="button"
             className="button button--danger candidate-detail__remove"
             onClick={handleRemove}
-            disabled={busy}
+            disabled={busy || !canRemove}
+            title={canRemove ? undefined : '후보지를 추가한 멤버나 호스트만 제외할 수 있어요.'}
           >
             후보지 제외
           </button>

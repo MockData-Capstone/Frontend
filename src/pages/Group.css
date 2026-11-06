@@ -158,6 +158,17 @@
   color: var(--text);
 }
 
+.group-login {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.group-login .button {
+  padding: 13px 16px;
+}
+
 .group-note {
   margin: 20px 0 0;
   font-size: 12px;
