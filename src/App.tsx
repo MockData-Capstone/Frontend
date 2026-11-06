@@ -7,6 +7,9 @@ import KakaoCallback from './pages/KakaoCallback';
 import KakaoSignup from './pages/KakaoSignup';
 import LinkAccount from './pages/LinkAccount';
 import WorkspaceList from './pages/WorkspaceList';
+import WorkspaceCreate from './pages/WorkspaceCreate';
+import WorkspaceInvitePage from './pages/WorkspaceInvite';
+import InvitePage from './pages/Invite';
 import CandidateList from './pages/candidates/CandidateList';
 import CandidateDetail from './pages/candidates/CandidateDetail';
 import MiniGamePage from './pages/minigame/MiniGamePage';
@@ -28,6 +31,8 @@ function App() {
       <Route path="/signup/kakao" element={<KakaoSignup />} />
       {/* 카카오 디벨로퍼스·백엔드(oauth.kakao.redirect-uri)에 등록한 Redirect URI와 같아야 한다 */}
       <Route path="/oauth/kakao/callback" element={<KakaoCallback />} />
+      {/* 04 초대 링크 진입 — 로그인 없이 초대 정보를 보여주고, 로그인 뒤 참여를 이어간다 */}
+      <Route path="/invite/:token" element={<InvitePage />} />
 
       {/* 08 내 그룹 목록 */}
       <Route
@@ -35,6 +40,24 @@ function App() {
         element={
           <RequireAuth>
             <WorkspaceList />
+          </RequireAuth>
+        }
+      />
+      {/* 09 새 그룹 만들기 */}
+      <Route
+        path="/workspaces/new"
+        element={
+          <RequireAuth>
+            <WorkspaceCreate />
+          </RequireAuth>
+        }
+      />
+      {/* 10 그룹 생성 완료·친구 초대 — 그룹 헤더(C)가 아니라 내 그룹 쪽 헤더라 레이아웃 밖에 둔다 */}
+      <Route
+        path="/workspaces/:workspaceId/invite"
+        element={
+          <RequireAuth>
+            <WorkspaceInvitePage />
           </RequireAuth>
         }
       />
