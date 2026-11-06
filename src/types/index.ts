@@ -28,6 +28,26 @@ export interface WorkspaceDetail {
   createdAt: string;
 }
 
+// MEM-01 초대 링크. 프론트는 token으로 초대 링크 주소(/invite/{token})를 만든다.
+export interface Invitation {
+  token: string;
+  expiresAt: string;
+}
+
+// MEM-02 보조 — 참여 확인 화면(04)용이라 로그인 없이 조회한다.
+export interface InvitationPreview {
+  workspaceName: string;
+  hostNickname: string;
+  memberCount: number;
+  expiresAt: string;
+}
+
+// MEM-02 초대 수락. 이미 멤버였으면 alreadyMember가 true (등록하지 않고 바로 이동)
+export interface AcceptInvitationResult {
+  workspaceId: number;
+  alreadyMember: boolean;
+}
+
 // MEM-03 멤버 목록 항목 — GET /api/workspaces/{workspaceId}/members
 export interface WorkspaceMember {
   userId: number;
