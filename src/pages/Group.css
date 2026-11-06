@@ -149,24 +149,13 @@
   color: var(--text);
 }
 
-/* 04 */
+/* 04 — 흐름도 02: 아바타 사이 12px, 그 뒤에 "외 N명" */
 .group-members {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
   font-size: 13px;
   color: var(--text);
-}
-
-.group-login {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  margin-top: 20px;
-}
-
-.group-login .button {
-  padding: 13px 16px;
 }
 
 .group-note {
