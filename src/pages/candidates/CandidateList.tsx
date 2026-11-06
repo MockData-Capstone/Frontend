@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../app/providers/useAuth';
 import { useWorkspace } from '../../app/providers/useWorkspace';
-import { useWorkspaceMessages } from '../../app/providers/useWorkspaceSocket';
+import { useWorkspaceMessages, useWorkspaceReconnect } from '../../app/providers/useWorkspaceSocket';
 import MapView from '../../components/Map';
 import { getErrorMessage } from '../../lib/authApi';
 import { getCandidates } from '../../lib/candidateApi';
@@ -38,6 +38,17 @@ export default function CandidateList() {
   useWorkspaceMessages((message) => {
     if (!isCandidateMessage(message)) return;
     setCandidates((list) => list && applyCandidateMessage(list, message, me?.id ?? null));
+  });
+
+  // 연결이 끊긴 동안 놓친 후보지·투표 통지가 있을 수 있어 다시 붙으면 목록을 새로 불러온다.
+  // 실패하면 지금 목록을 그대로 둔다 — 다음 재연결이나 통지 때 다시 맞춘다.
+  useWorkspaceReconnect(() => {
+    getCandidates(workspace.id)
+      .then((data) => {
+        setCandidates(data);
+        setError(null);
+      })
+      .catch(() => {});
   });
 
   const markers = useMemo(() => toMarkers(candidates ?? []), [candidates]);

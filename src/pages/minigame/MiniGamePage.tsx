@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../app/providers/useAuth';
 import { useWorkspace } from '../../app/providers/useWorkspace';
-import { useWorkspaceMessages } from '../../app/providers/useWorkspaceSocket';
+import { useWorkspaceMessages, useWorkspaceReconnect } from '../../app/providers/useWorkspaceSocket';
 import { getErrorMessage } from '../../lib/authApi';
 import {
   abortGame,
@@ -95,6 +95,20 @@ export default function MiniGamePage() {
       cancelled = true;
     };
   }, [workspace.id, sync]);
+
+  // 연결이 끊긴 동안 놓친 통지(접속·입장·퇴장, 게임 시작·결과·중단)를 메운다. 멤버는 새로 불러오고,
+  // 게임은 19 대기 중이면 그사이 시작된 게임을 찾고, 진행 중이면 그 게임을 다시 조회한다(룰렛은 폴링이 없다).
+  // 결과가 나온 뒤에는 결과 확인 흐름을 끊지 않게 그대로 둔다.
+  useWorkspaceReconnect(() => {
+    getMembers(workspace.id)
+      .then(setMembers)
+      .catch(() => {});
+    if (game === null) {
+      sync(getCurrentGame(workspace.id)).catch(() => {});
+    } else if (game?.status === 'IN_PROGRESS') {
+      refresh(game.gameId);
+    }
+  });
 
   const pollingGameId =
     game?.type === 'ROCK_PAPER_SCISSORS' && game.status === 'IN_PROGRESS' ? game.gameId : null;
