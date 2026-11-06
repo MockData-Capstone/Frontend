@@ -1,0 +1,42 @@
+.connection-banner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 10px 24px;
+  font-size: 14px;
+  line-height: 1.4;
+  color: var(--text-h);
+  text-align: center;
+  background: var(--info-bg);
+  border-bottom: 1px solid var(--border);
+}
+
+.connection-banner__dot {
+  /* 문구가 두 줄로 넘어가도 점이 눌려 타원이 되지 않게 한다. */
+  flex-shrink: 0;
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: var(--danger);
+  animation: connection-banner-pulse 1.2s ease-in-out infinite;
+}
+
+@keyframes connection-banner-pulse {
+  50% {
+    opacity: 0.3;
+  }
+}
+
+/* 상단바(Header.css)와 같은 640px에서 양옆 여백을 맞춘다. */
+@media (max-width: 640px) {
+  .connection-banner {
+    padding: 8px 16px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .connection-banner__dot {
+    animation: none;
+  }
+}
