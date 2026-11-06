@@ -3,8 +3,12 @@ import { useLocation } from 'react-router-dom';
 import { useNotifications } from './useNotifications';
 import './NotificationBell.css';
 
+// 알림함 패널(E2)을 만들기 전까지는 다른 미구현 버튼처럼 비활성 + "준비 중" 툴팁으로 둔다(빈 패널이 열리지 않게).
+// 패널을 만들면 true로 바꾼다.
+const PANEL_READY = false;
+
 // 알림 종 + 안 읽은 알림 수 배지 (0이면 숨김, 100 이상이면 "99+").
-// 누르면 종 아래에 알림 패널이 열리고 닫힌다. 패널 내용은 6단계에서 만든다.
+// 누르면 종 아래에 알림 패널이 열리고 닫힌다.
 export default function NotificationBell() {
   const { unreadCount } = useNotifications();
   const { pathname } = useLocation();
@@ -44,6 +48,8 @@ export default function NotificationBell() {
         aria-label={count > 0 ? `알림, 안 읽은 알림 ${badge}개` : '알림'}
         aria-expanded={open}
         aria-haspopup="dialog"
+        disabled={!PANEL_READY}
+        title={PANEL_READY ? undefined : '준비 중인 기능이에요.'}
         onClick={() => setOpen((value) => !value)}
       >
         <BellIcon />

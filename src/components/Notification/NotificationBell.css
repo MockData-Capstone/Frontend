@@ -24,6 +24,13 @@
   background: var(--code-bg);
 }
 
+/* 알림함을 만들기 전까지 비활성 (NotificationBell.tsx PANEL_READY) — 헤더의 준비 중 탭과 같은 톤 */
+.notification-bell__button:disabled {
+  color: var(--text);
+  background: transparent;
+  cursor: not-allowed;
+}
+
 .notification-bell__badge {
   position: absolute;
   top: 1px;
