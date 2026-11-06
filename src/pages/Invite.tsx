@@ -53,7 +53,8 @@ function Invite({ token }: { token: string }) {
     };
   }, [token]);
 
-  // 로그인 전이면 이 링크를 기억해 둔다. 헤더의 SIGN IN·SIGN UP으로 가도 로그인 뒤 참여가 이어진다.
+  // 로그인 전이면 이 링크를 기억해 둔다. 이메일 회원은 상단바의 로그인·회원가입으로 가도 로그인 뒤 참여가 이어진다
+  // (흐름도 02에는 카카오 버튼만 있다).
   useEffect(() => {
     if (preview && !loggedIn) rememberInvite(token);
   }, [preview, loggedIn, token]);
@@ -93,11 +94,6 @@ function Invite({ token }: { token: string }) {
     }
   };
 
-  const loginWithEmail = () => {
-    rememberInvite(token);
-    navigate('/login');
-  };
-
   const others = preview ? preview.memberCount - 1 : 0;
 
   return (
@@ -125,33 +121,31 @@ function Invite({ token }: { token: string }) {
               <p className="group-card__eyebrow">초대받은 그룹</p>
               <h2 className="group-card__name">{preview.workspaceName}</h2>
               <p className="group-card__desc">함께 조건을 정하고 후보지를 비교하는 공간이에요.</p>
-              {/* 초대 정보에는 멤버 목록이 없어 호스트와 나머지 인원만 보여준다 */}
+              {/* 흐름도 02: 멤버 아바타 + "외 N명". 초대 정보에는 멤버 목록이 없어 호스트 아바타만 그리고,
+                  호스트 이름은 마우스를 올렸을 때와 화면 낭독기로 알려준다. */}
               <div className="group-members">
-                <Avatar nickname={preview.hostNickname} profileImageUrl={null} />
-                <span>
-                  {preview.hostNickname} 님{others > 0 && ` 외 ${others}명`}
+                <span
+                  role="img"
+                  aria-label={`호스트 ${preview.hostNickname}`}
+                  title={`호스트 ${preview.hostNickname}`}
+                >
+                  <Avatar nickname={preview.hostNickname} profileImageUrl={null} />
                 </span>
+                {others > 0 && <span>외 {others}명</span>}
               </div>
 
-              {loggedIn ? (
-                <button
-                  type="button"
-                  className="button button--primary group-card__submit"
-                  onClick={join}
-                  disabled={joining}
-                >
-                  {joining ? '참여하는 중...' : '그룹 참여하기'}
-                </button>
-              ) : (
-                <div className="group-login">
-                  <button type="button" className="button button--primary" onClick={loginWithKakao}>
-                    카카오로 로그인하고 참여하기
-                  </button>
-                  <button type="button" className="button button--secondary" onClick={loginWithEmail}>
-                    이메일로 로그인하고 참여하기
-                  </button>
-                </div>
-              )}
+              <button
+                type="button"
+                className="button button--primary group-card__submit"
+                onClick={loggedIn ? join : loginWithKakao}
+                disabled={joining}
+              >
+                {loggedIn
+                  ? joining
+                    ? '참여하는 중...'
+                    : '그룹 참여하기'
+                  : '카카오로 로그인하고 참여하기'}
+              </button>
               <p className="group-note">초대 링크를 이용한 참여는 로그인 후 완료돼요.</p>
             </>
           )}

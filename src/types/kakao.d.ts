@@ -39,6 +39,50 @@ declare namespace kakao.maps {
   }
 }
 
+// 장소 검색 (SDK 주소에 libraries=services를 붙여야 생긴다). 첫 화면의 지역·지하철역·학교 검색에 쓴다.
+declare namespace kakao.maps.services {
+  // SDK의 Status 값은 문자열이다.
+  type Status = 'OK' | 'ZERO_RESULT' | 'ERROR';
+
+  interface PlacesSearchResultItem {
+    id: string;
+    place_name: string;
+    // 카테고리 그룹 코드 (SW8 지하철역, SC4 학교 …). 그룹이 없는 장소는 빈 문자열
+    category_group_code: string;
+    category_group_name: string;
+    address_name: string;
+    road_address_name: string;
+    // 경도(x)·위도(y)가 문자열로 온다.
+    x: string;
+    y: string;
+  }
+
+  class Places {
+    constructor();
+    keywordSearch(
+      keyword: string,
+      callback: (result: PlacesSearchResultItem[], status: Status) => void,
+      options?: { size?: number; page?: number },
+    ): void;
+  }
+
+  interface AddressSearchResultItem {
+    address_name: string;
+    // REGION: 지역명(시·군·구·동)만 맞은 결과. 나머지는 도로명·지번 주소다.
+    address_type: 'REGION' | 'ROAD' | 'REGION_ADDR' | 'ROAD_ADDR';
+    x: string;
+    y: string;
+  }
+
+  class Geocoder {
+    constructor();
+    addressSearch(
+      address: string,
+      callback: (result: AddressSearchResultItem[], status: Status) => void,
+    ): void;
+  }
+}
+
 interface Window {
   kakao?: typeof kakao;
 }
