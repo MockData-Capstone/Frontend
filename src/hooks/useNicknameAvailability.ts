@@ -6,7 +6,7 @@ export type NicknameStatus = 'idle' | 'checking' | 'available' | 'unavailable';
 const MIN_LENGTH = 2;
 const DEBOUNCE_MS = 500;
 
-// AUTH-01·02 보조(GET /api/auth/nickname-availability) 실시간 체크.
+// AUTH-01·02 보조(GET /api/users/nickname-availability) 실시간 체크.
 // 입력이 멈추고 500ms 뒤 자동으로 호출한다 — 별도 "중복확인" 버튼 없음.
 export function useNicknameAvailability(nickname: string): NicknameStatus {
   const trimmed = nickname.trim();
