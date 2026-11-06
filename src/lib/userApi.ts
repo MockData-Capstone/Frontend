@@ -17,17 +17,22 @@ export async function changePassword(currentPassword: string, newPassword: strin
   return data;
 }
 
+// api의 기본 Content-Type이 JSON이라 그대로 보내면 axios가 FormData를 JSON({"image":{}})으로 바꿔 보낸다.
+// 백엔드는 image가 없으면 기본 이미지로 되돌리므로 사진이 올라가지 않고 지워진다 — 사진 요청은 multipart로 지정한다.
+// (브라우저에서는 axios가 이 값을 지우고 브라우저가 boundary를 붙인 Content-Type을 넣는다.)
+const MULTIPART = { headers: { 'Content-Type': 'multipart/form-data' } };
+
 // 프로필 사진 변경 — PATCH /api/users/me/profile-image (multipart/form-data, 파일 필드 image)
 export async function updateProfileImage(file: File): Promise<MeResponse> {
   const form = new FormData();
   form.append('image', file);
-  const { data } = await api.patch<MeResponse>('/api/users/me/profile-image', form);
+  const { data } = await api.patch<MeResponse>('/api/users/me/profile-image', form, MULTIPART);
   return data;
 }
 
 // 기본 이미지로 — 같은 주소로 image 없이 보낸다
 export async function resetProfileImage(): Promise<MeResponse> {
-  const { data } = await api.patch<MeResponse>('/api/users/me/profile-image', new FormData());
+  const { data } = await api.patch<MeResponse>('/api/users/me/profile-image', new FormData(), MULTIPART);
   return data;
 }
 
