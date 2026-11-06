@@ -1,0 +1,60 @@
+.dialog-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: var(--dim);
+}
+
+.dialog {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+  max-width: 440px;
+  /* 내용이 화면보다 길면 위아래가 잘리지 않고 팝업 안에서 스크롤된다. */
+  max-height: 100%;
+  overflow-y: auto;
+  padding: 28px 28px 24px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: var(--shadow);
+  text-align: left;
+}
+
+/* 버튼이 모두 꺼졌을 때 포커스를 패널에 붙잡아 둔다(tabIndex=-1). 패널 자체에는 테두리를 그리지 않는다. */
+.dialog:focus {
+  outline: none;
+}
+
+.dialog__title {
+  font-family: var(--heading);
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1.5;
+  letter-spacing: -0.2px;
+  color: var(--text-h);
+  overflow-wrap: anywhere;
+}
+
+.dialog__description {
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--text);
+  overflow-wrap: anywhere;
+}
+
+.dialog__body {
+  margin-top: 8px;
+}
+
+.dialog__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 20px;
+}
