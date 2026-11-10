@@ -1,3 +1,4 @@
+import { isCancel } from 'axios';
 import { forceLogout, getTokens, refreshTokens } from './api';
 import { parseInstant } from './time';
 import { getIceServers } from './tourApi';
@@ -169,11 +170,11 @@ export class TourConnection {
     };
     ws.onmessage = (event) => this.handleMessage(event.data as string);
     ws.onclose = (event) => {
-      if (this.socket === ws) this.handleClose(event.code);
+      if (this.socket === ws) this.handleClose(event.code, accessToken);
     };
   }
 
-  private handleClose(code: number) {
+  private handleClose(code: number, accessToken: string) {
     this.socket = null;
     // 다시 들어가면 서버가 연결 중(CONNECTING)으로 되돌리므로 상태도 다시 보고한다.
     this.reportedState = null;
@@ -183,7 +184,9 @@ export class TourConnection {
         forceLogout();
         return;
       case WsClose.TOKEN_EXPIRED:
-        refreshTokens().then(() => this.open(), forceLogout);
+        refreshTokens(accessToken).then(() => this.open(), (error: unknown) => {
+          if (!this.stopped && !isCancel(error)) forceLogout();
+        });
         return;
       case WsClose.NOT_FOUND:
         this.ended ??= 'UNKNOWN';
