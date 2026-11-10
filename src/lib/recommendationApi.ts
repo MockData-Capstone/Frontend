@@ -1,2 +1,9 @@
-// TODO(F-03, F-04): AI 위치 추천/부가 정보 조회 API 클라이언트
-export {};
+import { api } from './api';
+import type { Analysis, Recommendations } from '../types/search';
+
+export async function getRecommendations(workspaceId: number): Promise<Recommendations> {
+  return (await api.get<Recommendations>(`/api/workspaces/${workspaceId}/recommendations`)).data;
+}
+export async function requestRecommendations(workspaceId: number): Promise<Analysis> {
+  return (await api.post<Analysis>(`/api/workspaces/${workspaceId}/recommendations`)).data;
+}
