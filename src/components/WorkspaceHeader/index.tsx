@@ -21,7 +21,14 @@ export default function WorkspaceHeader({ workspace }: { workspace: WorkspaceDet
     <>
       <header className="site-header">
         <nav className="site-header__nav">
-          <NavLink to={`/workspaces/${workspace.id}/search`} className={({ isActive }) => `site-header__nav-link${isActive ? ' is-active' : ''}`}>함께 찾기</NavLink>
+          <button
+            type="button"
+            className="site-header__nav-link workspace-header__tab-disabled"
+            disabled
+            title="준비 중인 화면이에요."
+          >
+            함께 찾기
+          </button>
           <NavLink
             to={`/workspaces/${workspace.id}/candidates`}
             className={({ isActive }) =>
@@ -46,10 +53,10 @@ export default function WorkspaceHeader({ workspace }: { workspace: WorkspaceDet
         </Link>
 
         <div className="workspace-header__meta">
-          <Link className="workspace-header__name" to={`/workspaces/${workspace.id}/settings`} title="그룹 설정">{workspace.name} · 설정</Link>
+          <span className="workspace-header__name">{workspace.name}</span>
           <span className="workspace-header__count">멤버 {workspace.memberCount}명</span>
           <NotificationBell />
-          <Link to="/account" aria-label="내 정보">{me ? <Avatar nickname={me.nickname} profileImageUrl={me.profileImageUrl} /> : '내 정보'}</Link>
+          {me && <Avatar nickname={me.nickname} profileImageUrl={me.profileImageUrl} />}
         </div>
       </header>
       <ConnectionBanner workspaceConnected={connected} />

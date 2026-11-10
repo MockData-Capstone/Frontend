@@ -68,7 +68,14 @@ export default function CandidateList() {
             {count === undefined ? '후보지' : `후보지 ${count}곳`}
           </h1>
           <div className="candidate-panel__tabs">
-            <Link className="candidate-panel__tab" to={`/workspaces/${workspace.id}/search`}>대화·추천</Link>
+            <button
+              type="button"
+              className="candidate-panel__tab"
+              disabled
+              title="준비 중인 화면이에요."
+            >
+              대화
+            </button>
             <span className="candidate-panel__tab is-active">후보지 {count ?? ''}</span>
           </div>
         </div>
@@ -77,7 +84,7 @@ export default function CandidateList() {
           {error && <p className="candidate-panel__error">{error}</p>}
           {!error && !candidates && <p className="candidate-panel__hint">불러오는 중...</p>}
           {candidates?.length === 0 && (
-            <p className="candidate-panel__hint">아직 추가된 후보지가 없어요. <Link to={`/workspaces/${workspace.id}/search`}>추천받고 후보지 추가하기</Link></p>
+            <p className="candidate-panel__hint">아직 추가된 후보지가 없어요.</p>
           )}
           {candidates && candidates.length > 0 && (
             <ul className="candidate-panel__cards">
@@ -122,11 +129,31 @@ export default function CandidateList() {
 
         <div className="candidate-panel__actions">
           <div className="candidate-panel__action-row">
-            <Link className="button button--secondary" to={`/workspaces/${workspace.id}/comparisons`}>후보지 비교</Link>
-            <Link className="button button--secondary" to={`/workspaces/${workspace.id}/votes`}>투표하기</Link>
+            <button
+              type="button"
+              className="button button--secondary"
+              disabled
+              title="준비 중인 화면이에요."
+            >
+              후보지 비교
+            </button>
+            <button
+              type="button"
+              className="button button--secondary"
+              disabled
+              title="준비 중인 화면이에요."
+            >
+              투표하기
+            </button>
           </div>
-          <Link className="button button--primary" to={`/workspaces/${workspace.id}/conditions`}>조건 확정</Link>
-          <Link className="button button--secondary" to={`/workspaces/${workspace.id}/listings`}>매물 찾기</Link>
+          <button
+            type="button"
+            className="button button--primary"
+            disabled
+            title="준비 중인 화면이에요."
+          >
+            조건 확정
+          </button>
         </div>
       </aside>
 

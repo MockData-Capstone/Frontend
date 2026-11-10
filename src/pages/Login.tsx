@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import Header from '../components/Header';
 import { useAuth } from '../app/providers/useAuth';
 import { login, getErrorCode, getFieldErrors, type FieldError } from '../lib/authApi';
-import { beginOAuth, type SocialProvider } from '../lib/oauth';
+import { beginOAuth } from '../lib/oauth';
 import './Auth.css';
 
 // AUTH-03 자체 로그인 + AUTH-02 카카오 로그인
@@ -48,14 +48,12 @@ export default function Login() {
     }
   }
 
-  async function handleSocialLogin(provider: SocialProvider) {
+  async function handleKakaoLogin() {
     setError(null);
-    setIsSubmitting(true);
     try {
-      await beginOAuth(provider);
+      await beginOAuth('kakao');
     } catch {
-      setError('소셜 로그인을 시작할 수 없습니다. 잠시 후 다시 시도해주세요.');
-      setIsSubmitting(false);
+      setError('카카오 로그인을 시작할 수 없습니다. 잠시 후 다시 시도해주세요.');
     }
   }
 
@@ -106,14 +104,10 @@ export default function Login() {
           <button
             type="button"
             className="auth-button--kakao"
-            disabled={isSubmitting}
-            onClick={() => { void handleSocialLogin('kakao'); }}
+            onClick={handleKakaoLogin}
           >
             카카오로 로그인
           </button>
-
-          <button type="button" className="button button--secondary" disabled={isSubmitting} onClick={() => { void handleSocialLogin('google'); }}>구글로 로그인</button>
-          <p className="auth-footer"><Link to="/password-reset">비밀번호를 잊으셨나요?</Link></p>
 
           <p className="auth-footer">
             처음 오셨나요? <Link to="/signup">회원가입</Link>
