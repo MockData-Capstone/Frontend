@@ -1,6 +1,7 @@
 import { Route, Routes } from 'react-router-dom';
 import Home from './pages/Home';
 import WorkspaceSearch from './pages/WorkspaceSearch';
+import WorkspaceSettings from './pages/WorkspaceSettings';
 import Conditions from './pages/Conditions';
 import Comparison from './components/Comparison';
 import Vote from './components/Vote';
@@ -92,6 +93,7 @@ function App() {
       >
         <Route index element={<WorkspaceIndexRedirect />} />
         <Route path="search" element={<WorkspaceSearch />} />
+        <Route path="settings" element={<WorkspaceSettings />} />
         <Route path="comparisons" element={<Comparison />} />
         <Route path="votes" element={<Vote />} />
         <Route path="conditions" element={<Conditions />} />

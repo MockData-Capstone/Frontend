@@ -66,7 +66,7 @@ function WorkspaceShell({ workspaceId }: { workspaceId: number }) {
 
   return (
     <div className="page page--workspace">
-      <WorkspaceProvider value={{ workspace }}>
+      <WorkspaceProvider value={{ workspace, updateWorkspace: setWorkspace }}>
         {/* 나가거나 내보내졌거나(4403) 그룹이 삭제되면(4404) 서버가 소켓을 닫는다 — 내 그룹 목록으로 보낸다. */}
         <WorkspaceSocketProvider
           workspaceId={workspace.id}
