@@ -46,7 +46,7 @@ export default function WorkspaceHeader({ workspace }: { workspace: WorkspaceDet
         </Link>
 
         <div className="workspace-header__meta">
-          <span className="workspace-header__name">{workspace.name}</span>
+          <Link className="workspace-header__name" to={`/workspaces/${workspace.id}/settings`} title="그룹 설정">{workspace.name} · 설정</Link>
           <span className="workspace-header__count">멤버 {workspace.memberCount}명</span>
           <NotificationBell />
           <Link to="/account" aria-label="내 정보">{me ? <Avatar nickname={me.nickname} profileImageUrl={me.profileImageUrl} /> : '내 정보'}</Link>
