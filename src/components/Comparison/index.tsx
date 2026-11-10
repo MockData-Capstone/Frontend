@@ -21,7 +21,8 @@ export default function Comparison() {
     <ErrorNotice message={result.error} retry={() => { void result.reload(); }} /><ErrorNotice message={task.error} />
     <section className="feature-card"><div className="feature-actions">
       {result.data?.items.map((row) => <label className="feature-check" key={row.candidateId}><input type="checkbox" checked={ids.includes(row.candidateId)} onChange={(event) => setSelected(event.target.checked ? [...ids, row.candidateId] : ids.filter((id) => id !== row.candidateId))} />{row.name}</label>)}
-      <button className="button button--secondary" disabled={task.busy || ids.length === 0} onClick={() => void task.run(() => regenerateComparison(workspace.id, ids), async () => { await result.reload(); })}>최신 정보로 갱신</button></div>
+      <button className="button button--secondary" disabled={task.busy || ids.length < 2} onClick={() => void task.run(() => regenerateComparison(workspace.id, ids), async () => { await result.reload(); })}>최신 정보로 갱신</button></div>
+      {ids.length < 2 && <p className="feature-muted">비교 정보를 갱신하려면 후보지를 2곳 이상 선택해주세요.</p>}
       {rows.length === 0 ? <p className="feature-muted">비교할 후보지를 선택해주세요. 후보지가 없다면 먼저 추천 결과에서 추가해주세요.</p> : <div className="feature-table-wrap"><table className="feature-table"><caption>선택한 후보지의 경사·차량 진입·투표</caption><thead><tr><th>후보지</th><th>경사</th><th>차량 진입</th><th>투표</th></tr></thead><tbody>
         {rows.map((row) => <tr key={row.candidateId}><th scope="row"><Link to={`/workspaces/${workspace.id}/candidates/${row.candidateId}`}>{row.name}</Link></th><td>{slopeSummary(row.slope)}{row.slope?.estimated && <small> · 추정치</small>}</td><td>{vehicleSummary(row.vehicleAccess)}{row.vehicleAccess?.estimated && <small> · 추정치</small>}</td><td>찬성 {row.votes.agreeCount} / 반대 {row.votes.disagreeCount}{row.votes.split && <p>의견이 나뉘었어요.</p>}</td></tr>)}
       </tbody></table></div>}
