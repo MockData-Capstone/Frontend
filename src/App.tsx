@@ -1,18 +1,9 @@
 import { Route, Routes } from 'react-router-dom';
 import Home from './pages/Home';
-import WorkspaceSearch from './pages/WorkspaceSearch';
-import WorkspaceSettings from './pages/WorkspaceSettings';
-import Conditions from './pages/Conditions';
-import Comparison from './components/Comparison';
-import Vote from './components/Vote';
-import Listing from './components/Listing';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
 import SignupComplete from './pages/SignupComplete';
-import SocialCallback from './pages/SocialCallback';
-import Account from './pages/Account';
-import PasswordReset from './pages/PasswordReset';
-import Notifications from './pages/Notifications';
+import KakaoCallback from './pages/KakaoCallback';
 import KakaoSignup from './pages/KakaoSignup';
 import LinkAccount from './pages/LinkAccount';
 import WorkspaceList from './pages/WorkspaceList';
@@ -38,13 +29,8 @@ function App() {
       <Route path="/signup" element={<Signup />} />
       <Route path="/signup/complete" element={<SignupComplete />} />
       <Route path="/signup/kakao" element={<KakaoSignup />} />
-      <Route path="/signup/social" element={<KakaoSignup />} />
-      <Route path="/password-reset" element={<PasswordReset />} />
-      <Route path="/account" element={<RequireAuth><Account /></RequireAuth>} />
-      <Route path="/notifications" element={<RequireAuth><Notifications /></RequireAuth>} />
       {/* 카카오 디벨로퍼스·백엔드(oauth.kakao.redirect-uri)에 등록한 Redirect URI와 같아야 한다 */}
-      <Route path="/oauth/kakao/callback" element={<SocialCallback provider="kakao" />} />
-      <Route path="/oauth/google/callback" element={<SocialCallback provider="google" />} />
+      <Route path="/oauth/kakao/callback" element={<KakaoCallback />} />
       {/* 04 초대 링크 진입 — 로그인 없이 초대 정보를 보여주고, 로그인 뒤 참여를 이어간다 */}
       <Route path="/invite/:token" element={<InvitePage />} />
 
@@ -94,12 +80,6 @@ function App() {
         }
       >
         <Route index element={<WorkspaceIndexRedirect />} />
-        <Route path="search" element={<WorkspaceSearch />} />
-        <Route path="settings" element={<WorkspaceSettings />} />
-        <Route path="comparisons" element={<Comparison />} />
-        <Route path="votes" element={<Vote />} />
-        <Route path="conditions" element={<Conditions />} />
-        <Route path="listings" element={<Listing />} />
         <Route path="candidates" element={<CandidateList />} />
         <Route path="candidates/:candidateId" element={<CandidateDetail />} />
         {/* 19 방문자 정하기 → 20 가위바위보 / 21 룰렛 (진행 상태에 따라 같은 주소에서 바뀐다) */}

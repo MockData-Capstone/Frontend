@@ -9,6 +9,7 @@ import './Header.css';
 
 // 상단바: 동네 찾기 탭 / zipfit 로고 / 로그인·회원가입(로그인 후에는 내 그룹·알림 종·아바타)
 // 상단바 바로 아래에 실시간 끊김 안내 띠(알림 연결이 3초 넘게 끊겼을 때)를 둔다.
+// TODO(AUTH-04): 내 정보(13) 화면이 생기면 아바타를 그 화면 링크로 바꾸고 로그아웃 버튼을 그쪽으로 옮긴다.
 export default function Header() {
   const { accessToken, me, signOut } = useAuth();
   const { showToast } = useToast();
@@ -56,7 +57,7 @@ export default function Header() {
               내 그룹
             </NavLink>
             <NotificationBell />
-            <Link to="/account" aria-label="내 정보">{me ? <Avatar nickname={me.nickname} profileImageUrl={me.profileImageUrl} /> : '내 정보'}</Link>
+            {me && <Avatar nickname={me.nickname} profileImageUrl={me.profileImageUrl} />}
             <button type="button" className="site-header__signout" onClick={handleSignOut} disabled={signingOut}>
               {signingOut ? '로그아웃 중...' : '로그아웃'}
             </button>

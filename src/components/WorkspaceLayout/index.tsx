@@ -21,9 +21,9 @@ export default function WorkspaceLayout() {
   return <WorkspaceShell key={workspaceId} workspaceId={Number(workspaceId)} />;
 }
 
-// 그룹 진입 시 대화와 추천을 시작한다.
+// 그룹 홈(11)이 아직 없어서 그룹에 들어오면 후보지 목록(14)으로 보낸다.
 export function WorkspaceIndexRedirect() {
-  return <Navigate to="search" replace />;
+  return <Navigate to="candidates" replace />;
 }
 
 function WorkspaceShell({ workspaceId }: { workspaceId: number }) {
@@ -66,7 +66,7 @@ function WorkspaceShell({ workspaceId }: { workspaceId: number }) {
 
   return (
     <div className="page page--workspace">
-      <WorkspaceProvider value={{ workspace, updateWorkspace: setWorkspace }}>
+      <WorkspaceProvider value={{ workspace }}>
         {/* 나가거나 내보내졌거나(4403) 그룹이 삭제되면(4404) 서버가 소켓을 닫는다 — 내 그룹 목록으로 보낸다. */}
         <WorkspaceSocketProvider
           workspaceId={workspace.id}
