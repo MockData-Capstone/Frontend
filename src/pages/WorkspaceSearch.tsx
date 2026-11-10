@@ -6,7 +6,7 @@ import Chat from '../components/Chat';
 import { ErrorNotice, FeaturePage, WorkspaceLinks } from '../components/FeatureUI';
 import { useResource } from '../hooks/useResource';
 import { useTask } from '../hooks/useTask';
-import { getRecommendations, requestRecommendations } from '../lib/recommendationApi';
+import { getRecommendations, refreshesRecommendations, requestRecommendations } from '../lib/recommendationApi';
 import { addCandidate } from '../lib/candidateApi';
 
 export default function WorkspaceSearch() {
@@ -16,7 +16,7 @@ export default function WorkspaceSearch() {
   const working = result.data?.analysis?.status === 'IN_PROGRESS';
   const { reload } = result;
   useWorkspaceMessages((message) => {
-    if (message.type.startsWith('ANALYSIS_') || message.type.startsWith('CANDIDATE_')) void reload();
+    if (refreshesRecommendations(message.type)) void reload();
   });
   useWorkspaceReconnect(() => { void reload(); });
   useEffect(() => {

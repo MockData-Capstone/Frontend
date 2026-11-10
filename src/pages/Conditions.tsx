@@ -14,11 +14,11 @@ export default function Conditions() {
   const task = useTask();
   const [revision, setRevision] = useState(0);
   const [changed, setChanged] = useState(false);
-  useWorkspaceMessages((message) => { if (['CONDITION_UPDATED', 'CONDITION_SUGGESTIONS_UPDATED', 'ANALYSIS_COMPLETED'].includes(message.type)) setChanged(true); });
+  useWorkspaceMessages((message) => { if (['CONDITION_UPDATED', 'CONDITION_SUGGESTION_ACCEPTED', 'RECOMMENDATION_COMPLETED', 'CANDIDATE_ADDED', 'CANDIDATE_REMOVED'].includes(message.type)) setChanged(true); });
   useWorkspaceReconnect(() => setChanged(true));
   return <FeaturePage title="집 조건 확정" description="금액은 만원, 면적은 ㎡로 입력하세요. 비워 둔 항목은 제한하지 않아요."><WorkspaceLinks id={workspace.id} />
     <ErrorNotice message={result.error} retry={() => { void result.reload(); }} />
-    {changed && <p className="feature-success">새 조건이나 분석 결과가 있을 수 있어요. 입력 중인 내용은 유지했습니다.</p>}
+    {changed && <p className="feature-success">조건이나 추천 결과가 갱신됐어요. 입력을 유지하고 있으니, 최신 조건 불러오기로 확인해주세요.</p>}
     {result.data && <ConditionEditor key={revision} workspaceId={workspace.id} initial={result.data.view} onReload={async () => {
       const latest = await result.reload(); if (latest) { setRevision((value) => value + 1); setChanged(false); }
     }} />}
@@ -58,8 +58,8 @@ function ConditionEditor({ workspaceId, initial, onReload }: { workspaceId: numb
         ['월세 (만원)', 'monthlyRentMin', 'monthlyRentMax', 10000, 1],
         ['면적 (㎡)', 'areaMin', 'areaMax', 1000, 'any'],
       ] as const).map(([label, low, high, max, step]) => <fieldset key={low}><legend>{label}</legend><div className="feature-pair">{([low, high] as const).map((key, index) => <label key={key}>{index === 0 ? '최소' : '최대'}<input aria-label={`${label} ${index === 0 ? '최소' : '최대'}`} type="number" min={0} max={max} step={step} value={form[key] ?? ''} onChange={(event) => { setSuccess(false); setForm({ ...form, [key]: event.target.value === '' ? null : Number(event.target.value) }); }} /></label>)}</div></fieldset>)}
-      <label>방 구조<select value={form.roomType ?? ''} onChange={(event) => setForm({ ...form, roomType: (event.target.value || null) as HouseCondition['roomType'] })}><option value="">제한 없음</option><option value="ONE_ROOM">원룸</option><option value="TWO_ROOM">투룸</option><option value="THREE_ROOM_OR_MORE">쓰리룸 이상</option></select></label>
-      {(['avoidSlope', 'needVehicleAccess'] as const).map((key) => <label key={key}>{key === 'avoidSlope' ? '오르막 회피' : '차량 진입 필요'}<select value={form[key] === null ? '' : String(form[key])} onChange={(event) => setForm({ ...form, [key]: event.target.value === '' ? null : event.target.value === 'true' })}><option value="">미정</option><option value="true">예</option><option value="false">아니요</option></select></label>)}
+      <label>방 구조<select value={form.roomType ?? ''} onChange={(event) => { setSuccess(false); setForm({ ...form, roomType: (event.target.value || null) as HouseCondition['roomType'] }); }}><option value="">제한 없음</option><option value="ONE_ROOM">원룸</option><option value="TWO_ROOM">투룸</option><option value="THREE_ROOM_OR_MORE">쓰리룸 이상</option></select></label>
+      {(['avoidSlope', 'needVehicleAccess'] as const).map((key) => <label key={key}>{key === 'avoidSlope' ? '오르막 회피' : '차량 진입 필요'}<select value={form[key] === null ? '' : String(form[key])} onChange={(event) => { setSuccess(false); setForm({ ...form, [key]: event.target.value === '' ? null : event.target.value === 'true' }); }}><option value="">미정</option><option value="true">예</option><option value="false">아니요</option></select></label>)}
       <div className="feature-actions"><button className="button button--primary" disabled={task.busy}>{task.busy ? '저장 중...' : exists ? '조건 수정 저장' : '조건 확정'}</button>
         <button type="button" className="button button--secondary" disabled={task.busy || dirty} onClick={() => { void onReload(); }}>최신 조건 불러오기</button></div>
       {dirty && <p className="feature-muted">저장하지 않은 변경이 있어요. 최신 조건을 불러오려면 먼저 저장하거나 <button type="button" className="button button--secondary" onClick={() => setForm(saved)}>입력 되돌리기</button>를 눌러주세요.</p>}
