@@ -1,5 +1,7 @@
+import { useState } from 'react';
 import { Link, NavLink } from 'react-router-dom';
 import { useAuth } from '../../app/providers/useAuth';
+import { useToast } from '../Toast/useToast';
 import Avatar from '../Avatar';
 import ConnectionBanner from '../ConnectionBanner';
 import NotificationBell from '../Notification/NotificationBell';
@@ -10,6 +12,19 @@ import './Header.css';
 // TODO(AUTH-04): 내 정보(13) 화면이 생기면 아바타를 그 화면 링크로 바꾸고 로그아웃 버튼을 그쪽으로 옮긴다.
 export default function Header() {
   const { accessToken, me, signOut } = useAuth();
+  const { showToast } = useToast();
+  const [signingOut, setSigningOut] = useState(false);
+
+  async function handleSignOut() {
+    setSigningOut(true);
+    try {
+      await signOut();
+    } catch {
+      showToast('로그아웃하지 못했어요. 연결을 확인하고 다시 시도해주세요.');
+    } finally {
+      setSigningOut(false);
+    }
+  }
 
   return (
     <>
@@ -43,8 +58,8 @@ export default function Header() {
             </NavLink>
             <NotificationBell />
             {me && <Avatar nickname={me.nickname} profileImageUrl={me.profileImageUrl} />}
-            <button type="button" className="site-header__signout" onClick={signOut}>
-              로그아웃
+            <button type="button" className="site-header__signout" onClick={handleSignOut} disabled={signingOut}>
+              {signingOut ? '로그아웃 중...' : '로그아웃'}
             </button>
           </div>
         ) : (

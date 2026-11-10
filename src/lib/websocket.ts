@@ -1,3 +1,4 @@
+import { isCancel } from 'axios';
 import { BASE_URL, forceLogout, getTokens, refreshTokens } from './api';
 import { parseInstant } from './time';
 
@@ -53,13 +54,15 @@ export interface WorkspaceSocketHandlers {
   onRejected: (code: number) => void;
 }
 
+export type WorkspaceConnection = (() => void) & { send: (message: WsMessage) => boolean };
+
 // CHAT-01·02 Workspace 소켓 /ws/workspaces. 그룹 화면에 있는 동안 열어 둔다 —
 // 미니게임 참가자는 이 소켓에 접속 중인 멤버만 고를 수 있고, 끊긴 채 10초가 지나면 게임에서 빠진다.
 // 끊기면 다시 접속하고, 토큰이 만료돼 닫히면(4402) 재발급받아 다시 접속한다. 반환값을 부르면 닫는다.
 export function connectWorkspaceSocket(
   workspaceId: number,
   handlers: WorkspaceSocketHandlers,
-): () => void {
+): WorkspaceConnection {
   let socket: WebSocket | null = null;
   let timer: ReturnType<typeof setTimeout> | undefined;
   let attempt = 0;
@@ -99,7 +102,9 @@ export function connectWorkspaceSocket(
           forceLogout();
           return;
         case WsClose.TOKEN_EXPIRED:
-          refreshTokens().then(open, forceLogout);
+          refreshTokens(accessToken).then(open, (error: unknown) => {
+            if (!closed && !isCancel(error)) forceLogout();
+          });
           return;
         case WsClose.BAD_REQUEST:
         case WsClose.FORBIDDEN:
@@ -115,9 +120,15 @@ export function connectWorkspaceSocket(
   // StrictMode가 effect를 두 번 돌릴 때 열리기도 전에 닫히는 연결이 생기지 않게 한 틱 미룬다.
   timer = setTimeout(open, 0);
 
-  return () => {
+  const disconnect = () => {
     closed = true;
     clearTimeout(timer);
     socket?.close();
   };
+  return Object.assign(disconnect, {
+    send(message: WsMessage): boolean {
+      if (closed || socket?.readyState !== WebSocket.OPEN) return false;
+      try { socket.send(JSON.stringify(message)); return true; } catch { return false; }
+    },
+  });
 }

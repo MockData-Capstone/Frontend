@@ -1,6 +1,10 @@
 import { api } from './api';
 import type { Candidate } from '../types';
 
+export async function addCandidate(workspaceId: number, recommendationId: number): Promise<Candidate> {
+  return (await api.post<Candidate>(`/api/workspaces/${workspaceId}/candidates`, { recommendationId })).data;
+}
+
 // CAND-02 후보지 목록 (입지 정보·투표 집계 요약 포함) — GET /api/workspaces/{workspaceId}/candidates
 export async function getCandidates(workspaceId: number): Promise<Candidate[]> {
   const { data } = await api.get<{ items: Candidate[] }>(

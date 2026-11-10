@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { useWorkspaceMessages } from '../../app/providers/useWorkspaceSocket';
+import { useWorkspaceMessages, useWorkspaceReconnect } from '../../app/providers/useWorkspaceSocket';
 import { tourHeldFor, useTourStatus } from '../../hooks/useTourStatus';
 import { getGameHistory } from '../../lib/minigameApi';
 import type { MiniGame } from '../../types';
@@ -26,6 +26,12 @@ export default function TourBanner({ workspaceId, meId }: { workspaceId: number;
 
   useWorkspaceMessages((message) => {
     if (message.type !== 'GAME_FINISHED') return;
+    getGameHistory(workspaceId)
+      .then((games) => setLatestGame(games.find((g) => g.status === 'FINISHED') ?? null))
+      .catch(() => {});
+  });
+
+  useWorkspaceReconnect(() => {
     getGameHistory(workspaceId)
       .then((games) => setLatestGame(games.find((g) => g.status === 'FINISHED') ?? null))
       .catch(() => {});

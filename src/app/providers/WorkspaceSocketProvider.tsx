@@ -7,7 +7,7 @@ import {
   useState,
   type ReactNode,
 } from 'react';
-import { connectWorkspaceSocket } from '../../lib/websocket';
+import { connectWorkspaceSocket, type WorkspaceConnection, type WsMessage } from '../../lib/websocket';
 import {
   WorkspaceSocketContext,
   type WorkspaceMessageListener,
@@ -27,17 +27,19 @@ export function WorkspaceSocketProvider({
 }) {
   const [connected, setConnected] = useState(false);
   const listeners = useRef(new Set<WorkspaceMessageListener>());
+  const connection = useRef<WorkspaceConnection | null>(null);
   const handleRejected = useEffectEvent((code: number) => onRejected(code));
 
-  useEffect(
-    () =>
-      connectWorkspaceSocket(workspaceId, {
+  useEffect(() => {
+      const socket = connectWorkspaceSocket(workspaceId, {
         onMessage: (message) => listeners.current.forEach((listener) => listener(message)),
         onOpenChange: (open) => setConnected(open),
         onRejected: (code) => handleRejected(code),
-      }),
-    [workspaceId],
-  );
+      });
+      connection.current = socket;
+      return () => { connection.current = null; socket(); };
+    }, [workspaceId]);
+  const send = useCallback((message: WsMessage) => connection.current?.send(message) ?? false, []);
 
   const subscribe = useCallback((listener: WorkspaceMessageListener) => {
     listeners.current.add(listener);
@@ -47,8 +49,8 @@ export function WorkspaceSocketProvider({
   }, []);
 
   const value = useMemo<WorkspaceSocketContextValue>(
-    () => ({ connected, subscribe }),
-    [connected, subscribe],
+    () => ({ connected, subscribe, send }),
+    [connected, subscribe, send],
   );
 
   return <WorkspaceSocketContext.Provider value={value}>{children}</WorkspaceSocketContext.Provider>;

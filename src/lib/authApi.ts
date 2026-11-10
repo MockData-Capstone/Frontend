@@ -1,9 +1,8 @@
-import { api } from './api';
+import { api, endSession } from './api';
+import { createOAuthAuthorizeUrl } from './oauth';
 import type { MeResponse } from '../types';
 
-// 엔드포인트는 노션 ZIPFIT API명세서(auth 카테고리) 기준. 전부 "시작 전" 상태라
-// 아직 백엔드에 실제로 존재하지 않을 수 있다. 요청/응답 JSON 필드명은 API명세서에
-// 스키마까지는 없어서(설명 텍스트만 있음) 기능명세서 입력값 기준으로 추정한 값이다.
+// Backend AuthController/UserController 계약 기준. 실제 연동 검증 범위는 docs/api-integration.md 참고.
 
 export interface SignUpRequest {
   email: string;
@@ -21,7 +20,6 @@ export interface LoginRequest {
 
 export interface AuthResponse {
   accessToken: string;
-  refreshToken: string;
   accessTokenExpiresIn: number; // 초 단위
   tokenType: string; // "Bearer"
 }
@@ -63,16 +61,16 @@ export async function login(payload: LoginRequest): Promise<AuthResponse> {
   return data;
 }
 
-// AUTH-03 보조 — POST /api/auth/logout (refresh token 폐기)
-export async function logout(refreshToken: string): Promise<void> {
-  await api.post('/api/auth/logout', { refreshToken });
+// AUTH-03 보조 — 쿠키의 재발급 토큰 폐기 및 클라이언트 세션 정리
+export function logout(): Promise<void> {
+  return endSession();
 }
 
 // AUTH-02 보조 — GET /api/auth/kakao/authorize-url
 // 서버가 생성한 카카오 인가 URL을 반환한다. 앱 키를 FE에 두지 않기 위함.
 export async function getKakaoAuthorizeUrl(): Promise<string> {
-  const { data } = await api.get<{ url: string }>('/api/auth/kakao/authorize-url');
-  return data.url;
+  // 가입/초대 화면도 같은 콜백을 쓰므로 로그인 화면과 동일하게 state를 저장한다.
+  return createOAuthAuthorizeUrl('kakao');
 }
 
 // AUTH-02 카카오 로그인·가입 — POST /api/auth/kakao
@@ -95,6 +93,16 @@ export type SocialLoginResult =
 export async function exchangeKakaoCode(code: string): Promise<SocialLoginResult> {
   const { data } = await api.post<SocialLoginResult>('/api/auth/kakao', { code });
   return data;
+}
+
+export async function exchangeSocialCode(provider: 'kakao' | 'google', code: string): Promise<SocialLoginResult> {
+  return (await api.post<SocialLoginResult>(`/api/auth/${provider}`, { code })).data;
+}
+export async function requestPasswordReset(email: string): Promise<void> {
+  await api.post('/api/auth/password-reset/request', { email });
+}
+export async function confirmPasswordReset(token: string, newPassword: string): Promise<void> {
+  await api.post('/api/auth/password-reset/confirm', { token, newPassword });
 }
 
 // AUTH-02 소셜 최초 가입 — POST /api/auth/signup/social (201 + 토큰)
