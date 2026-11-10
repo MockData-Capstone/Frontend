@@ -56,6 +56,7 @@ export default function MiniGamePage() {
 
   const apply = useCallback((next: MiniGame | null) => {
     sequence.current += 1;
+    setError(null);
     setGame(next?.status === 'ABORTED' ? null : next);
   }, []);
 
@@ -103,7 +104,7 @@ export default function MiniGamePage() {
     getMembers(workspace.id)
       .then(setMembers)
       .catch(() => {});
-    if (game === null) {
+    if (game == null) {
       sync(getCurrentGame(workspace.id)).catch(() => {});
     } else if (game?.status === 'IN_PROGRESS') {
       refresh(game.gameId);
