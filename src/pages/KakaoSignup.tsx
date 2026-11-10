@@ -16,7 +16,8 @@ const NICKNAME_MAX = 20;
 export default function KakaoSignup() {
   const navigate = useNavigate();
   const { signIn } = useAuth();
-  const signup = useLocation().state as SocialSignupInfo | null;
+  const signup = useLocation().state as (SocialSignupInfo & { provider?: 'kakao' | 'google' }) | null;
+  const providerName = signup?.provider === 'google' ? '구글' : '카카오';
 
   const [nickname, setNickname] = useState(signup?.nickname ?? '');
   const [agreedToTerms, setAgreedToTerms] = useState(false);
@@ -24,7 +25,7 @@ export default function KakaoSignup() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(
     signup && signup.nickname && !signup.nicknameAvailable
-      ? '카카오 닉네임이 이미 사용 중이에요. 다른 닉네임을 입력해주세요.'
+      ? '닉네임이 이미 사용 중이에요. 다른 닉네임을 입력해주세요.'
       : null,
   );
   const [expired, setExpired] = useState(false);
@@ -74,7 +75,7 @@ export default function KakaoSignup() {
         setError('이미 사용 중인 닉네임이에요. 다른 닉네임을 입력해주세요.');
       } else if (code === 'INVALID_SIGNUP_TOKEN' || code === 'ALREADY_REGISTERED') {
         setExpired(true);
-        setError('가입 정보가 만료되었어요. 카카오 로그인부터 다시 진행해주세요.');
+        setError('가입 정보가 만료되었어요. 소셜 로그인부터 다시 진행해주세요.');
       } else if (code === 'INVALID_INPUT') {
         setFieldErrors(getFieldErrors(err));
       } else {
@@ -90,7 +91,7 @@ export default function KakaoSignup() {
       <Header />
       <div className="auth-page__content">
         <div className="auth-card">
-          <h1 className="auth-card__title">카카오로 가입하기</h1>
+          <h1 className="auth-card__title">{providerName}로 가입하기</h1>
           <p className="auth-card__subtitle">그룹에서 사용할 닉네임을 확인해주세요.</p>
 
           {error && <p className="auth-error">{error}</p>}
