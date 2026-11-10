@@ -59,3 +59,46 @@ test('workspace messages are sent only through an open connection and retry keep
   } finally { connection(); }
   assert.equal(connection.send(payload), false);
 });
+
+test('condition validation rejects reversed ranges, negative, fractional currency and nonfinite amounts', async () => {
+  const { validateCondition, emptyCondition } = await server.ssrLoadModule('/src/lib/conditionApi.ts');
+  assert.equal(validateCondition(emptyCondition), null);
+  assert.equal(validateCondition({ ...emptyCondition, areaMin: 12.5, depositMin: 0 }), null);
+  for (const change of [
+    { depositMin: 500, depositMax: 100 }, { monthlyRentMin: -1 },
+    { monthlyRentMax: 10001 }, { depositMin: 1.5 }, { areaMax: Infinity },
+    { areaMin: 30, areaMax: 20 }, { areaMin: NaN },
+  ]) assert.equal(typeof validateCondition({ ...emptyCondition, ...change }), 'string');
+});
+test('listing links reject executable or malformed URLs and allow web links', async () => {
+  const { safeExternalUrl } = await server.ssrLoadModule('/src/lib/listingApi.ts');
+  for (const unsafe of ['javascript:alert(1)', 'data:text/html,test', '//example.com', 'invalid']) assert.equal(safeExternalUrl(unsafe), null);
+  assert.equal(safeExternalUrl('https://example.com/search?a=1'), 'https://example.com/search?a=1');
+});
+test('first votes use POST, changed votes use PATCH, and server conflicts are surfaced', async () => {
+  const { submitVote } = await server.ssrLoadModule('/src/lib/voteApi.ts');
+  const calls = [];
+  session.setTokens(null);
+  session.api.defaults.adapter = async (config) => {
+    calls.push({ method: config.method, url: config.url, body: JSON.parse(config.data) });
+    return { data: { myChoice: JSON.parse(config.data).choice }, status: 200, headers: {}, config };
+  };
+  await submitVote(8, 'AGREE', null);
+  await submitVote(8, 'DISAGREE', 'AGREE');
+  assert.deepEqual(calls, [
+    { method: 'post', url: '/api/candidates/8/votes', body: { choice: 'AGREE' } },
+    { method: 'patch', url: '/api/candidates/8/votes/me', body: { choice: 'DISAGREE' } },
+  ]);
+  session.api.defaults.adapter = async () => { throw Object.assign(new Error('Already voted'), { response: { status: 409, data: { code: 'ALREADY_VOTED' } } }); };
+  await assert.rejects(submitVote(8, 'AGREE', null), { message: 'Already voted' });
+});
+test('condition confirmation and full replacement preserve explicit false and null values', async () => {
+  const { saveConditions, emptyCondition } = await server.ssrLoadModule('/src/lib/conditionApi.ts');
+  const calls = [];
+  session.api.defaults.adapter = async (config) => { calls.push(config); return { data: {}, status: 200, headers: {}, config }; };
+  const value = { ...emptyCondition, avoidSlope: false, depositMin: 0 };
+  await saveConditions(3, value, false);
+  await saveConditions(3, value, true);
+  assert.deepEqual(calls.map((config) => config.method), ['post', 'put']);
+  for (const config of calls) assert.deepEqual(JSON.parse(config.data), value);
+});
