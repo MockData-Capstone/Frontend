@@ -1,9 +1,7 @@
 import { api, endSession } from './api';
 import type { MeResponse } from '../types';
 
-// 엔드포인트는 노션 ZIPFIT API명세서(auth 카테고리) 기준. 전부 "시작 전" 상태라
-// 아직 백엔드에 실제로 존재하지 않을 수 있다. 요청/응답 JSON 필드명은 API명세서에
-// 스키마까지는 없어서(설명 텍스트만 있음) 기능명세서 입력값 기준으로 추정한 값이다.
+// Backend AuthController/UserController 계약 기준. 실제 연동 검증 범위는 docs/api-integration.md 참고.
 
 export interface SignUpRequest {
   email: string;

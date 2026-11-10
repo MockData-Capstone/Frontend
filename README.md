@@ -62,20 +62,20 @@
 | **Framework** | React 19 + TypeScript (Vite 8) |
 | **Lint** | ESLint 10 (flat config) + typescript-eslint |
 
-### 예정 (미적용)
+### 화면·통신 구현
 
 | 계층 | 기술 | 용도 |
 |---|---|---|
-| **스타일링** | Tailwind CSS | 아직 설치되지 않음 — 필요 시 `npm install -D tailwindcss postcss autoprefixer` |
+| **스타일링** | CSS | 공통 토큰·컴포넌트·반응형 화면 |
 | **라우팅** | react-router-dom | 페이지 라우팅 |
-| **지도** | react-kakao-maps-sdk | 지도/마커/로드뷰 렌더링 (REC, LOC) |
-| **실시간 통신** | STOMP.js + SockJS, 브라우저 내장 WebRTC API | 채팅(CHAT), 투어(TOUR, SIG) |
-| **소셜 로그인** | 카카오 로그인 SDK (JS) | AUTH-02 |
+| **지도** | 카카오맵 JavaScript SDK | 지도·후보지 마커 렌더링 |
+| **실시간 통신** | 브라우저 WebSocket + WebRTC | 채팅·알림·미니게임·투어 시그널링 |
+| **소셜 로그인** | 백엔드 OAuth API | 카카오·구글 로그인 및 연결 |
 | **상태관리** | React Context API | 워크스페이스 단위로 상태 범위가 명확해 Redux/Zustand 미도입 |
 | **HTTP 클라이언트** | axios | JWT 헤더 자동 첨부 인스턴스 |
 | **웹 푸시** | Service Worker + Web Push 구독 | NOTI-04/05 (P2) |
 
-> **TBD** — 이전 스캐폴드에는 Tailwind CSS가 포함돼 있었으나 현재 `package.json`에는 없다. 디자인 작업 시작 시 재도입 여부 팀 논의 필요.
+외부 서비스 설정 및 현재 백엔드의 임시 구현 범위는 [API 연동 현황](docs/api-integration.md)을 참고한다.
 
 ---
 
@@ -91,11 +91,14 @@ npm run dev
 ```bash
 npm run build      # 타입체크 + 프로덕션 빌드
 npm run lint       # ESLint
-npm test           # 쿠키 인증·토큰 재발급·로그아웃 회귀 테스트
+npm test           # 인증·채팅·조건·투표·OAuth·알림 회귀 테스트 (26개)
+npm run test:integration # 별도 H2 백엔드가 필요한 실제 API 검증 (26개, 아래 문서 참고)
 npm run preview    # 빌드 결과 로컬 미리보기
 ```
 
 ### 로그인 유지
+
+현재 연결된 API와 화면, 오류 검증 범위, 격리 테스트 실행 방법은 [API 연동 현황](docs/api-integration.md)에 정리되어 있다.
 
 접근 토큰은 메모리에만 보관하고, 재발급 토큰은 백엔드의 httpOnly 쿠키로 주고받는다.
 axios 요청은 `withCredentials: true`를 사용하며, 새로고침하면 본문 없는
@@ -111,7 +114,7 @@ axios 요청은 `withCredentials: true`를 사용하며, 새로고침하면 본�
 2. 같은 와이파이의 폰에서 터미널에 찍힌 `Network: https://<맥 IP>:5173` 주소로 접속 → 인증서 경고에서 "계속" 선택
 3. 시청은 PC의 `npm run dev`(http://localhost:5173)나 같은 https 주소로 접속
 
-**측정용 설정** — 새로고침하면 로그아웃되므로 로그인 화면 주소에 붙여 연다(이 브라우저에 기억, `=0`이면 끔).
+**측정용 설정** — 화면 주소에 붙여 연다(이 브라우저에 기억, `=0`이면 끔).
 
 - `?debug=1`: 23·24 구석에 연결 방식(P2P/TURN)·연결 시간·끊김 횟수·재연결 시간 표시
 - `?relay=1`: TURN 중계만 사용 (TURN 서버가 설정된 백엔드에서 TURN 강제 시험)
@@ -126,9 +129,9 @@ Vite는 `VITE_` 접두사가 붙은 변수만 클라이언트에 노출한다. `
 |---|---|---|
 | `VITE_API_BASE_URL` | 백엔드 API base URL | ✅ |
 | `VITE_KAKAO_JS_KEY` | 카카오맵 JavaScript 키 (도메인 제한 설정) | ✅ (REC, LOC) |
-| `VITE_KAKAO_LOGIN_JS_KEY` | 카카오 로그인 JavaScript 키 | ✅ (AUTH-02) |
-| `VITE_WEB_PUSH_VAPID_PUBLIC_KEY` | 웹 푸시 구독용 VAPID 공개 키 | ⬜ (NOTI-04, P2) |
-| `VITE_NOTIFICATIONS` | `on`이면 알림 연결(`/ws/notifications`)과 안 읽은 개수를 켠다. 알림 백엔드가 준비되기 전까지 비워 둔다(꺼짐) | ⬜ (NOTI-01) |
+| `VITE_NOTIFICATIONS` | 기본 활성화. `off`일 때 실시간 알림 연결(`/ws/notifications`)과 배지 갱신을 끈다 | ⬜ (NOTI-01) |
+
+카카오·구글 로그인 주소와 웹 푸시 VAPID 공개 키는 백엔드 API로 받는다. 로그인용 JS 키나 푸시 키를 프론트 환경 변수에 따로 넣지 않는다.
 
 > ⚠️ 카카오 REST API 키, OpenAI 등 외부 LLM 키는 **서버 전용**이라 프론트엔드 환경 변수로 두지 않는다.
 
@@ -141,14 +144,10 @@ src/
   app/
     providers/           # AuthProvider, WorkspaceProvider 등 전역 Context
   components/
-    Auth/                 # 카카오/자체 로그인, 내 정보 (AUTH)
-    Workspace/            # 워크스페이스 생성/초대/멤버 관리 (WS, MEM)
     Chat/                 # 그룹 채팅 UI (CHAT)
-    Map/                  # 카카오맵, 로드뷰, 후보지 마커, 입지 정보 표시 (REC, LOC)
-    Candidate/            # 후보지 추가/제외/이름 수정 (CAND)
+    Map/                  # 카카오맵, 후보지 마커 (CAND)
     Comparison/           # 후보지 비교표 (CMP)
     Vote/                 # 👍/👎 투표 (VOTE)
-    Condition/            # 조건 확정 화면 (COND)
     Listing/              # 매물 검색 링크 카드 (LINK)
     MiniGame/             # 방문자 뽑기 (GAME)
     Tour/                 # WebRTC 그룹 통화 (TOUR, SIG)
@@ -156,11 +155,11 @@ src/
   lib/
     api.ts                # axios 인스턴스 (JWT 헤더 자동 첨부)
     authApi.ts, workspaceApi.ts, chatApi.ts, recommendationApi.ts,
-    locationApi.ts, candidateApi.ts, voteApi.ts, conditionApi.ts,
+    candidateApi.ts, comparisonApi.ts, voteApi.ts, conditionApi.ts,
     listingApi.ts, minigameApi.ts, tourApi.ts, notificationApi.ts
-    websocket.ts          # STOMP 클라이언트 초기화 (채팅)
+    websocket.ts          # Workspace WebSocket, 채팅 전송·재접속
     webrtc.ts             # RTCPeerConnection 래퍼, 시그널링 클라이언트
-  pages/                  # 라우트 단위 페이지
+  pages/                  # 라우트 단위 페이지, Account·Conditions·WorkspaceSettings 등
   types/                  # 백엔드 API 응답/DTO 타입 정의
 ```
 
@@ -170,22 +169,22 @@ src/
 
 | 기능 ID | 담당 컴포넌트/페이지 |
 |---|---|
-| `AUTH` 회원·로그인 | `components/Auth`, `pages/Login` |
-| `WS`, `MEM` 워크스페이스·초대·멤버 | `components/Workspace`, `pages/WorkspaceCreate`, `pages/Invite` |
-| `CHAT` 그룹 채팅 | `components/Chat`, `lib/websocket.ts` |
-| `REC` AI 위치 추천 | `components/Map`, `lib/recommendationApi.ts` (결과 폴링/구독, 로딩 UI 필수, 조건 제안 수락/거절 UI) |
-| `LOC` 입지 분석 표시 | `components/Map` 내 경사도·진입성 패널, 신뢰도 낮은 값 "추정치" 배지 |
-| `CAND`, `CMP` 후보지·비교표 | `components/Candidate`, `components/Comparison` |
+| `AUTH` 회원·로그인 | `pages/Login`, `pages/Account`, `pages/PasswordReset`, `pages/SocialCallback`, `pages/signup` |
+| `WS`, `MEM` 워크스페이스·초대·멤버 | `pages/WorkspaceCreate`, `pages/Invite`, `pages/WorkspaceSettings` |
+| `CHAT` 그룹 채팅 | `components/Chat`, `lib/websocket.ts` (브라우저 WebSocket) |
+| `REC` AI 위치 추천 | `pages/WorkspaceSearch`, `lib/recommendationApi.ts` (비동기 상태, 폴링·소켓 갱신, 후보지 추가) |
+| `LOC` 입지 분석 표시 | `pages/candidates/CandidateDetail`, `components/Comparison`의 경사·진입성·추정치 표시 |
+| `CAND`, `CMP` 후보지·비교표 | `pages/candidates`, `components/Comparison` |
 | `VOTE` 후보지 투표 | `components/Vote` |
-| `COND`, `LINK` 조건 확정·매물 검색 | `components/Condition`, `components/Listing` (백엔드가 조합한 딥링크로 이동만 수행) |
+| `COND`, `LINK` 조건 확정·매물 검색 | `pages/Conditions`, `components/Listing` (조건 제안 수락, 서버가 조합한 링크로 이동) |
 | `GAME`, `TOUR`, `SIG` 미니게임·투어 | `components/MiniGame`, `components/Tour`, `lib/webrtc.ts` |
-| `NOTI` 알림 | `components/Notification` |
+| `NOTI` 알림 | `pages/Notifications`, `components/Notification`, `public/push-sw.js` |
 
 ---
 
 ## 경계 원칙 — 백엔드와의 책임 분리
 
-- **카카오맵 JS SDK·카카오 로그인 JS SDK만 클라이언트에서 직접 호출**한다 (도메인 제한된 JS 키 사용, 로드뷰 이미지 캡처/저장 금지).
+- **카카오맵 JS SDK는 클라이언트에서 직접 호출**한다 (도메인 제한된 JS 키 사용, 로드뷰 이미지 캡처/저장 금지). 소셜 인증 코드 교환은 백엔드에서 처리한다.
 - **OpenAI 등 외부 LLM API, 카카오 로컬/모빌리티/도보경로 API는 프론트에서 직접 호출하지 않는다.** REC·LOC·LINK의 실제 조회/조합(로컬 LLM 분석, 경사도·진입성 산출, 딥링크 생성)은 백엔드가 서버 키·자체 GPU 서버로 담당하고, 프론트는 결과 표시와 링크 이동만 수행한다.
 - 매물 검색 링크는 백엔드가 만들어준 딥링크로 단순 이동만 하며, 프론트에서 URL 파라미터를 직접 조합하지 않는다(크롤링 금지 정책은 Backend README 참고).
 - 투어 영상은 녹화·저장하지 않는다. 시그널링(SDP/ICE)만 서버를 거치고 영상 스트림은 P2P(또는 TURN 중계)로만 흐른다.
