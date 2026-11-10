@@ -68,14 +68,7 @@ export default function CandidateList() {
             {count === undefined ? '후보지' : `후보지 ${count}곳`}
           </h1>
           <div className="candidate-panel__tabs">
-            <button
-              type="button"
-              className="candidate-panel__tab"
-              disabled
-              title="준비 중인 화면이에요."
-            >
-              대화
-            </button>
+            <Link className="candidate-panel__tab" to={`/workspaces/${workspace.id}/search`}>대화·추천</Link>
             <span className="candidate-panel__tab is-active">후보지 {count ?? ''}</span>
           </div>
         </div>
@@ -84,7 +77,7 @@ export default function CandidateList() {
           {error && <p className="candidate-panel__error">{error}</p>}
           {!error && !candidates && <p className="candidate-panel__hint">불러오는 중...</p>}
           {candidates?.length === 0 && (
-            <p className="candidate-panel__hint">아직 추가된 후보지가 없어요.</p>
+            <p className="candidate-panel__hint">아직 추가된 후보지가 없어요. <Link to={`/workspaces/${workspace.id}/search`}>추천받고 후보지 추가하기</Link></p>
           )}
           {candidates && candidates.length > 0 && (
             <ul className="candidate-panel__cards">

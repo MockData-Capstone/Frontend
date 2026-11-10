@@ -1,5 +1,6 @@
 import { Route, Routes } from 'react-router-dom';
 import Home from './pages/Home';
+import WorkspaceSearch from './pages/WorkspaceSearch';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
 import SignupComplete from './pages/SignupComplete';
@@ -80,6 +81,7 @@ function App() {
         }
       >
         <Route index element={<WorkspaceIndexRedirect />} />
+        <Route path="search" element={<WorkspaceSearch />} />
         <Route path="candidates" element={<CandidateList />} />
         <Route path="candidates/:candidateId" element={<CandidateDetail />} />
         {/* 19 방문자 정하기 → 20 가위바위보 / 21 룰렛 (진행 상태에 따라 같은 주소에서 바뀐다) */}

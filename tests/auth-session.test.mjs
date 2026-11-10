@@ -10,7 +10,7 @@ const server = await createServer({
   configFile: false,
   cacheDir: 'node_modules/.vite-auth-tests',
   optimizeDeps: { noDiscovery: true, include: [] },
-  server: { middlewareMode: true, hmr: false, watch: null },
+  server: { middlewareMode: true, hmr: false, ws: false, watch: null },
   appType: 'custom',
 });
 const session = await server.ssrLoadModule('/src/lib/api.ts');

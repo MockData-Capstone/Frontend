@@ -21,14 +21,7 @@ export default function WorkspaceHeader({ workspace }: { workspace: WorkspaceDet
     <>
       <header className="site-header">
         <nav className="site-header__nav">
-          <button
-            type="button"
-            className="site-header__nav-link workspace-header__tab-disabled"
-            disabled
-            title="준비 중인 화면이에요."
-          >
-            함께 찾기
-          </button>
+          <NavLink to={`/workspaces/${workspace.id}/search`} className={({ isActive }) => `site-header__nav-link${isActive ? ' is-active' : ''}`}>함께 찾기</NavLink>
           <NavLink
             to={`/workspaces/${workspace.id}/candidates`}
             className={({ isActive }) =>
