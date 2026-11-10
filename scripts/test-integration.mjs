@@ -39,6 +39,7 @@ const auth = await load('authApi'), users = await load('userApi'), groups = awai
 const settings = await load('workspaceSettingsApi'), chats = await load('chatApi'), recommendations = await load('recommendationApi');
 const candidates = await load('candidateApi'), votes = await load('voteApi'), comparisons = await load('comparisonApi');
 const conditions = await load('conditionApi'), listings = await load('listingApi'), notifications = await load('notificationApi');
+const games = await load('minigameApi'), tours = await load('tourApi');
 const sockets = [];
 const results = [];
 const stamp = Date.now().toString().slice(-7);
@@ -75,6 +76,8 @@ try {
   await check('member cannot modify host settings', async () => { as(member); await rejected(() => settings.updateWorkspace(workspace.id, { name: '거절' }), 'NOT_WORKSPACE_HOST'); });
   await check('host updates workspace and retrieves members', async () => { as(host); assert.equal((await settings.updateWorkspace(workspace.id, { name: '통합 검증 수정' })).name, '통합 검증 수정'); assert.equal((await groups.getMembers(workspace.id)).length, 2); });
   const channel = await socket(host, workspace.id);
+  await socket(member, workspace.id);
+  await until(() => groups.getMembers(workspace.id), (members) => members.every((item) => item.online));
   await check('chat rejects empty messages with a correlated error', async () => {
     channel.ws.send(JSON.stringify({ type: 'CHAT_SEND', data: { clientMessageId: 'empty', content: '' } }));
     const error = await until(() => channel.messages.find((message) => message.type === 'ERROR' && message.data.requestId === 'empty'), Boolean);
@@ -131,6 +134,69 @@ try {
   await check('listing links expose applied and excluded conditions', async () => {
     const links = await listings.getListingLinks(workspace.id, first.candidateId); assert.ok(links.links.length > 0);
     for (const link of links.links) { assert.ok(listings.safeExternalUrl(link.url)); assert.ok(Array.isArray(link.excludedConditions)); }
+  });
+  const players = [host.id, member.id];
+  await check('existing signup and invitation screens use matching availability and invitation contracts', async () => {
+    assert.equal(await auth.checkEmailAvailability(host.email), false);
+    assert.equal(await auth.checkNicknameAvailability(host.nickname), false);
+    assert.equal((await groups.getCurrentInvitation(workspace.id)).token, invitation.token);
+    assert.equal((await groups.getInvitationPreview(invitation.token)).workspaceName, '통합 검증 수정');
+    assert.ok((await groups.getMyWorkspaces()).some((item) => item.id === workspace.id));
+  });
+  let roulette;
+  await check('minigame setup rejects missing players and retrieves a started roulette', async () => {
+    await rejected(() => games.startGame(workspace.id, { type: 'ROULETTE', participantUserIds: [host.id], visitorRule: null }), 'NOT_ENOUGH_PLAYERS');
+    roulette = await games.startGame(workspace.id, { type: 'ROULETTE', participantUserIds: players, visitorRule: null });
+    assert.equal((await games.getCurrentGame(workspace.id)).gameId, roulette.gameId);
+    assert.equal((await games.getGame(roulette.gameId)).participants.length, 2);
+    await until(() => channel.messages.find((event) => event.type === 'GAME_STARTED' && event.data.gameId === roulette.gameId), Boolean);
+  });
+  await check('roulette draw, result and game history agree', async () => {
+    roulette = await games.drawRoulette(roulette.gameId); assert.equal(roulette.status, 'FINISHED');
+    assert.ok(players.includes(roulette.visitor.userId));
+    assert.equal((await games.getGame(roulette.gameId)).visitor.userId, roulette.visitor.userId);
+    assert.equal((await games.getGameHistory(workspace.id))[0].gameId, roulette.gameId);
+    assert.equal(await games.getCurrentGame(workspace.id), null);
+  });
+  await check('rock paper scissors preserves hidden choices, rejects duplicates and selects the loser', async () => {
+    const game = await games.startGame(workspace.id, { type: 'ROCK_PAPER_SCISSORS', participantUserIds: players, visitorRule: 'LOSER' });
+    const waiting = await games.submitChoice(game.gameId, game.currentRound, 'ROCK');
+    assert.ok(waiting.submittedUserIds.includes(host.id)); assert.equal(waiting.rounds.length, 0);
+    await rejected(() => games.submitChoice(game.gameId, game.currentRound, 'PAPER'), 'ALREADY_SUBMITTED');
+    as(member); const result = await games.submitChoice(game.gameId, game.currentRound, 'SCISSORS');
+    assert.equal(result.status, 'FINISHED'); assert.equal(result.visitor.userId, member.id); as(host);
+  });
+  await check('only the minigame starter can abort an active game', async () => {
+    const game = await games.startGame(workspace.id, { type: 'ROULETTE', participantUserIds: players, visitorRule: null });
+    as(member); await rejected(() => games.abortGame(game.gameId), 'NOT_GAME_STARTER');
+    as(host); assert.equal((await games.abortGame(game.gameId)).status, 'ABORTED');
+    assert.equal(await games.getCurrentGame(workspace.id), null);
+  });
+  let liveTour;
+  await check('only the selected visitor starts the tour and obtains signaling and ICE settings', async () => {
+    await rejected(() => tours.startTour(workspace.id), 'NOT_SELECTED_VISITOR');
+    as(member); liveTour = await tours.startTour(workspace.id);
+    assert.equal(liveTour.tour.visitor.userId, member.id); assert.ok(liveTour.signalingPath);
+    assert.ok(Array.isArray(liveTour.ice.iceServers));
+    assert.equal((await tours.getCurrentTour(workspace.id)).tourId, liveTour.tour.tourId);
+    await until(() => channel.messages.find((event) => event.type === 'TOUR_STARTED' && event.data.tourId === liveTour.tour.tourId), Boolean);
+  });
+  await check('viewer participation, ICE renewal, exit and visitor rejoin follow the tour contract', async () => {
+    const id = liveTour.tour.tourId;
+    as(host); await rejected(() => tours.getIceServers(id), 'NOT_TOUR_PARTICIPANT');
+    assert.equal((await tours.joinTour(id)).tour.participantCount, 2);
+    assert.ok(Array.isArray((await tours.getIceServers(id)).iceServers));
+    await rejected(() => tours.endTour(id), 'ONLY_VISITOR_ALLOWED');
+    await tours.leaveTour(id); await rejected(() => tours.getIceServers(id), 'NOT_TOUR_PARTICIPANT');
+    as(member); assert.equal((await tours.rejoinTour(id)).tour.tourId, id);
+  });
+  await check('visitor termination updates current tour, history and the workspace event', async () => {
+    await tours.endTour(liveTour.tour.tourId);
+    assert.equal(await tours.getCurrentTour(workspace.id), null);
+    const history = await tours.getTourHistory(workspace.id);
+    assert.equal(history[0].tourId, liveTour.tour.tourId); assert.equal(history[0].endReason, 'VISITOR_ENDED');
+    await rejected(() => tours.startTour(workspace.id), 'TOUR_ALREADY_HELD');
+    await until(() => channel.messages.find((event) => event.type === 'TOUR_ENDED' && event.data.tourId === liveTour.tour.tourId), Boolean);
   });
   await check('notification list, unread count, single read and read-all', async () => {
     as(member); const page = await notifications.getNotifications(); assert.ok(page.items.length > 0);
