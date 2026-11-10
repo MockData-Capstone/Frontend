@@ -1,10 +1,8 @@
 import { createContext } from 'react';
 import type { MeResponse } from '../../types';
+import type { Tokens } from '../../lib/api';
 
-export interface AuthTokens {
-  accessToken: string;
-  refreshToken: string;
-}
+export type AuthTokens = Tokens;
 
 export interface AuthContextValue {
   accessToken: string | null;
@@ -16,6 +14,6 @@ export interface AuthContextValue {
   signOut: () => Promise<void>;
 }
 
-// TODO(기능명세서 7장 #28): 영속 저장 방식(localStorage/쿠키 등)은 아직 미결.
-// 실제 보관은 lib/api.ts의 모듈 메모리가 한다 — 여기 accessToken은 렌더용 거울.
+// 재발급 토큰은 httpOnly 쿠키, 접근 토큰은 lib/api.ts의 메모리에만 둔다.
+// AuthProvider가 쿠키로 세션을 복원한 뒤 하위 화면을 렌더한다.
 export const AuthContext = createContext<AuthContextValue | null>(null);

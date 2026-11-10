@@ -1,3 +1,4 @@
+import { isCancel } from 'axios';
 import { forceLogout, getTokens, refreshTokens } from './api';
 import { retryDelay, WS_BASE_URL, WsClose, type WsMessage } from './websocket';
 
@@ -53,7 +54,9 @@ export function connectNotificationSocket(handlers: NotificationSocketHandlers):
           forceLogout();
           return;
         case WsClose.TOKEN_EXPIRED:
-          refreshTokens().then(open, forceLogout);
+          refreshTokens(accessToken).then(open, (error: unknown) => {
+            if (!closed && !isCancel(error)) forceLogout();
+          });
           return;
         case WsClose.BAD_REQUEST:
           return;
