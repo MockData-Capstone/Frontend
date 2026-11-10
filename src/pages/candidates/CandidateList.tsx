@@ -122,31 +122,11 @@ export default function CandidateList() {
 
         <div className="candidate-panel__actions">
           <div className="candidate-panel__action-row">
-            <button
-              type="button"
-              className="button button--secondary"
-              disabled
-              title="준비 중인 화면이에요."
-            >
-              후보지 비교
-            </button>
-            <button
-              type="button"
-              className="button button--secondary"
-              disabled
-              title="준비 중인 화면이에요."
-            >
-              투표하기
-            </button>
+            <Link className="button button--secondary" to={`/workspaces/${workspace.id}/comparisons`}>후보지 비교</Link>
+            <Link className="button button--secondary" to={`/workspaces/${workspace.id}/votes`}>투표하기</Link>
           </div>
-          <button
-            type="button"
-            className="button button--primary"
-            disabled
-            title="준비 중인 화면이에요."
-          >
-            조건 확정
-          </button>
+          <Link className="button button--primary" to={`/workspaces/${workspace.id}/conditions`}>조건 확정</Link>
+          <Link className="button button--secondary" to={`/workspaces/${workspace.id}/listings`}>매물 찾기</Link>
         </div>
       </aside>
 

@@ -300,14 +300,8 @@ function CandidateDetail({ candidateId }: { candidateId: number }) {
             <p className="candidate-detail__note">일조·소음은 준비 중이에요.</p>
 
             <div className="candidate-detail__card-actions">
-              <button
-                type="button"
-                className="button button--primary"
-                disabled
-                title="준비 중인 기능이에요."
-              >
-                후보지에서 보기
-              </button>
+              <Link className="button button--primary" to={`/workspaces/${workspace.id}/votes`}>투표하기</Link>
+              <Link className="button button--secondary" to={`/workspaces/${workspace.id}/listings?candidateId=${candidateId}`}>이 지역 매물 찾기</Link>
               <button
                 type="button"
                 className="button button--secondary"
