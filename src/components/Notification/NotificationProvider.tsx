@@ -10,10 +10,8 @@ import {
   type NotificationMessageListener,
 } from './NotificationContext';
 
-// 알림 백엔드(/ws/notifications, /api/notifications/*)가 아직 없어서 기본으로 꺼 둔다.
-// 꺼져 있으면 연결을 열지 않고 안 읽은 개수도 부르지 않는다 — 끊김 안내 띠가 늘 떠 있지 않고, 알림 종은 배지 없이 보인다.
-// 백엔드가 준비되면 .env.local에 VITE_NOTIFICATIONS=on 을 넣어 켠다.
-const NOTIFICATIONS_ENABLED = import.meta.env.VITE_NOTIFICATIONS === 'on';
+// 알림 API가 있는 서버에서는 기본 활성화. 격리된 시험에서만 off로 끌 수 있다.
+const NOTIFICATIONS_ENABLED = import.meta.env.VITE_NOTIFICATIONS !== 'off';
 
 // 로그인한 동안 안 읽은 알림 수를 들고 알림 연결을 열어 둔다 (realtime.md "알림 연결").
 // 안 읽은 개수는 앱에 들어올 때(로그인 직후)와 연결이 다시 붙은 직후 부르고,

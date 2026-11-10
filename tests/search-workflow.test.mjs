@@ -121,3 +121,24 @@ test('account forms reject mismatched passwords and oversized, empty or unsuppor
   assert.equal(validateProfileImage({ size: 100, type: 'image/png' }), null);
   for (const file of [{ size: 0, type: 'image/png' }, { size: 5242881, type: 'image/jpeg' }, { size: 100, type: 'image/svg+xml' }]) assert.ok(validateProfileImage(file));
 });
+
+test('notification destinations stay inside the app and deleted or invalid targets cannot be opened', async () => {
+  const { notificationPath } = await server.ssrLoadModule('/src/lib/notificationLinks.ts');
+  const item = { linkActive: true, workspaceId: 3, type: 'NEW_MESSAGE' };
+  assert.equal(notificationPath(item), '/workspaces/3/search');
+  assert.equal(notificationPath({ ...item, type: 'ANALYSIS_COMPLETED' }), '/workspaces/3/search');
+  assert.equal(notificationPath({ ...item, type: 'VOTE_NEEDED' }), '/workspaces/3/votes');
+  assert.equal(notificationPath({ ...item, type: 'TOUR_STARTED' }), '/workspaces/3/tour');
+  for (const change of [{ linkActive: false }, { workspaceId: -1 }, { workspaceId: '//evil' }, { type: 'UNKNOWN' }]) assert.equal(notificationPath({ ...item, ...change }), null);
+});
+test('push unsubscribe keeps the browser subscription when the server deletion fails', async () => {
+  const { disablePush } = await server.ssrLoadModule('/src/lib/push.ts');
+  let unsubscribed = 0;
+  const subscription = { endpoint: 'https://push.example.invalid/device', async unsubscribe() { unsubscribed++; return true; } };
+  session.api.defaults.adapter = async () => { throw new Error('Network unavailable'); };
+  await assert.rejects(disablePush(subscription), /Network unavailable/);
+  assert.equal(unsubscribed, 0);
+  session.api.defaults.adapter = async () => { throw { response: { data: { code: 'PUSH_SUBSCRIPTION_NOT_FOUND' } } }; };
+  await disablePush(subscription);
+  assert.equal(unsubscribed, 1);
+});
