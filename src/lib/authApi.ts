@@ -1,4 +1,5 @@
 import { api, endSession } from './api';
+import { createOAuthAuthorizeUrl } from './oauth';
 import type { MeResponse } from '../types';
 
 // Backend AuthController/UserController 계약 기준. 실제 연동 검증 범위는 docs/api-integration.md 참고.
@@ -68,8 +69,8 @@ export function logout(): Promise<void> {
 // AUTH-02 보조 — GET /api/auth/kakao/authorize-url
 // 서버가 생성한 카카오 인가 URL을 반환한다. 앱 키를 FE에 두지 않기 위함.
 export async function getKakaoAuthorizeUrl(): Promise<string> {
-  const { data } = await api.get<{ url: string }>('/api/auth/kakao/authorize-url');
-  return data.url;
+  // 가입/초대 화면도 같은 콜백을 쓰므로 로그인 화면과 동일하게 state를 저장한다.
+  return createOAuthAuthorizeUrl('kakao');
 }
 
 // AUTH-02 카카오 로그인·가입 — POST /api/auth/kakao
