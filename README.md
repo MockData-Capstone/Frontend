@@ -91,8 +91,8 @@ npm run dev
 ```bash
 npm run build      # 타입체크 + 프로덕션 빌드
 npm run lint       # ESLint
-npm test           # 인증과 API 클라이언트 회귀 테스트 (26개)
-npm run test:integration # 별도 H2 서버에서 실제 API 검증 (26개, 아래 문서 참고)
+npm test           # 인증·API 클라이언트·투어 재접속 회귀 테스트 (30개)
+npm run test:integration # 별도 H2 서버에서 실제 API 검증 (34개, 아래 문서 참고)
 npm run preview    # 빌드 결과 로컬 미리보기
 ```
 
