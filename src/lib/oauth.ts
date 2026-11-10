@@ -14,14 +14,17 @@ export function validateOAuthIntent(raw: string | null, provider: SocialProvider
   }
   return intent;
 }
-export async function beginOAuth(provider: SocialProvider, mode: OAuthIntent['mode'] = 'login'): Promise<void> {
+export async function createOAuthAuthorizeUrl(provider: SocialProvider, mode: OAuthIntent['mode'] = 'login'): Promise<string> {
   const { data } = await api.get<{ url: string }>(`/api/auth/${provider}/authorize-url`);
   const url = new URL(data.url);
   if (url.protocol !== 'https:') throw new Error('소셜 로그인 주소를 확인할 수 없어요.');
   const intent: OAuthIntent = { provider, mode, state: crypto.randomUUID(), startedAt: Date.now() };
   sessionStorage.setItem(KEY, JSON.stringify(intent));
   url.searchParams.set('state', intent.state);
-  window.location.assign(url.href);
+  return url.href;
+}
+export async function beginOAuth(provider: SocialProvider, mode: OAuthIntent['mode'] = 'login'): Promise<void> {
+  window.location.assign(await createOAuthAuthorizeUrl(provider, mode));
 }
 export function consumeOAuthIntent(provider: SocialProvider, state: string | null): OAuthIntent {
   const raw = sessionStorage.getItem(KEY);

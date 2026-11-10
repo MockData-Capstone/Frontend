@@ -114,6 +114,38 @@ test('OAuth callbacks reject missing, replayed, mismatched and expired state', a
     [JSON.stringify(intent), 'google', null, now], [JSON.stringify(intent), 'google', 'expected', now + 600000],
   ]) assert.throws(() => validateOAuthIntent(raw, provider, state, at));
 });
+test('signup and invitation Kakao entry points create callback state and retain the pending invite', async () => {
+  const previousStorage = Object.getOwnPropertyDescriptor(globalThis, 'sessionStorage');
+  const values = new Map();
+  Object.defineProperty(globalThis, 'sessionStorage', { configurable: true, value: {
+    getItem: (key) => values.get(key) ?? null,
+    setItem: (key, value) => values.set(key, value), removeItem: (key) => values.delete(key),
+  } });
+  try {
+    const { getKakaoAuthorizeUrl } = await server.ssrLoadModule('/src/lib/authApi.ts');
+    const { consumeOAuthIntent } = await server.ssrLoadModule('/src/lib/oauth.ts');
+    const { rememberInvite, pendingInvite } = await server.ssrLoadModule('/src/lib/invite.ts');
+    session.api.defaults.adapter = async (config) => {
+      assert.equal(config.url, '/api/auth/kakao/authorize-url');
+      return { data: { url: 'https://kauth.kakao.com/oauth/authorize?client_id=test&redirect_uri=http%3A%2F%2Flocalhost%3A5173%2Foauth%2Fkakao%2Fcallback' }, status: 200, headers: {}, config };
+    };
+    rememberInvite('pending-test-invite');
+    const states = [];
+    for (let entry = 0; entry < 2; entry++) {
+      const url = new URL(await getKakaoAuthorizeUrl());
+      const state = url.searchParams.get('state');
+      assert.ok(state); states.push(state);
+      assert.equal(url.searchParams.get('client_id'), 'test');
+      assert.equal(consumeOAuthIntent('kakao', state).mode, 'login');
+      assert.throws(() => consumeOAuthIntent('kakao', state));
+      assert.equal(pendingInvite(), 'pending-test-invite');
+    }
+    assert.notEqual(states[0], states[1]);
+  } finally {
+    if (previousStorage) Object.defineProperty(globalThis, 'sessionStorage', previousStorage);
+    else delete globalThis.sessionStorage;
+  }
+});
 test('account forms reject mismatched passwords and oversized, empty or unsupported uploads', async () => {
   const { validateNewPassword, validateProfileImage } = await server.ssrLoadModule('/src/lib/accountValidation.ts');
   assert.equal(validateNewPassword('Password123!', 'Password123!'), null);
