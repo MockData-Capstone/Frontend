@@ -96,6 +96,16 @@ export async function exchangeKakaoCode(code: string): Promise<SocialLoginResult
   return data;
 }
 
+export async function exchangeSocialCode(provider: 'kakao' | 'google', code: string): Promise<SocialLoginResult> {
+  return (await api.post<SocialLoginResult>(`/api/auth/${provider}`, { code })).data;
+}
+export async function requestPasswordReset(email: string): Promise<void> {
+  await api.post('/api/auth/password-reset/request', { email });
+}
+export async function confirmPasswordReset(token: string, newPassword: string): Promise<void> {
+  await api.post('/api/auth/password-reset/confirm', { token, newPassword });
+}
+
 // AUTH-02 소셜 최초 가입 — POST /api/auth/signup/social (201 + 토큰)
 // 409 DUPLICATE_NICKNAME: 닉네임 중복 / 401 INVALID_SIGNUP_TOKEN: 가입 토큰 만료 → 카카오 로그인부터 다시.
 export async function signupSocial(payload: {

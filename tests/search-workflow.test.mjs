@@ -102,3 +102,22 @@ test('condition confirmation and full replacement preserve explicit false and nu
   assert.deepEqual(calls.map((config) => config.method), ['post', 'put']);
   for (const config of calls) assert.deepEqual(JSON.parse(config.data), value);
 });
+
+test('OAuth callbacks reject missing, replayed, mismatched and expired state', async () => {
+  const { validateOAuthIntent } = await server.ssrLoadModule('/src/lib/oauth.ts');
+  const now = 1000000;
+  const intent = { provider: 'google', mode: 'login', state: 'expected', startedAt: now - 1000 };
+  assert.deepEqual(validateOAuthIntent(JSON.stringify(intent), 'google', 'expected', now), intent);
+  for (const [raw, provider, state, at] of [
+    [null, 'google', 'expected', now], ['invalid', 'google', 'expected', now],
+    [JSON.stringify(intent), 'kakao', 'expected', now], [JSON.stringify(intent), 'google', 'wrong', now],
+    [JSON.stringify(intent), 'google', null, now], [JSON.stringify(intent), 'google', 'expected', now + 600000],
+  ]) assert.throws(() => validateOAuthIntent(raw, provider, state, at));
+});
+test('account forms reject mismatched passwords and oversized, empty or unsupported uploads', async () => {
+  const { validateNewPassword, validateProfileImage } = await server.ssrLoadModule('/src/lib/accountValidation.ts');
+  assert.equal(validateNewPassword('Password123!', 'Password123!'), null);
+  for (const [password, confirmation] of [['short1', 'short1'], ['passwordonly', 'passwordonly'], ['Password123', 'different']]) assert.ok(validateNewPassword(password, confirmation));
+  assert.equal(validateProfileImage({ size: 100, type: 'image/png' }), null);
+  for (const file of [{ size: 0, type: 'image/png' }, { size: 5242881, type: 'image/jpeg' }, { size: 100, type: 'image/svg+xml' }]) assert.ok(validateProfileImage(file));
+});

@@ -49,7 +49,7 @@ export default function WorkspaceHeader({ workspace }: { workspace: WorkspaceDet
           <span className="workspace-header__name">{workspace.name}</span>
           <span className="workspace-header__count">멤버 {workspace.memberCount}명</span>
           <NotificationBell />
-          {me && <Avatar nickname={me.nickname} profileImageUrl={me.profileImageUrl} />}
+          <Link to="/account" aria-label="내 정보">{me ? <Avatar nickname={me.nickname} profileImageUrl={me.profileImageUrl} /> : '내 정보'}</Link>
         </div>
       </header>
       <ConnectionBanner workspaceConnected={connected} />
