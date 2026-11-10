@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { useWorkspaceMessages } from '../app/providers/useWorkspaceSocket';
+import { useWorkspaceMessages, useWorkspaceReconnect } from '../app/providers/useWorkspaceSocket';
 import { parseInstant } from '../lib/time';
 import { getCurrentTour, getTourHistory } from '../lib/tourApi';
 import type { MiniGame, Tour } from '../types';
@@ -48,6 +48,9 @@ export function useTourStatus(workspaceId: number): TourStatus {
         .catch(() => {});
     }
   });
+
+  // 연결이 끊긴 동안 시작/종료된 투어도 결과 화면과 참여 버튼에 반영한다.
+  useWorkspaceReconnect(() => { void load().then(setStatus).catch(() => {}); });
 
   return status;
 }
