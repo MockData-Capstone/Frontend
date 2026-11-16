@@ -1,4 +1,6 @@
+import { lazy, Suspense } from 'react';
 import { Route, Routes } from 'react-router-dom';
+import LoadState from './components/LoadState';
 import Home from './pages/Home';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
@@ -10,23 +12,25 @@ import WorkspaceInvitePage from './pages/WorkspaceInvite';
 import InvitePage from './pages/Invite';
 import WorkspaceSearch from './pages/search/WorkspaceSearch';
 import CandidateDetail from './pages/candidates/CandidateDetail';
-import Account from './pages/Account';
-import Conditions from './pages/Conditions';
-import WorkspaceSettings from './pages/WorkspaceSettings';
-import PasswordReset from './pages/PasswordReset';
-import MiniGamePage from './pages/minigame/MiniGamePage';
-import GameResultPage from './pages/minigame/GameResult';
-import TourViewerPage from './pages/tour/TourViewer';
-import TourVisitorPage from './pages/tour/TourVisitor';
-import LinkAccount from './pages/LinkAccount';
-import KakaoSignup from './pages/KakaoSignup';
 import RequireAuth from './components/RequireAuth';
 import WorkspaceLayout, { WorkspaceIndexRedirect } from './components/WorkspaceLayout';
 import './App.css';
 
+// 자주 쓰지 않거나 무거운 화면(내 정보·설정·조건 확정·미니게임·집보기 등)은 들어갈 때 불러온다 (첫 화면 번들 크기 줄이기)
+const Account = lazy(() => import('./pages/Account'));
+const Conditions = lazy(() => import('./pages/Conditions'));
+const WorkspaceSettings = lazy(() => import('./pages/WorkspaceSettings'));
+const PasswordReset = lazy(() => import('./pages/PasswordReset'));
+const MiniGamePage = lazy(() => import('./pages/minigame/MiniGamePage'));
+const GameResultPage = lazy(() => import('./pages/minigame/GameResult'));
+const TourViewerPage = lazy(() => import('./pages/tour/TourViewer'));
+const TourVisitorPage = lazy(() => import('./pages/tour/TourVisitor'));
+const LinkAccount = lazy(() => import('./pages/LinkAccount'));
+const KakaoSignup = lazy(() => import('./pages/KakaoSignup'));
 
 function App() {
   return (
+    <Suspense fallback={<LoadState status="loading" />}>
     <Routes>
       <Route path="/" element={<Home />} />
       <Route path="/login" element={<Login />} />
@@ -112,6 +116,7 @@ function App() {
         <Route path="tour" element={<TourViewerPage />} />
       </Route>
     </Routes>
+    </Suspense>
   );
 }
 
