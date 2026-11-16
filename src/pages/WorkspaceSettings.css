@@ -1,0 +1,144 @@
+.settings-page,
+.conditions-page {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 0 40px 56px;
+}
+
+.settings-page__grid {
+  display: grid;
+  grid-template-columns: minmax(300px, 500px) minmax(0, 1fr);
+  gap: 24px;
+  align-items: start;
+}
+
+.settings-page__error {
+  margin: 0 0 16px;
+  padding: 12px 14px;
+  font-size: 14px;
+  color: var(--danger);
+  background: rgba(170, 101, 87, 0.08);
+  border-radius: 6px;
+}
+
+.settings-card__field {
+  margin-bottom: 14px;
+}
+
+.settings-card__divider {
+  margin: 22px 0 18px;
+  border: none;
+  border-top: 1px solid var(--border);
+}
+
+.settings-card__stack {
+  display: grid;
+  gap: 10px;
+}
+
+.settings-card__invite {
+  display: grid;
+  gap: 8px;
+  padding: 14px;
+  background: var(--bg-muted);
+  border-radius: 8px;
+}
+
+.settings-card__row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.settings-card__desc {
+  margin: 0 0 12px;
+  font-size: 14px;
+  color: var(--text);
+}
+
+.member-list {
+  display: grid;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.member-list__item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 56px;
+  padding: 6px 4px;
+  border-bottom: 1px solid var(--border);
+}
+
+.member-list__item:last-child {
+  border-bottom: none;
+}
+
+.member-list__who {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.member-list__name {
+  font-size: 15px;
+  color: var(--text-h);
+}
+
+.member-list__me {
+  font-size: 13px;
+  color: var(--text);
+}
+
+.member-list__state {
+  font-size: 13px;
+  color: var(--text);
+}
+
+.member-list__role {
+  margin-right: 4px;
+  font-size: 13px;
+  color: var(--text);
+}
+
+.member-list__role--host {
+  font-weight: 600;
+  color: var(--success);
+}
+
+.member-list__kick {
+  min-height: 34px;
+  padding: 6px 10px;
+  font: inherit;
+  font-size: 14px;
+  color: var(--danger);
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.member-list__kick:hover {
+  background: rgba(170, 101, 87, 0.08);
+}
+
+@media (max-width: 900px) {
+  .settings-page,
+  .conditions-page {
+    padding: 0 16px 40px;
+  }
+
+  .settings-page__grid {
+    grid-template-columns: 1fr;
+  }
+
+  .member-list__item {
+    flex-wrap: wrap;
+  }
+}
