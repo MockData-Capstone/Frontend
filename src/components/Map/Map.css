@@ -114,6 +114,11 @@
   transition: transform 0.15s;
 }
 
+/* 그룹 홈(11)의 추천 위치 — 후보지 마커와 구분되게 회색 */
+.map-marker--muted {
+  background: var(--accent);
+}
+
 .map-marker.is-active {
   transform: scale(1.2);
   box-shadow:

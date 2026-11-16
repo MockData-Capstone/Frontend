@@ -1,14 +1,3 @@
-.workspace-header__tab-disabled {
-  padding: 0 0 6px;
-  font-family: inherit;
-  line-height: inherit;
-  color: var(--text);
-  background: none;
-  border: none;
-  border-bottom: 2px solid transparent;
-  cursor: not-allowed;
-}
-
 .workspace-header__meta {
   justify-self: end;
   display: inline-flex;
