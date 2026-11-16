@@ -24,13 +24,6 @@
   background: var(--code-bg);
 }
 
-/* 알림함을 만들기 전까지 비활성 (NotificationBell.tsx PANEL_READY) — 헤더의 준비 중 탭과 같은 톤 */
-.notification-bell__button:disabled {
-  color: var(--text);
-  background: transparent;
-  cursor: not-allowed;
-}
-
 .notification-bell__badge {
   position: absolute;
   top: 1px;
@@ -55,8 +48,10 @@
   top: calc(100% + 10px);
   right: -8px;
   z-index: 50;
+  display: flex;
+  flex-direction: column;
   width: 380px;
-  min-height: 240px;
+  max-height: min(560px, calc(100svh - 120px));
   background: var(--bg);
   border: 1px solid var(--border);
   border-radius: 12px;
@@ -75,4 +70,116 @@
     right: 16px;
     width: auto;
   }
+}
+
+.notification-panel__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 18px 10px;
+  border-bottom: 1px solid var(--border);
+}
+
+.notification-panel__title {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--text-h);
+}
+
+.notification-panel__read-all {
+  padding: 6px 8px;
+  font: inherit;
+  font-size: 13px;
+  color: var(--success);
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.notification-panel__read-all:disabled {
+  color: var(--text);
+  cursor: default;
+}
+
+.notification-panel__status {
+  margin: 0;
+  padding: 32px 18px;
+  font-size: 14px;
+  color: var(--text);
+  text-align: center;
+}
+
+.notification-panel__status--error {
+  color: var(--danger);
+}
+
+.notification-panel__list {
+  flex: 1;
+  min-height: 0;
+  margin: 0;
+  padding: 6px;
+  overflow-y: auto;
+  list-style: none;
+}
+
+.notification-panel__item {
+  display: grid;
+  gap: 3px;
+  width: 100%;
+  padding: 10px 12px 10px 22px;
+  font: inherit;
+  text-align: left;
+  background: transparent;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  position: relative;
+}
+
+.notification-panel__item:hover {
+  background: var(--bg-muted);
+}
+
+.notification-panel__item.is-unread::before {
+  content: '';
+  position: absolute;
+  top: 16px;
+  left: 9px;
+  width: 7px;
+  height: 7px;
+  background: var(--danger);
+  border-radius: 999px;
+}
+
+.notification-panel__group {
+  font-size: 12px;
+  color: var(--text);
+}
+
+.notification-panel__message {
+  font-size: 14px;
+  color: var(--text-h);
+}
+
+.notification-panel__item:not(.is-unread) .notification-panel__message {
+  color: var(--text);
+}
+
+.notification-panel__time {
+  font-size: 12px;
+  color: var(--text-sub);
+}
+
+.notification-panel__more {
+  margin: 0 12px 12px;
+  min-height: 40px;
+  font: inherit;
+  font-size: 14px;
+  color: var(--text-h);
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  cursor: pointer;
 }
