@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import Header from '../components/Header';
 import { useAuth } from '../app/providers/useAuth';
 import { exchangeKakaoCode, getAccountLinkInfo } from '../lib/authApi';
+import { consumeOAuthIntent } from '../lib/oauth';
 import './Auth.css';
 
 // 카카오가 이 경로로 code를 돌려준다 (GET /api/auth/kakao/authorize-url 의 redirect_uri).
@@ -25,7 +26,11 @@ export default function KakaoCallback() {
     if (hasRun.current || !code) return;
     hasRun.current = true;
 
-    exchangeKakaoCode(code)
+    Promise.resolve()
+      .then(() => {
+        consumeOAuthIntent('kakao', searchParams.get('state'));
+        return exchangeKakaoCode(code);
+      })
       .then((result) => {
         if (result.status === 'SIGNUP_REQUIRED') {
           navigate('/signup/kakao', { replace: true, state: result.signup });
@@ -42,7 +47,7 @@ export default function KakaoCallback() {
         }
         setError('카카오 로그인에 실패했습니다. 다시 시도해주세요.');
       });
-  }, [code, signIn, navigate]);
+  }, [code, searchParams, signIn, navigate]);
 
   return (
     <div className="auth-page">

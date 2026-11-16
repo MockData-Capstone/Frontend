@@ -2,7 +2,8 @@ import { useState, type FormEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import Header from '../components/Header';
 import { useAuth } from '../app/providers/useAuth';
-import { login, getKakaoAuthorizeUrl, getErrorCode, getFieldErrors, type FieldError } from '../lib/authApi';
+import { login, getErrorCode, getFieldErrors, type FieldError } from '../lib/authApi';
+import { beginOAuth } from '../lib/oauth';
 import './Auth.css';
 
 // AUTH-03 자체 로그인 + AUTH-02 카카오 로그인
@@ -50,8 +51,7 @@ export default function Login() {
   async function handleKakaoLogin() {
     setError(null);
     try {
-      const url = await getKakaoAuthorizeUrl();
-      window.location.href = url;
+      await beginOAuth('kakao');
     } catch {
       setError('카카오 로그인을 시작할 수 없습니다. 잠시 후 다시 시도해주세요.');
     }
