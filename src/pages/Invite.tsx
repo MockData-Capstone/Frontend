@@ -14,10 +14,20 @@ interface InviteError {
   text: string;
 }
 
+// 07-07 만료된 초대 / 07-08 사용할 수 없는 초대 (MEM-02). 만료·무효 링크는 410 INVITATION_EXPIRED, 없는 링크는 404
 function inviteError(err: unknown, fallback: string): InviteError {
-  // 만료되었거나 유효하지 않은 링크는 410 INVITATION_EXPIRED (MEM-02)
-  if (getErrorCode(err) === 'INVITATION_EXPIRED') {
-    return { title: '만료된 초대 링크예요', text: '그룹 호스트에게 새 초대 링크를 받아 주세요.' };
+  const code = getErrorCode(err);
+  if (code === 'INVITATION_EXPIRED') {
+    return {
+      title: '초대 링크가 만료됐어요',
+      text: '초대한 사람에게 새 링크를 요청해 주세요. 기존 링크로는 그룹에 참여할 수 없어요.',
+    };
+  }
+  if (code === 'NOT_FOUND' || code === 'INVITATION_NOT_FOUND' || code === 'WORKSPACE_NOT_FOUND') {
+    return {
+      title: '초대 링크를 사용할 수 없어요',
+      text: '새 링크가 발급되었거나 유효하지 않은 링크예요. 초대한 사람에게 링크를 다시 확인해 주세요.',
+    };
   }
   return { title: fallback, text: getErrorMessage(err, '잠시 후 다시 시도해 주세요.') };
 }
@@ -36,6 +46,8 @@ function Invite({ token }: { token: string }) {
   const [preview, setPreview] = useState<InvitationPreview | null>(null);
   const [error, setError] = useState<InviteError | null>(null);
   const [joining, setJoining] = useState(false);
+  // 07-09 이미 참여한 그룹: 다시 가입하지 않고 그룹으로 보낸다
+  const [alreadyIn, setAlreadyIn] = useState<number | null>(null);
   // 로그인하러 가기 전에 기억해 둔 링크로 돌아왔으면(메인 → 여기) 버튼 없이 바로 참여한다.
   const [resumeJoin] = useState(() => pendingInvite() === token);
 
@@ -62,8 +74,13 @@ function Invite({ token }: { token: string }) {
     setJoining(true);
     setError(null);
     try {
-      const { workspaceId } = await acceptInvitation(token);
+      const { workspaceId, alreadyMember } = await acceptInvitation(token);
       clearPendingInvite();
+      if (alreadyMember) {
+        setAlreadyIn(workspaceId);
+        setJoining(false);
+        return;
+      }
       // 그룹 주소로 가면 그룹 홈(11)이 열린다.
       navigate(`/workspaces/${workspaceId}`, { replace: true });
     } catch (err) {
@@ -104,18 +121,34 @@ function Invite({ token }: { token: string }) {
     <div className="page page--group">
       <Header />
       <main className="group-page">
-        <div className="group-page__heading">
-          <h1 className="group-page__title">친구가 집 찾기 그룹에 초대했어요</h1>
-          <p className="group-page__subtitle">로그인하고 친구들과 함께 조건을 정해보세요.</p>
-        </div>
+        {!error && alreadyIn === null && (
+          <div className="group-page__heading">
+            <h1 className="group-page__title">친구가 집 찾기 그룹에 초대했어요</h1>
+            <p className="group-page__subtitle">로그인하고 친구들과 함께 조건을 정해보세요.</p>
+          </div>
+        )}
 
         <section className="group-card group-card--narrow">
           {error ? (
             <>
+              <p className="group-card__eyebrow">그룹 초대</p>
               <p className="group-card__name">{error.title}</p>
               <p className="group-card__desc">{error.text}</p>
-              <Link to="/" className="button button--secondary group-card__submit">
-                메인으로
+              <Link to="/" className="button button--primary group-card__submit">
+                지도 둘러보기
+              </Link>
+            </>
+          ) : alreadyIn !== null ? (
+            <>
+              <p className="group-card__eyebrow">그룹 초대</p>
+              <p className="group-card__name">이미 참여한 그룹이에요</p>
+              <p className="group-card__desc">
+                {preview?.workspaceName}
+                <br />
+                다시 가입하지 않고 바로 이어서 집을 찾아보세요.
+              </p>
+              <Link to={`/workspaces/${alreadyIn}`} className="button button--primary group-card__submit">
+                그룹으로 이동
               </Link>
             </>
           ) : !preview ? (
