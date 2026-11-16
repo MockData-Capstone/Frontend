@@ -63,9 +63,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signOut = useCallback(() => logoutApi(), []);
 
+  // 내 정보 화면에서 닉네임·사진을 바꾸면 서버 응답으로 바로 맞춘다 (상단바 아바타 등)
+  const updateMe = useCallback((next: MeResponse) => setMe(next), []);
+
   const value = useMemo<AuthContextValue>(
-    () => ({ accessToken, me, signIn, signOut }),
-    [accessToken, me, signIn, signOut],
+    () => ({ accessToken, me, signIn, signOut, updateMe }),
+    [accessToken, me, signIn, signOut, updateMe],
   );
 
   return (
