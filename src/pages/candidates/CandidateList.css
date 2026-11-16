@@ -18,8 +18,8 @@
 }
 
 .candidate-panel__title {
-  margin: 0 0 16px;
-  font-size: 20px;
+  margin: 0 0 14px;
+  font-size: 21px;
   font-weight: 700;
   letter-spacing: -0.2px;
   color: var(--text-h);
@@ -33,7 +33,8 @@
 .candidate-panel__tab {
   padding: 0 4px 10px;
   font: inherit;
-  font-size: 14px;
+  font-size: 15px;
+  text-decoration: none;
   color: var(--text);
   background: none;
   border: none;
@@ -85,15 +86,20 @@
   text-decoration: none;
   background: var(--bg);
   border: 1px solid var(--border);
-  border-radius: 10px;
+  border-radius: 6px;
   transition:
     background-color 0.15s,
     border-color 0.15s;
 }
 
+.candidate-card:hover,
 .candidate-card.is-active {
   background: var(--selected-bg);
-  border-color: var(--success);
+  border-color: var(--selected-border);
+}
+
+.candidate-card .letter-badge {
+  margin-top: 2px;
 }
 
 .candidate-badge {
@@ -131,13 +137,13 @@
 
 .candidate-card__slope {
   margin-top: 10px;
-  font-size: 13px;
+  font-size: 17px;
   font-weight: 700;
-  color: var(--brand);
+  color: var(--text-h);
 }
 
 .candidate-card__vehicle {
-  font-size: 13px;
+  font-size: 14px;
   color: var(--text);
 }
 
@@ -146,7 +152,7 @@
   justify-content: space-between;
   gap: 8px;
   margin-top: 10px;
-  font-size: 12px;
+  font-size: 13px;
   color: var(--text);
 }
 

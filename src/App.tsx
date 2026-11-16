@@ -4,22 +4,26 @@ import Login from './pages/Login';
 import Signup from './pages/Signup';
 import SignupComplete from './pages/SignupComplete';
 import KakaoCallback from './pages/KakaoCallback';
-import KakaoSignup from './pages/KakaoSignup';
-import LinkAccount from './pages/LinkAccount';
 import WorkspaceList from './pages/WorkspaceList';
 import WorkspaceCreate from './pages/WorkspaceCreate';
 import WorkspaceInvitePage from './pages/WorkspaceInvite';
 import InvitePage from './pages/Invite';
 import WorkspaceSearch from './pages/search/WorkspaceSearch';
-import CandidateList from './pages/candidates/CandidateList';
 import CandidateDetail from './pages/candidates/CandidateDetail';
+import Account from './pages/Account';
+import Conditions from './pages/Conditions';
+import WorkspaceSettings from './pages/WorkspaceSettings';
+import PasswordReset from './pages/PasswordReset';
 import MiniGamePage from './pages/minigame/MiniGamePage';
 import GameResultPage from './pages/minigame/GameResult';
 import TourViewerPage from './pages/tour/TourViewer';
 import TourVisitorPage from './pages/tour/TourVisitor';
+import LinkAccount from './pages/LinkAccount';
+import KakaoSignup from './pages/KakaoSignup';
 import RequireAuth from './components/RequireAuth';
 import WorkspaceLayout, { WorkspaceIndexRedirect } from './components/WorkspaceLayout';
 import './App.css';
+
 
 function App() {
   return (
@@ -35,7 +39,18 @@ function App() {
       {/* 04 초대 링크 진입 — 로그인 없이 초대 정보를 보여주고, 로그인 뒤 참여를 이어간다 */}
       <Route path="/invite/:token" element={<InvitePage />} />
 
-      {/* 08 내 그룹 목록 */}
+      {/* 01 비밀번호 재설정 요청·새 비밀번호 (AUTH-07, 메일 링크 /password-reset?token=) */}
+      <Route path="/password-reset" element={<PasswordReset />} />
+      {/* 12 내 정보 · 탈퇴 */}
+      <Route
+        path="/account"
+        element={
+          <RequireAuth>
+            <Account />
+          </RequireAuth>
+        }
+      />
+      {/* 04 내 그룹 목록 */}
       <Route
         path="/workspaces"
         element={
@@ -81,9 +96,13 @@ function App() {
         }
       >
         <Route index element={<WorkspaceIndexRedirect />} />
-        {/* 11 그룹 홈: 대화 → 분석 → 추천 위치를 후보지로 */}
+        {/* 06 그룹 홈: [대화 | 후보지 | ZIPFIT AI] 탭. 후보지 탭(08)은 주소만 다르고 같은 화면이다 */}
         <Route path="search" element={<WorkspaceSearch />} />
-        <Route path="candidates" element={<CandidateList />} />
+        <Route path="candidates" element={<WorkspaceSearch tab="candidates" />} />
+        {/* 10 조건 확정 · 매물 검색 링크 */}
+        <Route path="conditions" element={<Conditions />} />
+        {/* 11 그룹 설정 · 멤버 */}
+        <Route path="settings" element={<WorkspaceSettings />} />
         <Route path="candidates/:candidateId" element={<CandidateDetail />} />
         {/* 19 방문자 정하기 → 20 가위바위보 / 21 룰렛 (진행 상태에 따라 같은 주소에서 바뀐다) */}
         <Route path="minigame" element={<MiniGamePage />} />

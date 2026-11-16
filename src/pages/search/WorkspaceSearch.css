@@ -1,4 +1,4 @@
-/* 11 그룹 홈: 검색 줄 + [왼쪽 패널 360 | 지도] (UI v0.4 §3 지도 레이아웃, 01 첫 화면과 같은 검색 줄) */
+/* 06 그룹 홈: 검색 줄 + 조건 칩 + [왼쪽 패널 360 | 지도] (UI v0.4.3, 01 첫 화면과 같은 검색 줄) */
 .search-layout {
   display: flex;
   flex-direction: column;
@@ -10,8 +10,9 @@
   flex-wrap: wrap;
   align-items: center;
   gap: 10px 16px;
-  padding: 16px 24px 10px;
+  padding: 14px 24px;
   background: var(--bg-muted);
+  border-bottom: 1px solid var(--border);
 }
 
 .search-toolbar__search {
@@ -20,7 +21,7 @@
   gap: 10px;
   width: 350px;
   max-width: 100%;
-  height: 46px;
+  height: 44px;
   padding: 0 14px 0 13px;
   box-sizing: border-box;
   color: var(--text-h);
@@ -43,7 +44,7 @@
   height: 100%;
   padding: 0;
   font: inherit;
-  font-size: 14px;
+  font-size: 15px;
   color: var(--text-h);
   background: none;
   border: none;
@@ -100,14 +101,19 @@
 
 .search-panel__settings {
   flex: none;
-  padding: 6px 10px;
+  padding: 6px 14px;
   font: inherit;
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 600;
   color: var(--text-h);
-  background: var(--code-bg);
-  border: none;
+  text-decoration: none;
+  background: #fff;
+  border: 1px solid var(--border);
   border-radius: 6px;
+}
+
+.search-panel__settings:hover {
+  background: var(--bg-muted);
 }
 
 .search-panel__settings:disabled {
@@ -385,5 +391,309 @@
 
   .search-panel .chat-messages {
     max-height: 50svh;
+  }
+}
+
+/* 오른쪽 위 저장한 후보지 카드 (06 · 06-A) */
+.search-layout__map {
+  position: relative;
+}
+
+.saved-card {
+  position: absolute;
+  right: 16px;
+  bottom: 16px;
+  z-index: 1;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 360px;
+  max-height: calc(100% - 96px);
+  padding: 16px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: var(--shadow);
+}
+
+.saved-card__title {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--text-h);
+}
+
+.saved-card__hint {
+  margin: 0;
+  font-size: 14px;
+  color: var(--text);
+}
+
+.saved-card__list {
+  display: grid;
+  gap: 8px;
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+  overflow-y: auto;
+  list-style: none;
+}
+
+.saved-card__item {
+  position: relative;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+}
+
+.saved-card__item.is-chosen {
+  background: var(--bg-muted);
+  border-color: #cfd6dc;
+}
+
+.saved-card__select {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  width: 100%;
+  padding: 12px;
+  font: inherit;
+  text-align: left;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+}
+
+.saved-card__select .letter-badge {
+  margin-top: 20px;
+}
+
+.saved-card__text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.saved-card__name {
+  font-size: 15px;
+  color: var(--text-h);
+}
+
+.saved-card__slope {
+  font-size: 17px;
+  color: var(--text-h);
+}
+
+.saved-card__vehicle {
+  font-size: 13px;
+  color: var(--text);
+}
+
+.saved-card__detail {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+}
+
+.saved-card__actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.saved-card__wide {
+  grid-column: 1 / -1;
+}
+
+/* 06-A ZIPFIT AI 탭 */
+.ai-feed__list {
+  display: grid;
+  gap: 14px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ai-feed__who {
+  margin: 0 0 6px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-h);
+}
+
+.ai-feed__row {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+}
+
+.ai-feed__bubble {
+  margin: 0;
+  padding: 10px 12px;
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--text-h);
+  background: var(--info-bg);
+  border-radius: 6px;
+}
+
+.ai-feed__bubble.is-ai {
+  background: var(--selected-bg);
+}
+
+.ai-feed__time {
+  flex: none;
+  font-size: 11px;
+  color: var(--text);
+}
+
+.ai-feed__choices {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.ai-feed__shared {
+  margin: 14px 0;
+  font-size: 12px;
+  color: var(--text);
+}
+
+.ai-feed__next {
+  display: grid;
+  gap: 8px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+}
+
+.ai-feed__next-title {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-h);
+}
+
+.ai-feed__next-desc {
+  margin: 0 0 4px;
+  font-size: 13px;
+  color: var(--text);
+}
+
+.ai-state {
+  padding: 18px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+
+.ai-state__title {
+  margin: 0 0 10px;
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--text-h);
+}
+
+.ai-state__line {
+  margin: 0;
+  font-size: 14px;
+  color: var(--text-h);
+}
+
+.ai-state__action {
+  margin-top: 16px;
+}
+
+/* 06-B 대화 분석 완료 팝업 */
+.analysis-done {
+  box-sizing: border-box;
+  width: min(380px, calc(100vw - 32px));
+  max-height: calc(100svh - 48px);
+  padding: 20px;
+  color: var(--text);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  box-shadow: var(--shadow);
+}
+
+.analysis-done::backdrop {
+  background: var(--dim);
+}
+
+.analysis-done__title {
+  margin: 0 0 8px;
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text-h);
+}
+
+.analysis-done__summary {
+  margin: 0 0 14px;
+  font-size: 15px;
+  color: var(--text-h);
+}
+
+.analysis-done__table {
+  display: grid;
+  gap: 8px;
+  margin: 0 0 14px;
+}
+
+.analysis-done__table div {
+  display: grid;
+  grid-template-columns: 96px 1fr;
+  font-size: 14px;
+}
+
+.analysis-done__table dt {
+  color: var(--text);
+}
+
+.analysis-done__table dd {
+  margin: 0;
+  font-weight: 600;
+  color: var(--text-h);
+}
+
+.analysis-done__note,
+.analysis-done__keep {
+  margin: 0 0 12px;
+  font-size: 13px;
+}
+
+.analysis-done__places {
+  display: grid;
+  gap: 6px;
+  margin: 0 0 12px;
+  padding: 12px;
+  list-style: none;
+  background: var(--selected-bg);
+  border-radius: 6px;
+}
+
+.analysis-done__places li {
+  display: grid;
+  gap: 2px;
+  font-size: 13px;
+}
+
+.analysis-done__places strong {
+  color: var(--text-h);
+}
+
+.analysis-done__actions {
+  display: grid;
+  gap: 8px;
+}
+
+@media (max-width: 900px) {
+  .saved-card {
+    position: static;
+    width: auto;
+    max-height: none;
+    margin: 12px;
+    box-shadow: none;
   }
 }
