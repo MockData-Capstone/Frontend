@@ -1,4 +1,4 @@
-import { api } from './api';
+import { api, endSession } from './api';
 import type { MeResponse } from '../types';
 
 // 엔드포인트는 노션 ZIPFIT API명세서(auth 카테고리) 기준. 전부 "시작 전" 상태라
@@ -21,7 +21,6 @@ export interface LoginRequest {
 
 export interface AuthResponse {
   accessToken: string;
-  refreshToken: string;
   accessTokenExpiresIn: number; // 초 단위
   tokenType: string; // "Bearer"
 }
@@ -63,9 +62,9 @@ export async function login(payload: LoginRequest): Promise<AuthResponse> {
   return data;
 }
 
-// AUTH-03 보조 — POST /api/auth/logout (refresh token 폐기)
-export async function logout(refreshToken: string): Promise<void> {
-  await api.post('/api/auth/logout', { refreshToken });
+// AUTH-03 보조 — 쿠키의 재발급 토큰 폐기 및 클라이언트 세션 정리
+export function logout(): Promise<void> {
+  return endSession();
 }
 
 // AUTH-02 보조 — GET /api/auth/kakao/authorize-url
