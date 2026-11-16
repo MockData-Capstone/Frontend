@@ -159,7 +159,7 @@ test('notification destinations stay inside the app and deleted or invalid targe
   const item = { linkActive: true, workspaceId: 3, type: 'NEW_MESSAGE' };
   assert.equal(notificationPath(item), '/workspaces/3/search');
   assert.equal(notificationPath({ ...item, type: 'ANALYSIS_COMPLETED' }), '/workspaces/3/search');
-  assert.equal(notificationPath({ ...item, type: 'VOTE_NEEDED' }), '/workspaces/3/votes');
+  assert.equal(notificationPath({ ...item, type: 'VOTE_NEEDED' }), '/workspaces/3/candidates');
   assert.equal(notificationPath({ ...item, type: 'TOUR_STARTED' }), '/workspaces/3/tour');
   for (const change of [{ linkActive: false }, { workspaceId: -1 }, { workspaceId: '//evil' }, { type: 'UNKNOWN' }]) assert.equal(notificationPath({ ...item, ...change }), null);
 });
