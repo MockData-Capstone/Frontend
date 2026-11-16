@@ -4,6 +4,7 @@ import { useAuth } from '../../app/providers/useAuth';
 import { useWorkspace } from '../../app/providers/useWorkspace';
 import { useWorkspaceMessages, useWorkspaceReconnect } from '../../app/providers/useWorkspaceSocket';
 import MapView from '../../components/Map';
+import VoteModal from '../../components/Vote';
 import { getErrorMessage } from '../../lib/authApi';
 import { getCandidates } from '../../lib/candidateApi';
 import type { Candidate } from '../../types';
@@ -19,6 +20,7 @@ export default function CandidateList() {
   const [candidates, setCandidates] = useState<Candidate[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [activeId, setActiveId] = useState<number | null>(null);
+  const [voteOpen, setVoteOpen] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -140,8 +142,8 @@ export default function CandidateList() {
             <button
               type="button"
               className="button button--secondary"
-              disabled
-              title="준비 중인 화면이에요."
+              onClick={() => setVoteOpen(true)}
+              aria-haspopup="dialog"
             >
               투표하기
             </button>
@@ -166,6 +168,7 @@ export default function CandidateList() {
           controls
         />
       </div>
+      {voteOpen && <VoteModal onClose={() => setVoteOpen(false)} />}
     </div>
   );
 }

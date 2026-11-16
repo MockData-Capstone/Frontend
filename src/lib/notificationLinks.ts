@@ -6,7 +6,7 @@ export function notificationPath(notification: AppNotification): string | null {
     case 'MEMBER_JOINED': return `${base}/settings`;
     case 'NEW_MESSAGE': case 'ANALYSIS_COMPLETED': return `${base}/search`;
     case 'TOUR_STARTED': return `${base}/tour`;
-    case 'VOTE_NEEDED': return `${base}/votes`;
+    case 'VOTE_NEEDED': return `${base}/candidates`;
     default: return null;
   }
 }
