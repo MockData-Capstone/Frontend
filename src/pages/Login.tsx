@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import Header from '../components/Header';
 import { useAuth } from '../app/providers/useAuth';
 import { login, getErrorCode, getFieldErrors, type FieldError } from '../lib/authApi';
@@ -9,7 +9,10 @@ import './Auth.css';
 // AUTH-03 자체 로그인 + AUTH-02 카카오 로그인
 export default function Login() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { signIn } = useAuth();
+  // 비밀번호 재설정을 마치고 왔을 때 안내
+  const notice = (location.state as { notice?: string } | null)?.notice ?? null;
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -65,6 +68,7 @@ export default function Login() {
           <h1 className="auth-card__title">로그인</h1>
           <p className="auth-card__subtitle">zipfit에서 함께 집을 찾아보세요.</p>
 
+          {notice && !error && <p className="auth-notice">{notice}</p>}
           {error && <p className="auth-error">{error}</p>}
 
           <form onSubmit={handleSubmit} noValidate>
@@ -111,6 +115,9 @@ export default function Login() {
 
           <p className="auth-footer">
             처음 오셨나요? <Link to="/signup">회원가입</Link>
+          </p>
+          <p className="auth-footer">
+            <Link to="/password-reset">비밀번호를 잊으셨나요?</Link>
           </p>
         </div>
       </div>
