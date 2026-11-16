@@ -1,0 +1,120 @@
+.compare-modal {
+  box-sizing: border-box;
+  width: min(920px, calc(100vw - 32px));
+  max-height: calc(100svh - 48px);
+  padding: 24px 28px;
+  color: var(--text);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: var(--shadow);
+}
+
+.compare-modal::backdrop {
+  background: var(--dim);
+}
+
+.compare-modal__heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.compare-modal__heading h2 {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text-h);
+}
+
+.compare-modal__close {
+  width: 34px;
+  height: 34px;
+  font-size: 20px;
+  color: var(--text-h);
+  background: var(--code-bg);
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.compare-modal__description {
+  margin: 10px 0 18px;
+  font-size: 15px;
+}
+
+.compare-modal__scroll {
+  overflow-x: auto;
+}
+
+.compare-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 15px;
+  text-align: center;
+}
+
+.compare-table thead th {
+  padding: 12px 10px;
+  background: var(--info-bg);
+}
+
+.compare-table__corner {
+  width: 110px;
+  font-weight: 500;
+  color: var(--text);
+  text-align: left;
+}
+
+.compare-table__pick {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 6px;
+  font: inherit;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-h);
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.compare-table tbody th {
+  padding: 16px 10px;
+  font-weight: 500;
+  color: var(--text);
+  text-align: left;
+}
+
+.compare-table td {
+  padding: 16px 10px;
+  color: var(--text-h);
+  border-top: 1px solid var(--border);
+}
+
+.compare-table td.is-strong {
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.compare-table .is-chosen {
+  background: var(--selected-bg);
+}
+
+.compare-modal__empty {
+  padding: 32px 0;
+  text-align: center;
+}
+
+.compare-modal__note {
+  margin: 14px 0 0;
+  font-size: 13px;
+}
+
+.compare-modal__actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 16px;
+}
