@@ -1,0 +1,188 @@
+.chat-messages {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 16px 20px;
+}
+
+.chat-messages__hint,
+.chat-messages__error {
+  margin: 0 0 12px;
+  font-size: 13px;
+  color: var(--text);
+}
+
+.chat-messages__error {
+  color: var(--danger);
+}
+
+.chat-messages__status {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.chat-messages__list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.chat-message {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+}
+
+.chat-message--mine {
+  align-items: flex-end;
+}
+
+.chat-message__sender {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.chat-message__sender .avatar {
+  width: 24px;
+  height: 24px;
+  font-size: 11px;
+}
+
+.chat-message__nickname {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-h);
+}
+
+.chat-message__row {
+  display: flex;
+  align-items: flex-end;
+  gap: 6px;
+  max-width: 100%;
+}
+
+.chat-message--mine .chat-message__row {
+  flex-direction: row-reverse;
+}
+
+.chat-message__bubble {
+  max-width: 240px;
+  margin: 0;
+  padding: 9px 12px;
+  font-size: 14px;
+  line-height: 1.45;
+  color: var(--text-h);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+}
+
+.chat-message--mine .chat-message__bubble {
+  background: var(--selected-bg);
+  border-color: transparent;
+}
+
+.chat-message__bubble.is-pending {
+  opacity: 0.6;
+}
+
+.chat-message__bubble.is-deleted {
+  font-style: italic;
+  color: var(--text);
+}
+
+.chat-message__meta {
+  flex: none;
+  font-size: 11px;
+  color: var(--text);
+  white-space: nowrap;
+}
+
+.chat-message__failed {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 4px 8px;
+  margin: 0;
+  font-size: 12px;
+  color: var(--danger);
+}
+
+.chat-message__failed button {
+  padding: 0;
+  font: inherit;
+  font-weight: 600;
+  color: var(--text-h);
+  text-decoration: underline;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.chat-composer {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  padding: 12px 20px 16px;
+}
+
+.chat-composer__input {
+  flex: 1;
+  min-width: 0;
+  max-height: 120px;
+  padding: 10px 12px;
+  box-sizing: border-box;
+  font: inherit;
+  font-size: 14px;
+  line-height: 1.45;
+  color: var(--text-h);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  resize: none;
+  /* 내용에 맞춰 늘어난다(지원 안 하는 브라우저는 한 줄 + 스크롤) */
+  field-sizing: content;
+}
+
+.chat-composer__input:focus {
+  border-color: var(--accent);
+  outline: none;
+}
+
+.chat-composer__input::placeholder {
+  color: var(--text);
+}
+
+.chat-composer__send {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  color: #fff;
+  background: var(--accent);
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.chat-composer__send:hover:not(:disabled) {
+  background: var(--accent-hover);
+}
+
+.chat-composer__send:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}

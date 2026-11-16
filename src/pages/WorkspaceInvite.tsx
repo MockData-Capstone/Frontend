@@ -150,7 +150,7 @@ function WorkspaceInvite({ workspaceId }: { workspaceId: number }) {
                 <p className="group-info">초대 링크는 그룹 호스트만 만들 수 있어요.</p>
               )}
 
-              {/* 그룹 홈(11)이 아직 없어 들어가면 후보지 목록으로 간다 (WorkspaceIndexRedirect) */}
+              {/* 그룹 주소로 가면 그룹 홈(11)이 열린다 (WorkspaceIndexRedirect) */}
               <Link
                 to={`/workspaces/${workspace.id}`}
                 className="button button--primary group-card__submit"
