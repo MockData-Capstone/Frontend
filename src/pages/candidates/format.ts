@@ -50,6 +50,7 @@ export function toMarkers(candidates: Candidate[]): MapMarker[] {
   return candidates.map((c, i) => ({
     id: c.candidateId,
     label: badgeLetter(i),
+    name: c.name,
     latitude: c.latitude,
     longitude: c.longitude,
   }));

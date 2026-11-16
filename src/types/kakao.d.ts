@@ -4,6 +4,33 @@ declare namespace kakao.maps {
 
   class LatLng {
     constructor(latitude: number, longitude: number);
+    getLat(): number;
+    getLng(): number;
+  }
+
+  // 지도 위에 겹치는 타일 (경사도 = 지형도, 로드뷰 = 로드뷰가 있는 길 표시)
+  enum MapTypeId {
+    ROADMAP = 1,
+    SKYVIEW = 2,
+    HYBRID = 3,
+    ROADVIEW = 5,
+    TERRAIN = 7,
+  }
+
+  namespace event {
+    function addListener(target: unknown, type: string, handler: (event: { latLng: LatLng }) => void): void;
+    function removeListener(target: unknown, type: string, handler: (event: { latLng: LatLng }) => void): void;
+  }
+
+  class Roadview {
+    constructor(container: HTMLElement);
+    setPanoId(panoId: number, position: LatLng): void;
+    relayout(): void;
+  }
+
+  class RoadviewClient {
+    constructor();
+    getNearestPanoId(position: LatLng, radius: number, callback: (panoId: number | null) => void): void;
   }
 
   class LatLngBounds {
@@ -23,6 +50,9 @@ declare namespace kakao.maps {
       paddingBottom?: number,
       paddingLeft?: number,
     ): void;
+    addOverlayMapTypeId(id: MapTypeId): void;
+    removeOverlayMapTypeId(id: MapTypeId): void;
+    relayout(): void;
   }
 
   class CustomOverlay {
