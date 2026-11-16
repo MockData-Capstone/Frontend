@@ -64,7 +64,7 @@ function Invite({ token }: { token: string }) {
     try {
       const { workspaceId } = await acceptInvitation(token);
       clearPendingInvite();
-      // 그룹 홈(11)이 아직 없어 들어가면 후보지 목록으로 간다.
+      // 그룹 주소로 가면 그룹 홈(11)이 열린다.
       navigate(`/workspaces/${workspaceId}`, { replace: true });
     } catch (err) {
       clearPendingInvite();

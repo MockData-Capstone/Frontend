@@ -7,12 +7,16 @@ export interface MapMarker {
   label: string;
   latitude: number;
   longitude: number;
+  // 회색 마커 — 그룹 홈(11)의 추천 위치처럼 후보지(테라코타)와 구분할 때
+  tone?: 'muted';
 }
 
 interface MapViewProps {
   // 배열이 바뀔 때마다 마커를 다시 그리고 지도 범위를 다시 맞춘다 — 부모에서 useMemo로 넘길 것.
   markers: MapMarker[];
   activeId?: number | null;
+  // 검색한 곳 등으로 지도를 옮긴다. 새 객체를 넘길 때마다 옮긴다.
+  focus?: { latitude: number; longitude: number } | null;
   onMarkerClick?: (id: number) => void;
   onMarkerHover?: (id: number, hovering: boolean) => void;
   // UI v0.4 §3 지도 레이아웃의 [지도|경사도|로드뷰] 세그먼트와 확대·축소 버튼
@@ -43,6 +47,7 @@ function KakaoMapView({
   appKey,
   markers,
   activeId = null,
+  focus = null,
   onMarkerClick,
   onMarkerHover,
   controls = false,
@@ -81,7 +86,7 @@ function KakaoMapView({
       const position = new kakao.maps.LatLng(marker.latitude, marker.longitude);
       const el = document.createElement('button');
       el.type = 'button';
-      el.className = 'map-marker';
+      el.className = marker.tone === 'muted' ? 'map-marker map-marker--muted' : 'map-marker';
       el.textContent = marker.label;
       el.addEventListener('click', () => handleClick(marker.id));
       el.addEventListener('mouseenter', () => handleHover(marker.id, true));
@@ -110,6 +115,12 @@ function KakaoMapView({
       overlay.setZIndex(active ? 2 : 1);
     });
   }, [activeId, map, markers]);
+
+  useEffect(() => {
+    if (!map || !focus) return;
+    map.setLevel(4);
+    map.setCenter(new kakao.maps.LatLng(focus.latitude, focus.longitude));
+  }, [map, focus]);
 
   const zoom = (delta: number) => {
     if (map) map.setLevel(map.getLevel() + delta, { animate: true });

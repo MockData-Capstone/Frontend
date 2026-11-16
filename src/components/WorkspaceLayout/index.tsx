@@ -21,9 +21,9 @@ export default function WorkspaceLayout() {
   return <WorkspaceShell key={workspaceId} workspaceId={Number(workspaceId)} />;
 }
 
-// 그룹 홈(11)이 아직 없어서 그룹에 들어오면 후보지 목록(14)으로 보낸다.
+// 그룹에 들어오면 그룹 홈(11)으로 보낸다. 주소는 헤더 [함께 찾기]와 같은 /search다.
 export function WorkspaceIndexRedirect() {
-  return <Navigate to="candidates" replace />;
+  return <Navigate to="search" replace />;
 }
 
 function WorkspaceShell({ workspaceId }: { workspaceId: number }) {
