@@ -12,7 +12,8 @@ import { badgeLetter, slopeSummary, toMarkers, vehicleSummary } from './format';
 import { applyCandidateMessage, isCandidateMessage } from './realtime';
 import './CandidateList.css';
 
-// 14 후보지 목록 (UI v0.4 §6). [대화] 탭은 그룹 홈(11)으로 간다. 비교·투표·조건 확정은 해당 화면이 생기면 연결한다.
+// 14 후보지 목록 (UI v0.4 §6). [대화] 탭은 그룹 홈(11)으로 가고 [투표하기]는 투표 팝업(17)을 연다.
+// 비교·조건 확정은 해당 화면이 생기면 연결한다.
 export default function CandidateList() {
   const { workspace } = useWorkspace();
   const { me } = useAuth();
