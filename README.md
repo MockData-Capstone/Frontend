@@ -91,8 +91,17 @@ npm run dev
 ```bash
 npm run build      # 타입체크 + 프로덕션 빌드
 npm run lint       # ESLint
+npm test           # 쿠키 인증·토큰 재발급·로그아웃 회귀 테스트
 npm run preview    # 빌드 결과 로컬 미리보기
 ```
+
+### 로그인 유지
+
+접근 토큰은 메모리에만 보관하고, 재발급 토큰은 백엔드의 httpOnly 쿠키로 주고받는다.
+axios 요청은 `withCredentials: true`를 사용하며, 새로고침하면 본문 없는
+`POST /api/auth/token/refresh`로 세션을 복원한 뒤 화면을 연다. 쿠키가 없거나 만료되면 비로그인으로 시작한다.
+로그아웃은 진행 중인 재발급을 기다린 뒤 `POST /api/auth/logout`으로 쿠키를 폐기한다.
+로컬에서는 프론트와 백엔드 모두 `localhost`를 사용한다. `localhost`와 `127.0.0.1`을 섞으면 쿠키가 공유되지 않는다.
 
 ### 폰으로 실시간 집보기 시험 (`npm run dev:mobile`)
 

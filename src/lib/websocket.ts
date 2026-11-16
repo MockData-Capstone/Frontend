@@ -1,3 +1,4 @@
+import { isCancel } from 'axios';
 import { BASE_URL, forceLogout, getTokens, refreshTokens } from './api';
 import { parseInstant } from './time';
 
@@ -99,7 +100,9 @@ export function connectWorkspaceSocket(
           forceLogout();
           return;
         case WsClose.TOKEN_EXPIRED:
-          refreshTokens().then(open, forceLogout);
+          refreshTokens(accessToken).then(open, (error: unknown) => {
+            if (!closed && !isCancel(error)) forceLogout();
+          });
           return;
         case WsClose.BAD_REQUEST:
         case WsClose.FORBIDDEN:
