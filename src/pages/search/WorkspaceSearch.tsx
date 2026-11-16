@@ -4,6 +4,7 @@ import { useAuth } from '../../app/providers/useAuth';
 import { useWorkspace } from '../../app/providers/useWorkspace';
 import { ChatComposer, ChatMessageList } from '../../components/Chat';
 import MapView, { type MapMarker } from '../../components/Map';
+import VoteModal from '../../components/Vote';
 import { useChat } from '../../hooks/useChat';
 import { searchPlaces } from '../../lib/kakaoMap';
 import { toMarkers } from '../candidates/format';
@@ -21,8 +22,8 @@ const FILTER_CHIPS = ['월세', '보증금', '방 구조', '면적', '차량 진
 
 // 11 그룹 홈 (UI v0.4 §6, 흐름도 "대화 → 분석 → 후보지 함께 찾기").
 // 왼쪽: 대화(CHAT) · 함께 정한 조건(COND-02) · 추천 위치(REC-02) · [대화 분석하기](REC-01) · 입력창
-// 오른쪽: 지도(후보지 A·B·C, 추천 위치는 회색 번호)와 후보지 카드.
-// 비교(16)·투표(17)·조건 확정(18)·그룹 설정(12)은 화면이 생기면 연결한다.
+// 오른쪽: 지도(후보지 A·B·C, 추천 위치는 회색 번호)와 후보지 카드. 카드의 [투표하기]는 투표 팝업(17)을 연다.
+// 비교(16)·조건 확정(18)·그룹 설정(12)은 화면이 생기면 연결한다.
 export default function WorkspaceSearch() {
   const { workspace } = useWorkspace();
   const { me } = useAuth();
@@ -36,6 +37,7 @@ export default function WorkspaceSearch() {
   const [focus, setFocus] = useState<{ latitude: number; longitude: number } | null>(null);
   const [keyword, setKeyword] = useState('');
   const [searchNote, setSearchNote] = useState<string | null>(null);
+  const [voteOpen, setVoteOpen] = useState(false);
   const searchId = useRef(0);
 
   const { analysis, items } = recommendations;
@@ -220,7 +222,12 @@ export default function WorkspaceSearch() {
               <button type="button" className="button button--secondary" disabled title="준비 중인 화면이에요.">
                 후보지 비교
               </button>
-              <button type="button" className="button button--secondary" disabled title="준비 중인 화면이에요.">
+              <button
+                type="button"
+                className="button button--secondary"
+                onClick={() => setVoteOpen(true)}
+                aria-haspopup="dialog"
+              >
                 투표하기
               </button>
               <button type="button" className="button button--primary" disabled title="준비 중인 화면이에요.">
@@ -230,6 +237,7 @@ export default function WorkspaceSearch() {
           </section>
         </div>
       </div>
+      {voteOpen && <VoteModal onClose={() => setVoteOpen(false)} />}
     </div>
   );
 }
