@@ -12,6 +12,8 @@ export interface AuthContextValue {
   signIn: (tokens: AuthTokens) => void;
   // AUTH-03 보조(POST /api/auth/logout)로 refresh token을 폐기한 뒤 로컬 상태를 지운다.
   signOut: () => Promise<void>;
+  // 내 정보 수정 응답(MeResponse)으로 me를 바꾼다
+  updateMe: (me: MeResponse) => void;
 }
 
 // 재발급 토큰은 httpOnly 쿠키, 접근 토큰은 lib/api.ts의 메모리에만 둔다.
