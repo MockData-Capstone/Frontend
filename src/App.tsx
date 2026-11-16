@@ -10,6 +10,7 @@ import WorkspaceList from './pages/WorkspaceList';
 import WorkspaceCreate from './pages/WorkspaceCreate';
 import WorkspaceInvitePage from './pages/WorkspaceInvite';
 import InvitePage from './pages/Invite';
+import WorkspaceSearch from './pages/search/WorkspaceSearch';
 import CandidateList from './pages/candidates/CandidateList';
 import CandidateDetail from './pages/candidates/CandidateDetail';
 import MiniGamePage from './pages/minigame/MiniGamePage';
@@ -70,7 +71,7 @@ function App() {
           </RequireAuth>
         }
       />
-      {/* 그룹 안(11 그룹 홈은 이번 범위 밖 — 들어가면 바로 14 후보지로 보낸다) */}
+      {/* 그룹 안 — 들어가면 11 그룹 홈(함께 찾기)으로 보낸다 */}
       <Route
         path="/workspaces/:workspaceId"
         element={
@@ -80,6 +81,8 @@ function App() {
         }
       >
         <Route index element={<WorkspaceIndexRedirect />} />
+        {/* 11 그룹 홈: 대화 → 분석 → 추천 위치를 후보지로 */}
+        <Route path="search" element={<WorkspaceSearch />} />
         <Route path="candidates" element={<CandidateList />} />
         <Route path="candidates/:candidateId" element={<CandidateDetail />} />
         {/* 19 방문자 정하기 → 20 가위바위보 / 21 룰렛 (진행 상태에 따라 같은 주소에서 바뀐다) */}

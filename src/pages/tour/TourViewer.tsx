@@ -16,13 +16,15 @@ import { useNow, useTourSnapshot } from './useTour';
 import './Tour.css';
 
 // 23 실시간 집보기 시청 (TOUR-02·03·04, SIG-01~05, UI v0.4 §6).
-// 방문자 영상을 P2P(안 되면 TURN)로 받는다. 끝나거나 나가면 후보지 목록으로 간다(그룹 홈 11 대신, UI명세 Q10).
+// 방문자 영상을 P2P(안 되면 TURN)로 받는다. [나가기]는 그룹 홈(11)으로 가고(흐름도 23→11),
+// 끝난 뒤 안내의 버튼은 후보지 목록으로 간다(UI명세 Q10).
 export default function TourViewerPage() {
   const { workspace } = useWorkspace();
   const { me } = useAuth();
   const meId = me?.id ?? null;
   const navigate = useNavigate();
   const listPath = `/workspaces/${workspace.id}/candidates`;
+  const homePath = `/workspaces/${workspace.id}/search`;
 
   // undefined: 불러오는 중, null: 진행 중인 집보기 없음
   const [tour, setTour] = useState<Tour | null | undefined>(undefined);
@@ -179,7 +181,7 @@ export default function TourViewerPage() {
   const handleLeave = async () => {
     if (!ended) await leaveTour(tour.tourId).catch(() => {});
     connection?.close();
-    navigate(listPath);
+    navigate(homePath);
   };
 
   const enterFullscreen = () => {

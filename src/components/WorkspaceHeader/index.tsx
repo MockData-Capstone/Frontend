@@ -9,7 +9,7 @@ import NotificationBell from '../Notification/NotificationBell';
 import '../Header/Header.css';
 import './WorkspaceHeader.css';
 
-// 헤더 C (UI v0.4 §3). 함께 찾기(11)는 화면이 아직 없어 비활성. 집보기는 미니게임(19~22)으로 가고,
+// 헤더 C (UI v0.4 §3). 함께 찾기는 그룹 홈(11)으로 간다. 집보기는 미니게임(19~22)으로 가고,
 // 실시간 집보기 시청(23)에서도 켜져 보인다.
 // 그룹 연결(WorkspaceSocketProvider) 안에서 그려져야 한다 — 끊김 안내 띠가 그룹 연결 상태를 받는다.
 export default function WorkspaceHeader({ workspace }: { workspace: WorkspaceDetail }) {
@@ -21,14 +21,14 @@ export default function WorkspaceHeader({ workspace }: { workspace: WorkspaceDet
     <>
       <header className="site-header">
         <nav className="site-header__nav">
-          <button
-            type="button"
-            className="site-header__nav-link workspace-header__tab-disabled"
-            disabled
-            title="준비 중인 화면이에요."
+          <NavLink
+            to={`/workspaces/${workspace.id}/search`}
+            className={({ isActive }) =>
+              `site-header__nav-link${isActive ? ' is-active' : ''}`
+            }
           >
             함께 찾기
-          </button>
+          </NavLink>
           <NavLink
             to={`/workspaces/${workspace.id}/candidates`}
             className={({ isActive }) =>
