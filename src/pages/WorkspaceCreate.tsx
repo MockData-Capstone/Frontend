@@ -46,7 +46,7 @@ export default function WorkspaceCreate() {
 
   return (
     <div className="page page--group">
-      <Header />
+      <Header tab="groups" />
       <main className="group-page">
         <div className="group-page__heading">
           <h1 className="group-page__title">새 그룹 만들기</h1>
