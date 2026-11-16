@@ -1,19 +1,17 @@
 import { Link, NavLink, useMatch } from 'react-router-dom';
-import { useAuth } from '../../app/providers/useAuth';
 import { useWorkspaceSocket } from '../../app/providers/useWorkspaceSocket';
 import type { WorkspaceDetail } from '../../types';
-import Avatar from '../Avatar';
 import ConnectionBanner from '../ConnectionBanner';
 import { HomeIcon } from '../Header';
 import NotificationBell from '../Notification/NotificationBell';
+import ProfileMenu from '../ProfileMenu';
 import '../Header/Header.css';
 import './WorkspaceHeader.css';
 
-// 헤더 C (UI v0.4 §3). 함께 찾기는 그룹 홈(11)으로 간다. 집보기는 미니게임(19~22)으로 가고,
-// 실시간 집보기 시청(23)에서도 켜져 보인다.
+// 그룹 상단바 (UI v0.4.3 06~17). 함께 찾기는 그룹 홈(06)으로 간다. 집보기는 미니게임(13~16)으로 가고,
+// 실시간 집보기 시청(17)에서도 켜져 보인다. 오른쪽: 그룹 이름(누르면 그룹 설정) · 멤버 수 · 알림 · 프로필 메뉴.
 // 그룹 연결(WorkspaceSocketProvider) 안에서 그려져야 한다 — 끊김 안내 띠가 그룹 연결 상태를 받는다.
 export default function WorkspaceHeader({ workspace }: { workspace: WorkspaceDetail }) {
-  const { me } = useAuth();
   const { connected } = useWorkspaceSocket();
   const onTour = useMatch('/workspaces/:workspaceId/tour/*') !== null;
 
@@ -53,10 +51,16 @@ export default function WorkspaceHeader({ workspace }: { workspace: WorkspaceDet
         </Link>
 
         <div className="workspace-header__meta">
-          <span className="workspace-header__name">{workspace.name}</span>
+          <Link
+            to={`/workspaces/${workspace.id}/settings`}
+            className="workspace-header__name"
+            title="그룹 설정"
+          >
+            {workspace.name}
+          </Link>
           <span className="workspace-header__count">멤버 {workspace.memberCount}명</span>
           <NotificationBell />
-          {me && <Avatar nickname={me.nickname} profileImageUrl={me.profileImageUrl} />}
+          <ProfileMenu />
         </div>
       </header>
       <ConnectionBanner workspaceConnected={connected} />
