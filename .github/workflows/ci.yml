@@ -13,7 +13,7 @@ concurrency:
 
 jobs:
   build:
-    name: Lint & Build
+    name: Lint, Test & Build
     runs-on: ubuntu-latest
 
     steps:
@@ -31,6 +31,11 @@ jobs:
       - name: Lint
         run: npm run lint
 
+      # 단위 테스트 (tests/*.test.mjs). 백엔드가 필요한 test:integration은 넣지 않는다.
+      - name: Unit test
+        run: npm test
+
       # tsc -b 타입 체크 + vite build
+      # 이 CI가 develop에서 통과하면 서버(zipfit.duckdns.org)가 2분 안에 가져가 배포한다 (Backend deploy/deploy-frontend.sh).
       - name: Type check & Build
         run: npm run build
