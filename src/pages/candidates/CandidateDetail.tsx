@@ -4,7 +4,8 @@ import { useAuth } from '../../app/providers/useAuth';
 import { useWorkspace } from '../../app/providers/useWorkspace';
 import { useWorkspaceMessages, useWorkspaceReconnect } from '../../app/providers/useWorkspaceSocket';
 import Dialog from '../../components/Dialog';
-import MapView from '../../components/Map';
+import MapView, { type RoadviewTarget } from '../../components/Map';
+import { useRoadviewAccess } from '../../hooks/useRoadviewAccess';
 import { getErrorMessage } from '../../lib/authApi';
 import {
   getCandidate,
@@ -12,6 +13,7 @@ import {
   removeCandidate,
   renameCandidate,
 } from '../../lib/candidateApi';
+import { vehicleVerdict } from '../../lib/roadview';
 import type { Candidate, CandidateRemovedData } from '../../types';
 import { badgeLetter, formatPercent, gradeLabel, toMarkers, vehicleLabel } from './format';
 import { applyCandidateMessage, isCandidateMessage } from './realtime';
@@ -42,7 +44,8 @@ function CandidateDetail({ candidateId }: { candidateId: number }) {
   // 보고 있는 후보지를 다른 멤버가 제외했다.
   const [removed, setRemoved] = useState(false);
   const [confirmRemove, setConfirmRemove] = useState(false);
-  const [roadviewAt, setRoadviewAt] = useState<{ latitude: number; longitude: number } | null>(null);
+  const [roadviewAt, setRoadviewAt] = useState<RoadviewTarget | null>(null);
+  const [roadviewOpen, setRoadviewOpen] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -104,6 +107,9 @@ function CandidateDetail({ candidateId }: { candidateId: number }) {
   });
 
   const markers = useMemo(() => toMarkers(all), [all]);
+  const roadviewStates = useRoadviewAccess(
+    candidate ? [{ id: candidate.candidateId, latitude: candidate.latitude, longitude: candidate.longitude }] : [],
+  );
 
   if (removed) {
     return (
@@ -144,6 +150,13 @@ function CandidateDetail({ candidateId }: { candidateId: number }) {
     .filter(Boolean)
     .join(' · ');
   const { slope, vehicleAccess } = candidate.location;
+  const roadviewState = roadviewStates[candidate.candidateId] ?? 'checking';
+  const verdict = vehicleVerdict(vehicleAccess, roadviewState);
+  // 로드뷰 단추는 열고 닫기를 오간다. 열 때는 후보지 쪽을 바라보게 연다.
+  const toggleRoadview = () =>
+    setRoadviewAt(
+      roadviewOpen ? null : { latitude: candidate.latitude, longitude: candidate.longitude, name: candidate.name },
+    );
 
   const startEditing = () => {
     setNameDraft(candidate.name);
@@ -238,15 +251,21 @@ function CandidateDetail({ candidateId }: { candidateId: number }) {
                 if (id !== candidate.candidateId) navigate(`${listPath}/${id}`);
               }}
               roadviewAt={roadviewAt}
+              onRoadviewChange={(open) => {
+                setRoadviewOpen(open);
+                if (!open) setRoadviewAt(null);
+              }}
+              controls
             />
           </div>
           <div className="candidate-detail__map-actions">
             <button
               type="button"
-              className="button button--secondary"
-              onClick={() => setRoadviewAt({ latitude: candidate.latitude, longitude: candidate.longitude })}
+              className={`button ${roadviewOpen ? 'button--primary' : 'button--secondary'}`}
+              aria-pressed={roadviewOpen}
+              onClick={toggleRoadview}
             >
-              로드뷰 보기
+              {roadviewOpen ? '로드뷰 닫기' : '로드뷰 보기'}
             </button>
             <Link to={listPath} className="button button--secondary">
               후보지 목록
@@ -289,18 +308,26 @@ function CandidateDetail({ candidateId }: { candidateId: number }) {
             )}
 
             <h3 className="candidate-detail__section-title">차량 진입</h3>
-            {vehicleAccess ? (
-              <>
-                <p className="candidate-detail__vehicle">{vehicleLabel(vehicleAccess.access)}</p>
-                {vehicleAccess.reason && (
-                  <p className="candidate-detail__reason">{vehicleAccess.reason}</p>
+            <p className={`candidate-detail__vehicle is-${verdict.access.toLowerCase()}`}>
+              {roadviewState === 'checking' && verdict.stage === 'NONE' ? '확인 중' : vehicleLabel(verdict.access)}
+            </p>
+            <ol className="vehicle-steps">
+              <li className={verdict.stage === 'ROADVIEW' ? 'is-decisive' : undefined}>
+                <span className="vehicle-steps__label">1차 · 로드뷰</span>
+                <span className="vehicle-steps__text">{verdict.roadview}</span>
+                {roadviewState === 'found' && (
+                  <button type="button" className="vehicle-steps__link" onClick={toggleRoadview}>
+                    {roadviewOpen ? '로드뷰 닫기' : '로드뷰로 길 보기'}
+                  </button>
                 )}
-                {vehicleAccess.estimated && (
-                  <p className="candidate-detail__estimated">추정치 — 현장 확인 필요</p>
-                )}
-              </>
-            ) : (
-              <p className="candidate-detail__empty">정보 없음</p>
+              </li>
+              <li className={verdict.stage === 'VLM' ? 'is-decisive' : undefined}>
+                <span className="vehicle-steps__label">2차 · 불법 주정차(VLM)</span>
+                <span className="vehicle-steps__text">{verdict.vlm}</span>
+              </li>
+            </ol>
+            {(verdict.stage !== 'VLM' || vehicleAccess?.estimated) && (
+              <p className="candidate-detail__estimated">추정치 — 현장 확인 필요</p>
             )}
             <p className="candidate-detail__note">일조·소음은 준비 중이에요.</p>
 
