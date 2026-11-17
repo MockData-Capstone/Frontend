@@ -4,12 +4,14 @@ import { useWorkspace } from '../../app/providers/useWorkspace';
 import { useWorkspaceMessages } from '../../app/providers/useWorkspaceSocket';
 import { getErrorMessage } from '../../lib/authApi';
 import { getComparison } from '../../lib/comparisonApi';
-import { badgeLetter, formatPercent, gradeLabel, vehicleLabel } from '../../pages/candidates/format';
+import { useRoadviewAccess } from '../../hooks/useRoadviewAccess';
+import { vehicleVerdict, vehicleVerdictSummary, type RoadviewState } from '../../lib/roadview';
+import { badgeLetter, formatPercent, gradeLabel } from '../../pages/candidates/format';
 import type { ComparisonResult, ComparisonRow } from '../../types/search';
 import LoadState from '../LoadState';
 import './Comparison.css';
 
-type Row = { label: string; value: (item: ComparisonRow) => string; strong?: boolean };
+type Row = { label: string; value: (item: ComparisonRow, roadview: RoadviewState) => string; strong?: boolean };
 
 const ROWS: Row[] = [
   {
@@ -27,7 +29,9 @@ const ROWS: Row[] = [
   },
   {
     label: '차량 진입',
-    value: (i) => (i.vehicleAccess ? vehicleLabel(i.vehicleAccess.access) : '정보 없음'),
+    // 1차 로드뷰 유무 + 2차 VLM(불법 주정차) 판정
+    value: (i, roadview) =>
+      vehicleVerdictSummary(vehicleVerdict(i.vehicleAccess, roadview), roadview).replace('차량 진입 ', ''),
   },
   { label: '경사 기준 목적지', value: (i) => i.slope?.destination ?? '—' },
   { label: '투표', value: (i) => `찬성 ${i.votes.agreeCount} · 반대 ${i.votes.disagreeCount}` },
@@ -38,6 +42,9 @@ const ROWS: Row[] = [
 export default function ComparisonModal({ onClose }: { onClose: () => void }) {
   const { workspace } = useWorkspace();
   const [result, setResult] = useState<ComparisonResult | null>(null);
+  const roadviewStates = useRoadviewAccess(
+    (result?.items ?? []).map((i) => ({ id: i.candidateId, latitude: i.latitude, longitude: i.longitude })),
+  );
   const [error, setError] = useState<string | null>(null);
   const [selected, setSelected] = useState<number | null>(null);
   const dialog = useRef<HTMLDialogElement>(null);
@@ -131,7 +138,7 @@ export default function ComparisonModal({ onClose }: { onClose: () => void }) {
                       key={item.candidateId}
                       className={`${item.candidateId === chosen ? 'is-chosen' : ''}${row.strong ? ' is-strong' : ''}`}
                     >
-                      {row.value(item)}
+                      {row.value(item, roadviewStates[item.candidateId] ?? 'checking')}
                     </td>
                   ))}
                 </tr>

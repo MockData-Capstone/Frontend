@@ -142,6 +142,66 @@
   color: var(--text-h);
 }
 
+.candidate-detail__vehicle.is-possible {
+  color: var(--success);
+}
+
+.candidate-detail__vehicle.is-impossible {
+  color: var(--danger);
+}
+
+/* 차량 진입 1차(로드뷰)·2차(VLM) 근거. 최종 판정을 정한 단계를 강조한다 */
+.vehicle-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0 0 8px;
+  padding: 0;
+  list-style: none;
+}
+
+.vehicle-steps li {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 10px 12px;
+  background: var(--info-bg);
+  border: 1px solid transparent;
+  border-radius: 8px;
+}
+
+.vehicle-steps li.is-decisive {
+  background: var(--selected-bg);
+  border-color: var(--selected-border);
+}
+
+.vehicle-steps__label {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-h);
+}
+
+.vehicle-steps__text {
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text);
+}
+
+.vehicle-steps__link {
+  align-self: flex-start;
+  margin-top: 2px;
+  padding: 0;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--success);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+
 .candidate-detail__reason,
 .candidate-detail__empty {
   margin: 0;
@@ -190,6 +250,11 @@
 
   .candidate-detail__map {
     height: 280px;
+  }
+
+  /* 로드뷰를 열면 지도와 로드뷰를 위아래로 나눠 쓸 만큼 키운다 */
+  .candidate-detail__map:has(.has-roadview) {
+    height: min(640px, calc(100vh - 140px));
   }
 }
 

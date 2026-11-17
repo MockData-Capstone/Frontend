@@ -11,11 +11,14 @@ import { useToast } from '../../components/Toast/useToast';
 import VoteModal from '../../components/Vote';
 import { useChat } from '../../hooks/useChat';
 import { useGroupConditions } from '../../hooks/useGroupConditions';
+import { useRoadviewAccess } from '../../hooks/useRoadviewAccess';
 import { getErrorMessage } from '../../lib/authApi';
 import { acceptSuggestion, getSuggestions } from '../../lib/conditionApi';
 import { searchPlaces } from '../../lib/kakaoMap';
+import { vehicleVerdict, vehicleVerdictSummary } from '../../lib/roadview';
+import type { Candidate } from '../../types';
 import type { Suggestion } from '../../types/search';
-import { badgeLetter, slopeSummary, toMarkers, vehicleSummary } from '../candidates/format';
+import { badgeLetter, slopeSummary, toMarkers } from '../candidates/format';
 import AiFeed from './AiFeed';
 import AnalysisDoneDialog from './AnalysisDoneDialog';
 import ConditionBox from './ConditionBox';
@@ -48,6 +51,14 @@ export default function WorkspaceSearch({ tab: routeTab }: { tab?: 'candidates' 
   const recommendations = useRecommendations(workspace.id);
   const conditions = useGroupConditions(workspace.id);
   const { candidates, error: candidatesError } = useWorkspaceCandidates(workspace.id, meId);
+  // 차량 진입 1차 판단: 후보지 반경 안에 로드뷰가 있는지
+  const roadviewStates = useRoadviewAccess(
+    (candidates ?? []).map((c) => ({ id: c.candidateId, latitude: c.latitude, longitude: c.longitude })),
+  );
+  const vehicleText = (c: Candidate) => {
+    const state = roadviewStates[c.candidateId] ?? 'checking';
+    return vehicleVerdictSummary(vehicleVerdict(c.location.vehicleAccess, state), state);
+  };
   // 지도 마커 id는 후보지 candidateId, 추천 위치 -recommendationId (둘이 겹치지 않게)
   const [activeMarker, setActiveMarker] = useState<number | null>(null);
   const [selected, setSelected] = useState<number | null>(focusId);
@@ -304,7 +315,7 @@ export default function WorkspaceSearch({ tab: routeTab }: { tab?: 'candidates' 
                               <span className="candidate-card__name">{c.name}</span>
                               {c.placeName !== c.name && <span className="candidate-card__place">{c.placeName}</span>}
                               <span className="candidate-card__slope">{slopeSummary(slope)}</span>
-                              <span className="candidate-card__vehicle">{vehicleSummary(vehicleAccess)}</span>
+                              <span className="candidate-card__vehicle">{vehicleText(c)}</span>
                               <span className="candidate-card__footer">
                                 <span>
                                   찬성 {c.votes.agreeCount} · 반대 {c.votes.disagreeCount}
@@ -388,7 +399,7 @@ export default function WorkspaceSearch({ tab: routeTab }: { tab?: 'candidates' 
                             <span className="saved-card__text">
                               <span className="saved-card__name">{c.name}</span>
                               <strong className="saved-card__slope">{slopeSummary(c.location.slope)}</strong>
-                              <span className="saved-card__vehicle">{vehicleSummary(c.location.vehicleAccess)}</span>
+                              <span className="saved-card__vehicle">{vehicleText(c)}</span>
                             </span>
                           </button>
                           {isChosen && (
