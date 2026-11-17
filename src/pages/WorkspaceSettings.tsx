@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState, type FormEvent } from 'react'
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../app/providers/useAuth';
 import { useWorkspace } from '../app/providers/useWorkspace';
-import { useWorkspaceMessages } from '../app/providers/useWorkspaceSocket';
+import { useWorkspaceMessages, useWorkspaceReconnect } from '../app/providers/useWorkspaceSocket';
 import Avatar from '../components/Avatar';
 import Dialog from '../components/Dialog';
 import { useToast } from '../components/Toast/useToast';
@@ -11,6 +11,7 @@ import { inviteLink } from '../lib/invite';
 import { getCurrentInvitation, getMembers, issueInvitation } from '../lib/workspaceApi';
 import { delegateHost, deleteWorkspace, kickMember, leaveWorkspace, updateWorkspace } from '../lib/workspaceSettingsApi';
 import type { Invitation, WorkspaceMember } from '../types';
+import type { HostChangedData } from '../types/workspaceSettings';
 import './WorkspaceSettings.css';
 
 const MEMBER_EVENTS = new Set(['MEMBER_JOINED', 'MEMBER_LEFT', 'MEMBER_KICKED', 'HOST_CHANGED', 'MEMBER_ONLINE', 'MEMBER_OFFLINE']);
@@ -38,6 +39,7 @@ export default function WorkspaceSettings() {
   const [inviteOpen, setInviteOpen] = useState(false);
   const [inviteBusy, setInviteBusy] = useState(false);
   const [inviteError, setInviteError] = useState<string | null>(null);
+  const [confirmIssue, setConfirmIssue] = useState(false);
   const [pending, setPending] = useState<Pending | null>(null);
   const [busy, setBusy] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
@@ -56,7 +58,15 @@ export default function WorkspaceSettings() {
 
   useWorkspaceMessages((message) => {
     if (MEMBER_EVENTS.has(message.type)) loadMembers();
+    // 역할은 그룹 틀(WorkspaceLayout)이 바꾼다. 내가 새 호스트가 됐을 때만 알려준다.
+    if (message.type === 'HOST_CHANGED') {
+      const data = message.data as HostChangedData;
+      if (data.newHostUserId === me?.id && data.previousHostUserId !== me?.id) showToast('호스트가 되었어요');
+    }
   });
+
+  // 실시간 연결이 끊긴 사이 들어오거나 나간 멤버를 놓치지 않게, 다시 연결되면 목록을 새로 받는다.
+  useWorkspaceReconnect(loadMembers);
 
   const nameTrimmed = name.trim();
   const infoChanged = nameTrimmed !== workspace.name || description.trim() !== (workspace.description ?? '');
@@ -103,6 +113,7 @@ export default function WorkspaceSettings() {
       setInviteError(getErrorMessage(err, '초대 링크를 만들지 못했어요.'));
     } finally {
       setInviteBusy(false);
+      setConfirmIssue(false);
     }
   };
 
@@ -142,6 +153,8 @@ export default function WorkspaceSettings() {
       setPending(null);
       loadMembers();
     } catch (err) {
+      // 그사이 멤버가 나갔거나 호스트가 바뀌었을 수 있으니, 멤버 줄 버튼이 실패하면 목록을 다시 맞춘다.
+      if (pending.kind === 'delegate' || pending.kind === 'kick') loadMembers();
       setPending(null);
       setActionError(getErrorMessage(err, '처리하지 못했어요. 잠시 후 다시 시도해주세요.'));
     } finally {
@@ -206,6 +219,9 @@ export default function WorkspaceSettings() {
             )}
           </form>
 
+          {/* 초대 링크 조회·발급은 호스트만 된다(백엔드 403 NOT_WORKSPACE_HOST). 멤버에게는 이 묶음을 보여주지 않는다. */}
+          {isHost && (
+          <>
           <hr className="settings-card__divider" />
           <h2 className="card__subtitle">초대 · 권한</h2>
           <div className="settings-card__stack">
@@ -231,7 +247,7 @@ export default function WorkspaceSettings() {
                   <button type="button" className="button button--secondary" onClick={() => void copy()} disabled={!invitation}>
                     초대 링크 복사
                   </button>
-                  <button type="button" className="button button--secondary" onClick={() => void issue()} disabled={inviteBusy}>
+                  <button type="button" className="button button--secondary" onClick={() => setConfirmIssue(true)} disabled={inviteBusy}>
                     {inviteBusy ? '만드는 중…' : '새 링크 발급'}
                   </button>
                 </div>
@@ -247,6 +263,8 @@ export default function WorkspaceSettings() {
               </button>
             )}
           </div>
+          </>
+          )}
 
           <hr className="settings-card__divider" />
           <h2 className="card__subtitle">그룹 나가기 · 삭제</h2>
@@ -341,6 +359,21 @@ export default function WorkspaceSettings() {
           busy={busy}
           onConfirm={() => void runPending()}
           onClose={() => setPending(null)}
+        />
+      )}
+
+      {/* [새 링크 발급]은 이전 링크를 바로 못 쓰게 만들므로 한 번 확인받는다 (그룹 생성 완료 화면의 확인과 같은 문구) */}
+      {confirmIssue && isHost && (
+        <Dialog
+          open
+          title="새 링크를 발급할까요?"
+          description="새 링크를 만들면 이전 링크로는 더 이상 참여할 수 없어요."
+          confirmLabel="새 링크 발급"
+          busyLabel="발급하는 중"
+          tone="danger"
+          busy={inviteBusy}
+          onConfirm={() => void issue()}
+          onClose={() => setConfirmIssue(false)}
         />
       )}
     </div>
