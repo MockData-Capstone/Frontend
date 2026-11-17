@@ -3,6 +3,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../../app/providers/useAuth';
 import { useWorkspace } from '../../app/providers/useWorkspace';
 import { useWorkspaceMessages, useWorkspaceReconnect } from '../../app/providers/useWorkspaceSocket';
+import Dialog from '../../components/Dialog';
 import MapView from '../../components/Map';
 import { getErrorMessage } from '../../lib/authApi';
 import {
@@ -40,6 +41,8 @@ function CandidateDetail({ candidateId }: { candidateId: number }) {
   const [actionError, setActionError] = useState<string | null>(null);
   // 보고 있는 후보지를 다른 멤버가 제외했다.
   const [removed, setRemoved] = useState(false);
+  const [confirmRemove, setConfirmRemove] = useState(false);
+  const [roadviewAt, setRoadviewAt] = useState<{ latitude: number; longitude: number } | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -174,7 +177,6 @@ function CandidateDetail({ candidateId }: { candidateId: number }) {
     workspace.myRole === 'HOST' || (candidate.addedBy !== null && candidate.addedBy.userId === me?.id);
 
   const handleRemove = async () => {
-    if (!window.confirm('이 후보지를 제외할까요? 이 후보지의 투표도 함께 지워져요.')) return;
     setBusy(true);
     setActionError(null);
     try {
@@ -182,9 +184,11 @@ function CandidateDetail({ candidateId }: { candidateId: number }) {
       navigate(listPath, { replace: true });
     } catch (err) {
       setActionError(getErrorMessage(err, '후보지를 제외하지 못했어요.'));
+      setConfirmRemove(false);
       setBusy(false);
     }
   };
+  const letter = badgeLetter(Math.max(0, all.findIndex((c) => c.candidateId === candidate.candidateId)));
 
   return (
     <div className="candidate-detail">
@@ -233,14 +237,14 @@ function CandidateDetail({ candidateId }: { candidateId: number }) {
               onMarkerClick={(id) => {
                 if (id !== candidate.candidateId) navigate(`${listPath}/${id}`);
               }}
+              roadviewAt={roadviewAt}
             />
           </div>
           <div className="candidate-detail__map-actions">
             <button
               type="button"
               className="button button--secondary"
-              disabled
-              title="준비 중인 기능이에요."
+              onClick={() => setRoadviewAt({ latitude: candidate.latitude, longitude: candidate.longitude })}
             >
               로드뷰 보기
             </button>
@@ -275,6 +279,7 @@ function CandidateDetail({ candidateId }: { candidateId: number }) {
                 {slope.grade && (
                   <span className="candidate-detail__grade">{gradeLabel(slope.grade)}</span>
                 )}
+                <SlopeGauge average={slope.averagePercent} max={slope.maxPercent} />
                 {slope.estimated && (
                   <p className="candidate-detail__estimated">추정치 — 현장 확인 필요</p>
                 )}
@@ -303,8 +308,7 @@ function CandidateDetail({ candidateId }: { candidateId: number }) {
               <button
                 type="button"
                 className="button button--primary"
-                disabled
-                title="준비 중인 기능이에요."
+                onClick={() => navigate(listPath, { state: { focus: candidate.candidateId } })}
               >
                 후보지에서 보기
               </button>
@@ -316,20 +320,61 @@ function CandidateDetail({ candidateId }: { candidateId: number }) {
               >
                 이름 수정
               </button>
+              <button
+                type="button"
+                className="button button--outline-danger"
+                onClick={() => setConfirmRemove(true)}
+                disabled={busy || !canRemove}
+                title={canRemove ? undefined : '후보지를 추가한 멤버나 호스트만 제외할 수 있어요.'}
+              >
+                후보에서 제외
+              </button>
             </div>
           </div>
-
-          <button
-            type="button"
-            className="button button--danger candidate-detail__remove"
-            onClick={handleRemove}
-            disabled={busy || !canRemove}
-            title={canRemove ? undefined : '후보지를 추가한 멤버나 호스트만 제외할 수 있어요.'}
-          >
-            후보지 제외
-          </button>
         </section>
       </div>
+      <Dialog
+        open={confirmRemove}
+        title="후보에서 제외할까요?"
+        description={
+          <>
+            <span className="candidate-detail__dialog-name">
+              <span className="letter-badge">{letter}</span> {candidate.name}
+            </span>
+            이 후보의 투표도 함께 삭제돼요. 제외한 후보는 후보 목록과 비교표에서 빠져요.
+          </>
+        }
+        confirmLabel="후보에서 제외"
+        busyLabel="제외하는 중"
+        tone="danger"
+        busy={busy}
+        onConfirm={() => void handleRemove()}
+        onClose={() => setConfirmRemove(false)}
+      />
+    </div>
+  );
+}
+
+// 평균·최대 경사를 등급 구간(완만 5% · 보통 8.3% · 가파름) 위에 표시한다
+function SlopeGauge({ average, max }: { average: number; max: number | null }) {
+  const scale = 12;
+  const pos = (v: number) => `${Math.min(100, (v / scale) * 100)}%`;
+  return (
+    <div className="slope-gauge" aria-hidden="true">
+      <p className="slope-gauge__title">경사 구간</p>
+      <div className="slope-gauge__bar">
+        <span className="slope-gauge__zone slope-gauge__zone--gentle" style={{ width: pos(5) }} />
+        <span className="slope-gauge__zone slope-gauge__zone--moderate" style={{ width: `calc(${pos(8.3)} - ${pos(5)})` }} />
+        <span className="slope-gauge__zone slope-gauge__zone--steep" />
+        <span className="slope-gauge__mark" style={{ left: pos(average) }} />
+        {max !== null && <span className="slope-gauge__mark slope-gauge__mark--max" style={{ left: pos(max) }} />}
+      </div>
+      <div className="slope-gauge__legend">
+        <span>완만 ~5%</span>
+        <span>보통 ~8.3%</span>
+        <span>가파름</span>
+      </div>
+      <p className="slope-gauge__keys">● 평균 · ◆ 최대</p>
     </div>
   );
 }

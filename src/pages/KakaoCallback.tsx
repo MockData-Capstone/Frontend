@@ -28,10 +28,16 @@ export default function KakaoCallback() {
 
     Promise.resolve()
       .then(() => {
-        consumeOAuthIntent('kakao', searchParams.get('state'));
+        const intent = consumeOAuthIntent('kakao', searchParams.get('state'));
+        // 내 정보(12)에서 [카카오 계정 연결]로 왔으면 로그인하지 않고 code를 내 정보 화면에 넘긴다 (AUTH-08)
+        if (intent.mode === 'link') return null;
         return exchangeKakaoCode(code);
       })
       .then((result) => {
+        if (result === null) {
+          navigate('/account', { replace: true, state: { linkProvider: 'kakao', code } });
+          return;
+        }
         if (result.status === 'SIGNUP_REQUIRED') {
           navigate('/signup/kakao', { replace: true, state: result.signup });
           return;

@@ -27,7 +27,7 @@ export default function WorkspaceList() {
 
   return (
     <div className="page page--workspace-list">
-      <Header />
+      <Header tab="groups" />
       <main className="workspace-list">
         <h1 className="workspace-list__title">함께 집을 찾을 그룹을 선택하세요</h1>
         <p className="workspace-list__subtitle">
@@ -58,7 +58,7 @@ export default function WorkspaceList() {
             <p className="workspace-card__eyebrow">새로운 시작</p>
             <h2 className="workspace-card__name">새 그룹 만들기</h2>
             <p className="workspace-card__meta">함께 집을 찾을 멤버들과 그룹을 시작하세요.</p>
-            <Link to="/workspaces/new" className="button button--primary workspace-card__button">
+            <Link to="/workspaces/new" className="button button--outline workspace-card__button">
               새 그룹 만들기
             </Link>
           </section>

@@ -41,7 +41,7 @@ export default function Roulette({
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // 나가거나 연결이 끊긴 참가자는 추첨에서 빠지므로 바퀴에서도 뺀다.
+  // 그룹에서 나간 참가자는 추첨에서 빠지므로 바퀴에서도 뺀다. 룰렛은 접속하지 않은 멤버도 추첨 대상이라 연결이 끊겨도 남는다.
   const players = game.participants.filter((p) => p.status === 'PLAYING');
   const isStarter = game.startedBy.userId === meId;
   const visitor = game.visitor;
@@ -192,7 +192,7 @@ export default function Roulette({
         <aside className="minigame__card minigame__side">
           <h2 className="minigame__side-title">참여 멤버</h2>
           <PlayerList rows={game.participants.map(rowOf)} />
-          <p className="minigame__info">게임 중 연결이 끊긴 멤버는 결과에서 제외돼요.</p>
+          <p className="minigame__info">접속하지 않은 멤버도 추첨 대상이에요. 그룹에서 나간 멤버만 결과에서 제외돼요.</p>
         </aside>
       </div>
     </div>

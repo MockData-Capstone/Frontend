@@ -69,3 +69,18 @@ export function extractedExtras(conditions: ExtractedConditions): string[] {
     facilities.length > 0 ? `편의시설 ${facilities.join(', ')}` : null,
   ].filter((item): item is string => item !== null);
 }
+
+// 대화에서 뽑은 조건 개수 (06-B "조건 6개") — 값이 있는 항목만 센다
+export function countConditions(c: ExtractedConditions | null): number {
+  if (!c) return 0;
+  return [
+    c.region,
+    c.depositMin ?? c.depositMax,
+    c.monthlyRentMin ?? c.monthlyRentMax,
+    c.roomType ?? c.areaMin ?? c.areaMax,
+    c.facilities?.length ? 1 : null,
+    c.destinations?.length ? 1 : null,
+    c.avoidSlope,
+    c.needVehicleAccess,
+  ].filter((v) => v !== null && v !== undefined).length;
+}

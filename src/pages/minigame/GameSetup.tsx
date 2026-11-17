@@ -8,9 +8,10 @@ import { gameTypeLabel, visitorRuleLabel } from './format';
 const GAME_TYPES: GameType[] = ['ROCK_PAPER_SCISSORS', 'ROULETTE'];
 const VISITOR_RULES: VisitorRule[] = ['LOSER', 'WINNER'];
 
-// 19 집 보러 갈 사람 정하기 (GAME-01). 서버는 그룹 연결에 접속 중인 멤버만 참여시킨다(PLAYER_NOT_AVAILABLE).
-// 멤버 목록의 online으로 미접속 멤버는 고를 수 없게 하고 "미접속"으로 표시한다. online을 주지 않는 서버에서는
-// 모두 고를 수 있고, 미접속 멤버를 고르면 서버의 거절 문구를 그대로 보여준다.
+// 19 집 보러 갈 사람 정하기 (GAME-01). 가위바위보는 라운드마다 직접 내야 해서 서버가 그룹 연결에 접속 중인 멤버만
+// 참여시킨다(PLAYER_NOT_AVAILABLE). 룰렛은 서버가 추첨하므로 접속하지 않은 멤버도 넣을 수 있다.
+// 멤버 목록의 online으로 미접속 멤버를 "미접속"으로 표시하고, 가위바위보일 때만 고를 수 없게 한다. online을 주지 않는
+// 서버에서는 모두 고를 수 있고, 미접속 멤버를 고르면 서버의 거절 문구를 그대로 보여준다.
 export default function GameSetup({
   members,
   meId,
@@ -36,13 +37,14 @@ export default function GameSetup({
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // 그사이 나가거나 접속이 끊긴 멤버가 선택에 남지 않게 지금 멤버 기준으로 센다.
-  const participantUserIds = members
-    .filter((m) => selected.has(m.userId) && m.online !== false)
-    .map((m) => m.userId);
-  // 서버가 접속 상태를 주면 시안처럼 "접속 중인 N명"으로 보여준다.
-  const knowsOnline = members.some((m) => m.online !== undefined);
   const isRps = type === 'ROCK_PAPER_SCISSORS';
+  // 그사이 나간 멤버, 가위바위보면 접속이 끊긴 멤버도 선택에 남지 않게 지금 멤버 기준으로 센다.
+  const canPlay = (m: WorkspaceMember) => !isRps || m.online !== false;
+  const participantUserIds = members
+    .filter((m) => selected.has(m.userId) && canPlay(m))
+    .map((m) => m.userId);
+  // 서버가 접속 상태를 주면 시안처럼 가위바위보는 "접속 중인 N명"으로 보여준다.
+  const knowsOnline = members.some((m) => m.online !== undefined);
 
   const toggle = (userId: number) =>
     setSelected((current) => {
@@ -112,24 +114,29 @@ export default function GameSetup({
           </div>
 
           <p className="minigame__label">
-            참여 멤버 · {knowsOnline && '접속 중인 '}
+            참여 멤버 · {isRps && knowsOnline && '접속 중인 '}
             {participantUserIds.length}명 선택
           </p>
-          <p className="minigame__label-hint">그룹 화면을 열어 둔 멤버만 참여할 수 있어요.</p>
+          <p className="minigame__label-hint">
+            {isRps
+              ? '가위바위보는 그룹 화면을 열어 둔 멤버만 참여할 수 있어요.'
+              : '룰렛은 지금 접속하지 않은 멤버도 넣을 수 있어요.'}
+          </p>
           {members.length === 0 ? (
             <p className="minigame__hint">멤버 목록을 불러오지 못했어요.</p>
           ) : (
             <ul className="minigame-members">
               {members.map((member) => {
                 const offline = member.online === false;
+                const blocked = !canPlay(member);
                 return (
                   <li key={member.userId}>
-                    <label className={`minigame-member${offline ? ' is-offline' : ''}`}>
+                    <label className={`minigame-member${blocked ? ' is-offline' : ''}`}>
                       <input
                         type="checkbox"
-                        checked={!offline && selected.has(member.userId)}
+                        checked={!blocked && selected.has(member.userId)}
                         onChange={() => toggle(member.userId)}
-                        disabled={offline}
+                        disabled={blocked}
                       />
                       <Avatar nickname={member.nickname} profileImageUrl={member.profileImageUrl} />
                       <span className="minigame-member__name">{member.nickname}</span>
@@ -175,7 +182,11 @@ export default function GameSetup({
             룰렛은 참여 멤버 중 한 명을 무작위로 정해요. 방문자 기준 선택은 가위바위보에만
             적용돼요.
           </p>
-          <p className="minigame__side-note">접속 중인 멤버가 2명 이상이어야 시작할 수 있어요.</p>
+          <p className="minigame__side-note">
+            {isRps
+              ? '접속 중인 멤버가 2명 이상이어야 시작할 수 있어요.'
+              : '참여 멤버가 2명 이상이어야 시작할 수 있어요.'}
+          </p>
         </aside>
       </div>
     </div>
