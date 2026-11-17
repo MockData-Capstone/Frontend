@@ -5,7 +5,7 @@ import NotificationBell from '../Notification/NotificationBell';
 import ProfileMenu from '../ProfileMenu';
 import './Header.css';
 
-// 공개 상단바 (UI v0.4.3 01·04·12): 동네 찾기 탭 / zipfit 로고 / SIGN IN · SIGN UP
+// 공개 상단바 (UI v0.4.3 01·04·12): 동네 찾기 탭 / zipfit 로고 / 로그인 · 회원가입
 // 로그인 후에는 [내 그룹] · 알림 종 · 내 아이콘(프로필 메뉴: 내 정보 / 로그아웃).
 // 상단바 바로 아래에 실시간 끊김 안내 띠(알림 연결이 3초 넘게 끊겼을 때)를 둔다.
 export default function Header({ tab = 'explore' }: { tab?: 'explore' | 'groups' }) {
@@ -65,7 +65,7 @@ export default function Header({ tab = 'explore' }: { tab?: 'explore' | 'groups'
               to="/login"
               className={({ isActive }) => `site-header__auth-link${isActive ? ' is-active' : ''}`}
             >
-              SIGN IN
+              로그인
             </NavLink>
             <span className="site-header__auth-divider" aria-hidden="true">
               /
@@ -74,7 +74,7 @@ export default function Header({ tab = 'explore' }: { tab?: 'explore' | 'groups'
               to="/signup"
               className={({ isActive }) => `site-header__auth-link${isActive ? ' is-active' : ''}`}
             >
-              SIGN UP
+              회원가입
             </NavLink>
           </div>
         )}
