@@ -17,14 +17,25 @@ declare namespace kakao.maps {
     TERRAIN = 7,
   }
 
+  // 지도 'click'은 { latLng }을 넘기고, 로드뷰 'init'·'position_changed'·'viewpoint_changed'는 인자가 없다.
   namespace event {
-    function addListener(target: unknown, type: string, handler: (event: { latLng: LatLng }) => void): void;
-    function removeListener(target: unknown, type: string, handler: (event: { latLng: LatLng }) => void): void;
+    function addListener(target: unknown, type: string, handler: (...args: never[]) => void): void;
+    function removeListener(target: unknown, type: string, handler: (...args: never[]) => void): void;
+  }
+
+  interface Viewpoint {
+    // 방위각(도, 북쪽 0 · 시계 방향), 위아래 각도, 확대 단계
+    pan: number;
+    tilt: number;
+    zoom: number;
   }
 
   class Roadview {
     constructor(container: HTMLElement);
     setPanoId(panoId: number, position: LatLng): void;
+    getPosition(): LatLng;
+    getViewpoint(): Viewpoint;
+    setViewpoint(viewpoint: Viewpoint): void;
     relayout(): void;
   }
 
@@ -41,6 +52,7 @@ declare namespace kakao.maps {
   class Map {
     constructor(container: HTMLElement, options: { center: LatLng; level?: number });
     setCenter(latlng: LatLng): void;
+    panTo(latlng: LatLng): void;
     getLevel(): number;
     setLevel(level: number, options?: { animate?: boolean }): void;
     setBounds(
@@ -65,6 +77,7 @@ declare namespace kakao.maps {
       clickable?: boolean;
     });
     setMap(map: Map | null): void;
+    setPosition(position: LatLng): void;
     setZIndex(zIndex: number): void;
   }
 }
