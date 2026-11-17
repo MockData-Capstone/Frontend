@@ -1,0 +1,78 @@
+.account-page__main {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 1040px;
+  margin: 0 auto;
+  padding: 0 24px 64px;
+}
+
+.account-page__head {
+  margin-bottom: 24px;
+}
+
+.account-card {
+  width: 100%;
+  max-width: 640px;
+  margin: 0 auto 24px;
+}
+
+.account-card__photo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.account-card__avatar .avatar {
+  width: 52px;
+  height: 52px;
+  font-size: 17px;
+}
+
+.account-card__field {
+  margin-bottom: 12px;
+}
+
+.account-card__save {
+  margin-top: 12px;
+}
+
+.account-card__methods {
+  margin: 0 0 4px;
+  padding: 0;
+  list-style: none;
+  font-size: 16px;
+  color: var(--text-h);
+}
+
+.account-card__desc {
+  margin: 0 0 14px;
+  font-size: 14px;
+  color: var(--text);
+}
+
+.account-card__row {
+  margin-top: 10px;
+}
+
+.account-card__subform {
+  display: grid;
+  gap: 12px;
+  margin-top: 12px;
+  padding: 16px;
+  background: var(--bg-muted);
+  border-radius: 8px;
+}
+
+.account-card .auth-field__hint {
+  margin: 0;
+  font-size: 13px;
+}
+
+.account-card .auth-field__hint--ok {
+  color: var(--success);
+}
+
+.account-card .auth-field__hint--bad {
+  color: var(--danger);
+}

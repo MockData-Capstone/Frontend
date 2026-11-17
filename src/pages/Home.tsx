@@ -1,10 +1,13 @@
 import { useMemo, useRef, useState, type FormEvent } from 'react';
 import { Link, Navigate } from 'react-router-dom';
 import { useAuth } from '../app/providers/useAuth';
+import ConditionChips from '../components/ConditionChips';
 import Header from '../components/Header';
 import MapView, { type MapMarker } from '../components/Map';
+import { emptyCondition } from '../lib/conditionApi';
 import { pendingInvite } from '../lib/invite';
 import { searchPlaces, type PlaceResult } from '../lib/kakaoMap';
+import type { HouseCondition } from '../types/search';
 import { badgeLetter } from './candidates/format';
 import './Home.css';
 
@@ -19,7 +22,8 @@ type SearchState =
 // 메인(동네 찾기). 흐름도 v0.4 "01 첫 화면 · 지도 열람"과 "01-D 로그인 후 지도 메인" —
 // 로그인 전에도 지도와 장소 검색을 쓸 수 있고, 아래 버튼만 로그인 여부에 따라 바뀐다.
 // 1단계(지금): 검색창, 카카오 지도(지도·확대·축소), 검색 결과 목록, [로그인하고 함께 찾기]·[내 그룹에서 함께 찾기].
-// 2단계(백엔드 필요): 동네별 경사·차량 진입·도보 시간 카드, 조건 칩(월세·보증금·방 구조·면적·차량 진입), 경사도·로드뷰.
+// 조건 칩(월세·보증금·방 구조·면적·차량 진입)은 둘러볼 때 기준으로만 쓰고(그룹 조건은 그룹 안에서 함께 정한다),
+// 지도는 [지도|경사도|로드뷰]를 바꿔 볼 수 있다.
 export default function Home() {
   const { accessToken } = useAuth();
 
@@ -38,6 +42,7 @@ function HomeMap({ loggedIn }: { loggedIn: boolean }) {
   const [search, setSearch] = useState<SearchState>({ status: 'idle' });
   const [hoverId, setHoverId] = useState<number | null>(null);
   const [selectedId, setSelectedId] = useState<number | null>(null);
+  const [browse, setBrowse] = useState<HouseCondition>(emptyCondition);
   const requestId = useRef(0);
   const listRef = useRef<HTMLUListElement>(null);
 
@@ -48,6 +53,7 @@ function HomeMap({ loggedIn }: { loggedIn: boolean }) {
       places.map((place, i) => ({
         id: i,
         label: badgeLetter(i),
+        name: place.name,
         latitude: place.latitude,
         longitude: place.longitude,
       })),
@@ -105,6 +111,7 @@ function HomeMap({ loggedIn }: { loggedIn: boolean }) {
             disabled={!KAKAO_JS_KEY}
           />
         </form>
+        <ConditionChips value={browse} onApply={(next) => setBrowse(next)} />
       </div>
 
       <main className="home-layout">
@@ -162,7 +169,11 @@ function HomeMap({ loggedIn }: { loggedIn: boolean }) {
               </ul>
             )}
             {/* 2단계: 흐름도의 동네 카드(평균 경사·차량 진입·도보 시간)는 지역 정보 API가 생기면 채운다. */}
-            {KAKAO_JS_KEY && <p className="home-panel__soon">경사·차량 진입 같은 동네 정보는 준비 중이에요.</p>}
+            {KAKAO_JS_KEY && (
+              <p className="home-panel__soon">
+                고른 조건은 둘러보기 기준이에요. 그룹에서 멤버와 대화하면 ZIPFIT AI가 조건에 맞는 동네와 경사·차량 진입을 분석해요.
+              </p>
+            )}
           </div>
 
           <div className="home-panel__actions">

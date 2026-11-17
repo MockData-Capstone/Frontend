@@ -86,7 +86,7 @@ function WorkspaceInvite({ workspaceId }: { workspaceId: number }) {
 
   return (
     <div className="page page--group">
-      <Header />
+      <Header tab="groups" />
       <main className="group-page">
         <div className="group-page__heading">
           <h1 className="group-page__title">그룹을 만들었어요</h1>
