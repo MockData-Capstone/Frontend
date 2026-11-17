@@ -2,6 +2,18 @@ import { useEffect, useEffectEvent, useRef, useState, type KeyboardEvent, type P
 import { loadKakaoMaps } from '../../lib/kakaoMap';
 import { bearingDegrees, distanceMeters, nearestPanoId, ROADVIEW_RADIUS_M } from '../../lib/roadview';
 import './Map.css';
+import {
+  clampRect,
+  dockedRect,
+  isFull,
+  moveRect,
+  PRESETS,
+  resizeRect,
+  visibleCenter,
+  type Box,
+  type PresetId,
+  type Rect,
+} from './pip';
 
 export interface MapMarker {
   id: number;
@@ -45,28 +57,21 @@ const APP_KEY: string | undefined = import.meta.env.VITE_KAKAO_JS_KEY;
 // 마커가 없을 때 보여줄 위치: 입지 분석 시범 지역인 대구(시청)
 const DEFAULT_CENTER = { latitude: 35.8714, longitude: 128.6014 };
 
-// 로드뷰 창 높이(지도 영역의 %). 작게·보통·크게(지도 전체) 단추와 끌기·방향키로 바꾼다.
-const ROADVIEW_SIZES = [
-  { label: '작게', value: 35 },
-  { label: '보통', value: 55 },
-  { label: '크게', value: 100 },
-];
-const MIN_SIZE = 25;
-const MAX_SIZE = 100;
-const SIZE_KEY = 'zipfit.roadview.size';
+// 로드뷰는 지도 위에 떠 있는 PiP 창으로 연다. 창 크기는 이 브라우저에 기억한다(위치는 열려 있는 동안만).
+const PIP_KEY = 'zipfit.roadview.pip';
 
-function loadSize() {
+function loadPipSize(): Box | null {
   try {
-    const saved = Number(localStorage.getItem(SIZE_KEY));
-    return saved >= MIN_SIZE && saved <= MAX_SIZE ? saved : 55;
+    const saved = JSON.parse(localStorage.getItem(PIP_KEY) ?? 'null') as Box | null;
+    return saved && saved.w > 0 && saved.h > 0 ? saved : null;
   } catch {
-    return 55;
+    return null;
   }
 }
 
-function saveSize(size: number) {
+function savePipSize(size: Box) {
   try {
-    localStorage.setItem(SIZE_KEY, String(Math.round(size)));
+    localStorage.setItem(PIP_KEY, JSON.stringify({ w: Math.round(size.w), h: Math.round(size.h) }));
   } catch {
     // 저장이 막혀도 이번 화면에서는 그대로 쓴다
   }
@@ -115,7 +120,13 @@ function KakaoMapView({
   const [layer, setLayer] = useState<MapLayer>('map');
   const [roadview, setRoadview] = useState<RoadviewTarget | null>(null);
   const [status, setStatus] = useState<RoadviewStatus>({ kind: 'loading' });
-  const [size, setSize] = useState(loadSize);
+  // pipSize: 사용자가 마지막에 맞춘 창 크기, placed: 열려 있는 동안 옮기거나 키운 자리(없으면 오른쪽 아래에 붙인다)
+  const [pipSize, setPipSize] = useState<Box | null>(loadPipSize);
+  const [placed, setPlaced] = useState<Rect | null>(null);
+  const [rootBox, setRootBox] = useState<Box>({ w: 0, h: 0 });
+  // 지금 PiP 창의 자리(지도 크기를 재기 전이면 null)
+  const pip = rootBox.w > 0 ? clampRect(placed ?? dockedRect(rootBox, pipSize), rootBox) : null;
+  const full = pip !== null && isFull(pip, rootBox);
   const markerRefs = useRef(
     new Map<number, { el: HTMLButtonElement; overlay: kakao.maps.CustomOverlay }>(),
   );
@@ -123,6 +134,15 @@ function KakaoMapView({
   const handleClick = useEffectEvent((id: number) => onMarkerClick?.(id));
   const handleHover = useEffectEvent((id: number, hovering: boolean) => onMarkerHover?.(id, hovering));
   const notifyRoadview = useEffectEvent((open: boolean) => onRoadviewChange?.(open));
+  // 로드뷰 자리를 지도에서 PiP 창에 가리지 않는 곳에 보이게 옮긴다.
+  const reveal = useEffectEvent((position: kakao.maps.LatLng) => {
+    if (!map) return;
+    map.setCenter(position);
+    const target = visibleCenter(pip, rootBox);
+    const dx = Math.round(rootBox.w / 2 - target.x);
+    const dy = Math.round(rootBox.h / 2 - target.y);
+    if (dx || dy) map.panBy(dx, dy);
+  });
   const openRoadviewAt = useEffectEvent((target: RoadviewTarget) => {
     setStatus({ kind: 'loading' });
     setRoadview(target);
@@ -275,7 +295,7 @@ function KakaoMapView({
         viewer.setViewpoint({ pan: bearingDegrees(here, roadview), tilt: 0, zoom: 0 });
       }
       syncPin();
-      map.panTo(position);
+      reveal(position);
     };
     kakao.maps.event.addListener(viewer, 'init', onInit);
     kakao.maps.event.addListener(viewer, 'position_changed', syncPin);
@@ -289,7 +309,7 @@ function KakaoMapView({
           setStatus({ kind: 'none' });
           pinEl.classList.add('is-none');
           pin.setMap(map);
-          map.panTo(requested);
+          reveal(requested);
           return;
         }
         // 판정은 파노라마가 있는지로 바로 알 수 있으니, 사진을 다 불러오기 전에 먼저 알린다.
@@ -321,7 +341,18 @@ function KakaoMapView({
     const observer = new ResizeObserver(relayout);
     observer.observe(target);
     return () => observer.disconnect();
-  }, [map, roadview, size]);
+  }, [map, roadview]);
+
+  // 지도 영역 크기를 재 둔다(PiP 창을 지도 안에 맞추는 데 쓴다).
+  useEffect(() => {
+    const root = rootRef.current;
+    if (!root || typeof ResizeObserver === 'undefined') return;
+    const observer = new ResizeObserver(([entry]) =>
+      setRootBox({ w: entry.contentRect.width, h: entry.contentRect.height }),
+    );
+    observer.observe(root);
+    return () => observer.disconnect();
+  }, []);
 
   // Esc로 로드뷰를 닫는다.
   useEffect(() => {
@@ -333,40 +364,68 @@ function KakaoMapView({
     return () => window.removeEventListener('keydown', onKey);
   }, [roadview]);
 
-  const changeSize = (next: number) => {
-    const clamped = Math.min(MAX_SIZE, Math.max(MIN_SIZE, next));
-    setSize(clamped);
-    saveSize(clamped);
-  };
-
-  // 경계선을 끌어 로드뷰 높이를 바꾼다.
-  const startResize = (e: PointerEvent<HTMLDivElement>) => {
-    const root = rootRef.current;
-    if (!root) return;
+  // 창을 끌어 옮기거나(머리줄) 모서리를 끌어 크기를 바꾼다. 크기를 바꾸면 끝날 때 기억한다.
+  const drag = (e: PointerEvent<HTMLElement>, apply: (dx: number, dy: number) => Rect, remember: boolean) => {
     e.preventDefault();
-    const handle = e.currentTarget;
-    handle.setPointerCapture(e.pointerId);
+    const el = e.currentTarget;
+    el.setPointerCapture(e.pointerId);
+    const startX = e.clientX;
+    const startY = e.clientY;
+    let last: Rect | null = null;
     const move = (ev: globalThis.PointerEvent) => {
-      const rect = root.getBoundingClientRect();
-      changeSize(((rect.bottom - ev.clientY) / rect.height) * 100);
+      last = apply(ev.clientX - startX, ev.clientY - startY);
+      setPlaced(last);
     };
     const stop = () => {
-      handle.removeEventListener('pointermove', move);
-      handle.removeEventListener('pointerup', stop);
-      handle.removeEventListener('pointercancel', stop);
+      el.removeEventListener('pointermove', move);
+      el.removeEventListener('pointerup', stop);
+      el.removeEventListener('pointercancel', stop);
+      if (remember && last && !isFull(last, rootBox)) {
+        setPipSize({ w: last.w, h: last.h });
+        savePipSize(last);
+      }
     };
-    handle.addEventListener('pointermove', move);
-    handle.addEventListener('pointerup', stop);
-    handle.addEventListener('pointercancel', stop);
+    el.addEventListener('pointermove', move);
+    el.addEventListener('pointerup', stop);
+    el.addEventListener('pointercancel', stop);
   };
 
-  const resizeByKey = (e: KeyboardEvent<HTMLDivElement>) => {
-    const steps: Record<string, number> = { ArrowUp: 5, ArrowDown: -5, PageUp: 20, PageDown: -20 };
-    if (e.key in steps) changeSize(size + steps[e.key]);
-    else if (e.key === 'Home') changeSize(MAX_SIZE);
-    else if (e.key === 'End') changeSize(MIN_SIZE);
-    else return;
+  const startMove = (e: PointerEvent<HTMLElement>) => {
+    if (!pip || (e.target as HTMLElement).closest('button')) return;
+    drag(e, (dx, dy) => moveRect(pip, dx, dy, rootBox), false);
+  };
+
+  const startResize = (corner: 'nw' | 'se') => (e: PointerEvent<HTMLElement>) => {
+    if (!pip) return;
+    e.stopPropagation();
+    drag(e, (dx, dy) => resizeRect(pip, corner, dx, dy, rootBox), true);
+  };
+
+  // 왼쪽 위 손잡이에서 방향키: ←↑ 키우기, →↓ 줄이기 (오른쪽 아래 모서리는 그대로)
+  const resizeByKey = (e: KeyboardEvent<HTMLElement>) => {
+    if (!pip) return;
+    const step = e.shiftKey ? 60 : 20;
+    const delta: Record<string, [number, number]> = {
+      ArrowLeft: [-step, 0],
+      ArrowRight: [step, 0],
+      ArrowUp: [0, -step],
+      ArrowDown: [0, step],
+    };
+    if (!(e.key in delta)) return;
     e.preventDefault();
+    const next = resizeRect(pip, 'nw', delta[e.key][0], delta[e.key][1], rootBox);
+    setPlaced(next);
+    setPipSize({ w: next.w, h: next.h });
+    savePipSize(next);
+  };
+
+  const applyPreset = (preset: PresetId) => {
+    const next = dockedRect(rootBox, null, preset);
+    setPlaced(next);
+    if (preset !== 'large') {
+      setPipSize({ w: next.w, h: next.h });
+      savePipSize(next);
+    }
   };
 
   const lookAtTarget = () => {
@@ -388,11 +447,10 @@ function KakaoMapView({
   ];
 
   const open = roadview !== null;
-  const full = open && size >= MAX_SIZE;
 
   return (
     <div ref={rootRef} className={`map-view${open ? ' has-roadview' : ''}${full ? ' is-roadview-full' : ''}`}>
-      <div ref={containerRef} className="map-view__canvas" style={open ? { bottom: `${size}%` } : undefined} />
+      <div ref={containerRef} className="map-view__canvas" />
       {failed && <p className="map-view__message">지도를 불러오지 못했어요.</p>}
       {controls && (
         <>
@@ -446,23 +504,32 @@ function KakaoMapView({
         </div>
       )}
       {roadview && (
-        <section className="map-view__roadview" style={{ height: `${size}%` }} aria-label="로드뷰">
-          <div
-            className="map-view__roadview-handle"
+        <section
+          className={`map-view__roadview${full ? ' is-full' : ''}`}
+          style={pip ? { left: pip.x, top: pip.y, width: pip.w, height: pip.h } : { visibility: 'hidden' }}
+          aria-label="로드뷰"
+        >
+          <span
+            className="map-view__roadview-corner map-view__roadview-corner--nw"
             role="separator"
-            aria-orientation="horizontal"
-            aria-label="로드뷰 크기 조절 (위아래 방향키)"
-            aria-valuemin={MIN_SIZE}
-            aria-valuemax={MAX_SIZE}
-            aria-valuenow={Math.round(size)}
+            aria-label="로드뷰 창 크기 조절 (방향키: ←↑ 키우기, →↓ 줄이기)"
             tabIndex={0}
-            onPointerDown={startResize}
+            onPointerDown={startResize('nw')}
             onKeyDown={resizeByKey}
-            onDoubleClick={() => changeSize(full ? 55 : MAX_SIZE)}
+          />
+          <span
+            className="map-view__roadview-corner map-view__roadview-corner--se"
+            aria-hidden="true"
+            onPointerDown={startResize('se')}
+          />
+          <div
+            className="map-view__roadview-bar"
+            title="끌어서 옮기기 · 두 번 누르면 크게/보통"
+            onPointerDown={startMove}
+            onDoubleClick={(e) => {
+              if (!(e.target as HTMLElement).closest('button')) applyPreset(full ? 'medium' : 'large');
+            }}
           >
-            <span className="map-view__roadview-grip" aria-hidden="true" />
-          </div>
-          <div className="map-view__roadview-bar">
             <p className={`map-view__roadview-status is-${status.kind}`} role="status">
               {status.kind === 'loading' && '로드뷰를 찾고 있어요…'}
               {status.kind === 'found' && (
@@ -491,12 +558,12 @@ function KakaoMapView({
                 </button>
               )}
               <div className="map-view__roadview-sizes" role="group" aria-label="로드뷰 크기">
-                {ROADVIEW_SIZES.map((preset) => (
+                {PRESETS.map((preset) => (
                   <button
-                    key={preset.value}
+                    key={preset.id}
                     type="button"
-                    aria-pressed={Math.round(size) === preset.value}
-                    onClick={() => changeSize(preset.value)}
+                    aria-pressed={preset.id === 'large' ? full : undefined}
+                    onClick={() => applyPreset(preset.id)}
                   >
                     {preset.label}
                   </button>

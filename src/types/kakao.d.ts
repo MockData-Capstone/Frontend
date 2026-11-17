@@ -53,6 +53,8 @@ declare namespace kakao.maps {
     constructor(container: HTMLElement, options: { center: LatLng; level?: number });
     setCenter(latlng: LatLng): void;
     panTo(latlng: LatLng): void;
+    // 지도 중심을 픽셀만큼 옮긴다 (+x 동쪽, +y 남쪽)
+    panBy(dx: number, dy: number): void;
     getLevel(): number;
     setLevel(level: number, options?: { animate?: boolean }): void;
     setBounds(
