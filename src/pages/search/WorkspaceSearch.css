@@ -126,10 +126,10 @@
   display: flex;
   flex: 0 1 auto;
   flex-direction: column;
-  gap: 12px;
+  gap: 8px;
   max-height: 50%;
   min-height: 0;
-  padding: 12px 20px 0;
+  padding: 8px 20px 0;
   border-top: 1px solid var(--border);
 }
 
@@ -163,9 +163,8 @@
   color: var(--danger);
 }
 
-/* 함께 정한 조건 (안내 박스 색) */
+/* 함께 정한 조건 (안내 박스 색). 기본은 한 줄 띠로 접혀 대화창을 넓게 쓴다 */
 .condition-box {
-  padding: 12px 14px;
   background: var(--info-bg);
   border-radius: 8px;
 }
@@ -174,7 +173,75 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  margin-bottom: 8px;
+  width: 100%;
+  min-height: 40px;
+  padding: 8px 12px;
+  font: inherit;
+  text-align: left;
+  color: inherit;
+  background: none;
+  border: 0;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.condition-box__head:focus-visible {
+  outline: 2px solid var(--success);
+  outline-offset: 2px;
+}
+
+.condition-box__title {
+  flex: none;
+}
+
+.condition-box__tag {
+  flex: none;
+}
+
+/* 한 줄 미리보기가 패널 폭을 밀어내지 않게 폭 0에서 남은 자리만 채운다 */
+.condition-box__preview {
+  flex: 1 1 0;
+  width: 0;
+  min-width: 0;
+  overflow: hidden;
+  font-size: 12px;
+  color: var(--text);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.condition-box__toggle {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.condition-box__head:hover .condition-box__toggle {
+  color: var(--text-h);
+}
+
+/* 접힘: 위로 펼친다는 뜻의 ^, 펼침: v */
+.condition-box__chevron {
+  width: 7px;
+  height: 7px;
+  border-top: 1.5px solid currentColor;
+  border-left: 1.5px solid currentColor;
+  transform: translateY(2px) rotate(45deg);
+}
+
+.condition-box.is-open .condition-box__chevron {
+  transform: translateY(-2px) rotate(225deg);
+}
+
+.condition-box__body {
+  max-height: 160px;
+  padding: 0 12px 12px;
+  overflow-y: auto;
 }
 
 .condition-box__title,
