@@ -1,19 +1,21 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { formatAreaRange, formatManwon, roomTypeLabel } from '../../lib/conditionFormat';
 import type { HouseCondition, RoomType } from '../../types/search';
+import RangeSlider from './RangeSlider';
 import './ConditionChips.css';
 
 type Key = 'rent' | 'deposit' | 'room' | 'area' | 'vehicle';
 
 const RANGES = {
-  rent: { min: 'monthlyRentMin', max: 'monthlyRentMax', title: '월세', unit: '만원', step: 5, limit: 10000, hint: '만원 단위로 입력해 주세요.' },
-  deposit: { min: 'depositMin', max: 'depositMax', title: '보증금', unit: '만원', step: 100, limit: 1000000, hint: '만원 단위로 입력해 주세요.' },
-  area: { min: 'areaMin', max: 'areaMax', title: '면적', unit: '㎡', step: 5, limit: 1000, hint: '제곱미터(㎡) 단위로 입력해 주세요.' },
+  rent: { min: 'monthlyRentMin', max: 'monthlyRentMax', title: '월세', hint: '손잡이를 끌어 월세 범위를 정해요.' },
+  deposit: { min: 'depositMin', max: 'depositMax', title: '보증금', hint: '손잡이를 끌어 보증금 범위를 정해요.' },
+  area: { min: 'areaMin', max: 'areaMax', title: '면적', hint: '손잡이를 끌어 면적 범위를 정해요. 1평은 약 3.3㎡예요.' },
 } as const;
 
 const ROOMS: RoomType[] = ['ONE_ROOM', 'TWO_ROOM', 'THREE_ROOM_OR_MORE'];
 
 // 상단 조건 칩 (UI v0.4.3 01·06 상단, 07-02~05 팝오버). 칩을 누르면 범위·선택 팝오버가 열리고 [적용]하면 onApply로 넘긴다.
+// 월세·보증금·면적은 최소~최대 두 손잡이 슬라이더로 고른다(RangeSlider).
 // 그룹 화면에서는 그룹 조건(COND-01)을 저장하고, 첫 화면(01)에서는 지도 둘러보기 필터로만 쓴다.
 export default function ConditionChips({
   value,
@@ -172,7 +174,8 @@ function RangePopover({
   const [min, setMin] = useState<number | null>(value[spec.min]);
   const [max, setMax] = useState<number | null>(value[spec.max]);
   const { busy, error, run } = useApply(onApply);
-  const invalid = min !== null && max !== null && min > max ? '최소 금액은 최대 금액보다 클 수 없어요.' : null;
+  // 슬라이더로는 엇갈릴 수 없지만, 저장된 값이 이미 엇갈려 있으면 손잡이를 옮기기 전까지 막는다.
+  const invalid = min !== null && max !== null && min > max ? '최솟값이 최댓값보다 커요. 손잡이를 다시 맞춰 주세요.' : null;
 
   return (
     <Popover
@@ -189,68 +192,17 @@ function RangePopover({
       error={invalid ?? error}
       busy={busy}
     >
-      <div className="condition-pop__range">
-        <Stepper label="최소" value={min} unit={spec.unit} step={spec.step} limit={spec.limit} onChange={setMin} />
-        <Stepper label="최대" value={max} unit={spec.unit} step={spec.step} limit={spec.limit} onChange={setMax} />
-      </div>
-      <p className="condition-pop__note">최소 금액은 최대 금액보다 클 수 없어요.</p>
+      <RangeSlider
+        kind={kind}
+        title={spec.title}
+        min={min}
+        max={max}
+        onChange={(nextMin, nextMax) => {
+          setMin(nextMin);
+          setMax(nextMax);
+        }}
+      />
     </Popover>
-  );
-}
-
-function Stepper({
-  label,
-  value,
-  unit,
-  step,
-  limit,
-  onChange,
-}: {
-  label: string;
-  value: number | null;
-  unit: string;
-  step: number;
-  limit: number;
-  onChange: (value: number | null) => void;
-}) {
-  const [text, setText] = useState(value === null ? '' : String(value));
-  const [synced, setSynced] = useState(value);
-  if (synced !== value) {
-    setSynced(value);
-    setText(value === null ? '' : String(value));
-  }
-  const bump = (delta: number) => {
-    const next = Math.min(limit, Math.max(0, (value ?? 0) + delta));
-    onChange(next === 0 && delta < 0 && value === null ? null : next);
-  };
-  return (
-    <div className="stepper">
-      <span className="stepper__label">{label}</span>
-      <div className="stepper__control">
-        <button type="button" aria-label={`${label} 줄이기`} onClick={() => bump(-step)} disabled={value === null || value <= 0}>
-          −
-        </button>
-        <input
-          aria-label={`${label} (${unit})`}
-          inputMode="numeric"
-          placeholder="제한 없음"
-          value={text}
-          onChange={(event) => {
-            const raw = event.target.value.replace(/[^\d.]/g, '');
-            setText(raw);
-            const n = raw === '' ? null : Number(raw);
-            if (n === null || (Number.isFinite(n) && n <= limit)) {
-              setSynced(n);
-              onChange(n);
-            }
-          }}
-        />
-        <span className="stepper__unit">{unit}</span>
-        <button type="button" aria-label={`${label} 늘리기`} onClick={() => bump(step)}>
-          +
-        </button>
-      </div>
-    </div>
   );
 }
 
