@@ -15,6 +15,7 @@ import { useRoadviewAccess } from '../../hooks/useRoadviewAccess';
 import { getErrorMessage } from '../../lib/authApi';
 import { acceptSuggestion, getSuggestions } from '../../lib/conditionApi';
 import { searchPlaces } from '../../lib/kakaoMap';
+import { POLICY_DOCS } from '../../lib/policy';
 import { vehicleVerdict, vehicleVerdictSummary } from '../../lib/roadview';
 import type { Candidate } from '../../types';
 import type { Suggestion } from '../../types/search';
@@ -235,9 +236,22 @@ export default function WorkspaceSearch({ tab: routeTab }: { tab?: 'candidates' 
                   >
                     {inProgress ? '분석 중이에요…' : '대화 분석하기'}
                   </button>
-                  {inProgress && (
+                  {inProgress ? (
                     <p className="search-panel__hint" role="status">
                       대화를 분석하고 있어요. 끝나면 추천 위치를 알려 드려요.
+                    </p>
+                  ) : (
+                    // 호갱노노 AI 안내처럼, 무엇이 어디로 가는지 누르기 전에 알린다 (개인정보 처리방침 제2조)
+                    <p className="search-panel__hint">
+                      대화는 닉네임 없이 AI 분석 서버로 보내요. 결과는 참고용이에요.{' '}
+                      <Link
+                        to={`${POLICY_DOCS.privacy.path}#privacy-ai`}
+                        className="search-panel__more"
+                        target="_blank"
+                        rel="noreferrer"
+                      >
+                        자세히
+                      </Link>
                     </p>
                   )}
                   {!inProgress && analysis?.status === 'FAILED' && (

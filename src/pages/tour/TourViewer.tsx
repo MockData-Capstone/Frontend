@@ -232,6 +232,8 @@ export default function TourViewerPage() {
         <p className="tour__subtitle">
           {workspace.name} · {tour.visitor.nickname} 님이 현장에서 영상을 보내고 있어요.
         </p>
+        {/* 이용약관 제9조: 영상은 저장하지 않고, 화면 녹화·캡처 공유는 금지 */}
+        <p className="tour__subtitle">영상은 저장되지 않아요. 화면을 녹화하거나 캡처해서 공유하지 마세요.</p>
       </div>
 
       <div className="tour__columns">
