@@ -95,12 +95,6 @@
   color: var(--text);
 }
 
-.condition-pop__range {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
-}
-
 .condition-pop__note {
   margin: 10px 0 0;
   font-size: 12px;
@@ -124,62 +118,99 @@
   margin-top: 16px;
 }
 
-.stepper {
+/* 월세·보증금·면적 두 손잡이 슬라이더. --lo·--hi는 두 손잡이 자리(%) */
+.range-slider__value {
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  min-width: 0;
-}
-
-.stepper__label {
-  font-size: 12px;
-  color: var(--text);
-}
-
-.stepper__control {
-  display: flex;
   align-items: center;
   gap: 2px;
-  min-height: 38px;
-  padding: 0 2px;
-  background: #fff;
-  border: 1px solid var(--border);
-  border-radius: 6px;
+  margin: 0 0 14px;
+  text-align: center;
 }
 
-.stepper__control button {
-  flex: none;
-  width: 26px;
-  height: 30px;
-  font: inherit;
-  font-size: 16px;
+.range-slider__value strong {
+  font-size: 18px;
+  font-weight: 700;
   color: var(--text-h);
-  background: none;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
 }
 
-.stepper__control button:disabled {
-  color: #c4c4c4;
-  cursor: default;
-}
-
-.stepper__control input {
-  flex: 1;
-  min-width: 0;
-  padding: 0;
-  font: inherit;
-  font-size: 14px;
-  color: var(--text-h);
-  text-align: right;
-  background: none;
-  border: none;
-  outline: none;
-}
-
-.stepper__unit {
-  flex: none;
+.range-slider__value span {
   font-size: 12px;
+  color: var(--text-sub);
+}
+
+.range-slider__control {
+  position: relative;
+  height: 28px;
+  margin: 0 11px;
+  cursor: pointer;
+  /* 끄는 동안 화면이 움직이지 않게 */
+  touch-action: none;
+}
+
+.range-slider__track {
+  position: absolute;
+  top: 50%;
+  right: 0;
+  left: 0;
+  height: 4px;
+  background: var(--border);
+  border-radius: 2px;
+  transform: translateY(-50%);
+}
+
+.range-slider__fill {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: var(--lo);
+  width: calc(var(--hi) - var(--lo));
+  background: var(--success);
+  border-radius: 2px;
+}
+
+.range-slider__thumb {
+  position: absolute;
+  top: 50%;
+  box-sizing: border-box;
+  width: 22px;
+  height: 22px;
+  background: #fff;
+  border: 2px solid var(--success);
+  border-radius: 50%;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  transform: translate(-50%, -50%);
+  cursor: grab;
+}
+
+.range-slider__thumb:focus-visible {
+  outline: 3px solid var(--selected-border);
+  outline-offset: 2px;
+}
+
+.range-slider__thumb:active {
+  cursor: grabbing;
+}
+
+.range-slider__ticks {
+  position: relative;
+  height: 16px;
+  margin: 6px 11px 0;
+  font-size: 11px;
   color: var(--text);
+}
+
+.range-slider__ticks span {
+  position: absolute;
+  top: 0;
+  white-space: nowrap;
+  transform: translateX(-50%);
+}
+
+.range-slider__ticks span:first-child {
+  transform: translateX(-11px);
+}
+
+.range-slider__ticks span:last-child {
+  transform: translateX(calc(-100% + 11px));
 }
