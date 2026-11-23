@@ -208,48 +208,279 @@
   color: var(--text-h);
 }
 
+/* 로드뷰 PiP: 지도 위에 떠 있는 창. 머리줄을 끌어 옮기고, 왼쪽 위·오른쪽 아래 모서리를 끌어 크기를 바꾼다.
+   위치·크기는 style(left·top·width·height)로 준다 */
 .map-view__roadview {
   position: absolute;
-  inset: 64px 16px 16px;
   z-index: 2;
+  container-type: size;
+  display: flex;
+  flex-direction: column;
   overflow: hidden;
   background: var(--video-bg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+}
+
+.map-view__roadview-corner {
+  position: absolute;
+  z-index: 5;
+  width: 22px;
+  height: 22px;
+  touch-action: none;
+}
+
+.map-view__roadview-corner::before {
+  content: '';
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  border-color: var(--text);
+  border-style: solid;
+  border-width: 0;
+}
+
+.map-view__roadview-corner--nw {
+  top: 0;
+  left: 0;
+  cursor: nwse-resize;
+}
+
+.map-view__roadview-corner--nw::before {
+  top: 5px;
+  left: 5px;
+  border-top-width: 2px;
+  border-left-width: 2px;
+}
+
+.map-view__roadview-corner--se {
+  right: 0;
+  bottom: 0;
+  cursor: nwse-resize;
+}
+
+.map-view__roadview-corner--se::before {
+  right: 5px;
+  bottom: 5px;
+  border-right-width: 2px;
+  border-bottom-width: 2px;
+  border-color: #fff;
+}
+
+.map-view__roadview-corner:hover::before,
+.map-view__roadview-corner:focus-visible::before {
+  border-color: var(--success);
+}
+
+.map-view__roadview-corner:focus-visible {
+  outline: 2px solid var(--success);
+  outline-offset: -2px;
+  border-radius: 10px 0 0;
+}
+
+.map-view__roadview.is-full {
   border-radius: 8px;
-  box-shadow: var(--shadow);
+}
+
+.map-view__roadview-bar {
+  display: flex;
+  flex: none;
+  flex-wrap: wrap;
+  gap: 6px 12px;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 10px 8px 26px;
+  cursor: move;
+  touch-action: none;
+  user-select: none;
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
+}
+
+.map-view__roadview-status {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px 8px;
+  align-items: baseline;
+  min-width: 0;
+  margin: 0;
+  font-size: 13px;
+  color: var(--text);
+}
+
+.map-view__roadview-status b {
+  font-size: 14px;
+  color: var(--text-h);
+}
+
+.map-view__roadview-status.is-found b {
+  color: var(--success);
+}
+
+.map-view__roadview-status.is-none b {
+  color: var(--danger);
+}
+
+.map-view__roadview-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+}
+
+.map-view__roadview-actions button {
+  min-height: 30px;
+  padding: 4px 10px;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-h);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.map-view__roadview-sizes {
+  display: inline-flex;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+}
+
+.map-view__roadview-actions .map-view__roadview-sizes button {
+  border: 0;
+  border-radius: 0;
+}
+
+.map-view__roadview-actions .map-view__roadview-sizes button + button {
+  border-left: 1px solid var(--border);
+}
+
+.map-view__roadview-actions .map-view__roadview-sizes button[aria-pressed='true'] {
+  color: var(--success);
+  background: var(--selected-bg);
+}
+
+.map-view__roadview-actions button:focus-visible {
+  outline: 2px solid var(--success);
+  outline-offset: 1px;
+}
+
+.map-view__roadview-actions .map-view__roadview-close {
+  color: #fff;
+  background: var(--accent);
+  border-color: transparent;
 }
 
 .map-view__roadview-canvas {
-  position: absolute;
-  inset: 0;
+  position: relative;
+  flex: 1;
+  min-height: 0;
 }
 
 .map-view__roadview-note {
   position: absolute;
-  inset: 0;
+  inset: 52px 0 0;
   display: flex;
   align-items: center;
   justify-content: center;
   margin: 0;
   padding: 24px;
   font-size: 14px;
+  line-height: 1.5;
   color: #fff;
   text-align: center;
 }
 
-.map-view__roadview-close {
+/* 지도 위 로드뷰 위치·방향 핀 (CustomOverlay라 전역 클래스). --pan은 로드뷰 시점 방위각 */
+.map-roadview-pin {
+  position: relative;
+  width: 44px;
+  height: 44px;
+  pointer-events: none;
+}
+
+.map-roadview-pin__cone {
   position: absolute;
-  top: 12px;
-  right: 12px;
-  z-index: 3;
-  min-height: 36px;
-  padding: 6px 12px;
-  font: inherit;
-  font-size: 14px;
-  color: var(--text-h);
-  background: var(--bg);
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
+  inset: 0;
+  background: conic-gradient(from calc(var(--pan, 0deg) - 30deg), rgba(23, 75, 55, 0.35) 0deg 60deg, transparent 60deg);
+  border-radius: 50%;
+}
+
+.map-roadview-pin__dot {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 14px;
+  height: 14px;
+  background: var(--success);
+  border: 3px solid #fff;
+  border-radius: 50%;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.35);
+  transform: translate(-50%, -50%);
+}
+
+.map-roadview-pin.is-none .map-roadview-pin__cone {
+  display: none;
+}
+
+.map-roadview-pin.is-none .map-roadview-pin__dot {
+  background: var(--danger);
+}
+
+/* 작은 PiP 창: 상태는 판정만, 단추는 한 줄로 줄여 로드뷰 사진 자리를 지킨다 */
+@container (max-width: 460px) {
+  .map-view__roadview-bar {
+    gap: 4px;
+    padding: 6px 6px 6px 24px;
+  }
+
+  .map-view__roadview-status {
+    font-size: 12px;
+  }
+
+  .map-view__roadview-status span {
+    display: none;
+  }
+
+  .map-view__roadview-actions {
+    flex-wrap: nowrap;
+    gap: 4px;
+  }
+
+  .map-view__roadview-actions button {
+    min-height: 28px;
+    padding: 2px 7px;
+    font-size: 12px;
+  }
+}
+
+/* 좁은 화면: 상태 한 줄 + 단추 한 줄로 줄여 로드뷰 사진 자리를 넓힌다 */
+@media (max-width: 600px) {
+  .map-view__roadview-bar {
+    gap: 6px;
+    padding: 8px 8px 8px 26px;
+  }
+
+  .map-view__roadview-status {
+    font-size: 12px;
+  }
+
+  .map-view__roadview-status span {
+    display: none;
+  }
+
+  .map-view__roadview-actions {
+    flex-wrap: nowrap;
+    gap: 4px;
+  }
+
+  .map-view__roadview-actions button {
+    padding: 4px 8px;
+    font-size: 12px;
+  }
 }
 
 @media (max-width: 900px) {
