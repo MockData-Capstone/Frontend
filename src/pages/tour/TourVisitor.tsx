@@ -275,7 +275,7 @@ function TourVisitor({ workspaceId }: { workspaceId: number }) {
       </header>
 
       {broadcasting && (
-        <p className="broadcast__notice">촬영 전에 중개사·임대인의 동의를 확인해주세요.</p>
+        <p className="broadcast__notice">촬영 전에 중개사·임대인의 동의를 확인해주세요. 영상은 저장되지 않아요.</p>
       )}
       {broadcasting && reconnecting && (
         <p className="broadcast__notice broadcast__notice--warn">
