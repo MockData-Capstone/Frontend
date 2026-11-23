@@ -159,6 +159,12 @@
   color: var(--text);
 }
 
+/* AI 안내의 [자세히] 링크는 줄이 바뀌어도 쪼개지지 않게 */
+.search-panel__more {
+  color: var(--text-h);
+  white-space: nowrap;
+}
+
 .search-panel__error {
   color: var(--danger);
 }

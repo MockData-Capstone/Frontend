@@ -4,6 +4,7 @@ import { useAuth } from '../app/providers/useAuth';
 import ConditionChips from '../components/ConditionChips';
 import Header from '../components/Header';
 import MapView, { type MapMarker } from '../components/Map';
+import PolicyFooter from '../components/PolicyFooter';
 import { emptyCondition } from '../lib/conditionApi';
 import { pendingInvite } from '../lib/invite';
 import { searchPlaces, type PlaceResult } from '../lib/kakaoMap';
@@ -192,6 +193,8 @@ function HomeMap({ loggedIn }: { loggedIn: boolean }) {
                 <p className="home-panel__note">로그인 전에도 지도와 지역 정보를 둘러볼 수 있어요.</p>
               </>
             )}
+            {/* 지도 화면이라 아래쪽 하단 정보 대신 패널 맨 아래에 약관 링크만 둔다 */}
+            <PolicyFooter compact />
           </div>
         </aside>
 

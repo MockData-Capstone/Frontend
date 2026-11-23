@@ -76,3 +76,50 @@
 .account-card .auth-field__hint--bad {
   color: var(--danger);
 }
+
+.account-card__version {
+  margin: 10px 0 0;
+  font-size: 13px;
+}
+
+/* 탈퇴 팝업: 지워지는 정보·남는 정보와 확인 체크 */
+.withdraw-info {
+  font-size: 14px;
+  color: var(--text-h);
+}
+
+.withdraw-info__title {
+  margin: 0 0 4px;
+  font-weight: 700;
+}
+
+.withdraw-info ul {
+  display: grid;
+  gap: 2px;
+  margin: 0 0 12px;
+  padding-left: 18px;
+  color: var(--text);
+}
+
+.withdraw-info__check {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  padding: 10px 12px;
+  margin-bottom: 8px;
+  font-weight: 600;
+  background: var(--bg-muted);
+  border-radius: 6px;
+}
+
+.withdraw-info__check input {
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  accent-color: var(--danger);
+}
+
+.withdraw-info__link {
+  font-size: 13px;
+  color: var(--text);
+}

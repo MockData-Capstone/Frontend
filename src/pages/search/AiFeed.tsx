@@ -52,7 +52,10 @@ export default function AiFeed({
   }
   if (!analysis) {
     return hasChat ? (
-      <StateCard title="아직 분석하지 않았어요" lines={['멤버들과 나눈 대화로 집 조건을 정리하고', '조건에 맞는 위치를 추천해 드려요.']}>
+      <StateCard
+        title="아직 분석하지 않았어요"
+        lines={['멤버들과 나눈 대화로 집 조건을 정리하고', '조건에 맞는 위치를 추천해 드려요.', '대화는 닉네임 없이 AI 분석 서버로 보내요.']}
+      >
         <button type="button" className="button button--primary button--block" onClick={onRequest}>
           대화 분석하기
         </button>
