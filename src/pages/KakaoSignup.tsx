@@ -1,16 +1,19 @@
 import { useState, type FormEvent } from 'react';
 import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom';
 import Header from '../components/Header';
+import PolicyFooter from '../components/PolicyFooter';
 import { useAuth } from '../app/providers/useAuth';
 import { getErrorCode, getFieldErrors, signupSocial, type FieldError, type SocialSignupInfo } from '../lib/authApi';
+import { EMPTY_CONSENTS, hasRequiredConsents, type Consents } from '../lib/policy';
 import { useNicknameAvailability } from '../hooks/useNicknameAvailability';
 import NicknameHint from '../components/NicknameHint';
+import ConsentList from './policy/ConsentList';
 import './Auth.css';
 
 const NICKNAME_MIN = 2;
 const NICKNAME_MAX = 20;
 
-// AUTH-02 카카오 최초 가입: 개인정보 수집·이용 동의 + 닉네임 확정.
+// AUTH-02 카카오 최초 가입: 가입 동의(만 14세·이용약관·개인정보) + 닉네임 확정.
 // 카카오 닉네임을 기본값으로 채우고, 이미 사용 중이면 새 닉네임을 입력받는다.
 // KakaoCallback이 navigate state로 가입 정보(SocialSignupInfo)를 넘겨준다.
 export default function KakaoSignup() {
@@ -19,8 +22,7 @@ export default function KakaoSignup() {
   const signup = useLocation().state as SocialSignupInfo | null;
 
   const [nickname, setNickname] = useState(signup?.nickname ?? '');
-  const [agreedToTerms, setAgreedToTerms] = useState(false);
-  const [agreedToPrivacy, setAgreedToPrivacy] = useState(false);
+  const [consents, setConsents] = useState<Consents>(EMPTY_CONSENTS);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(
     signup && signup.nickname && !signup.nicknameAvailable
@@ -45,7 +47,7 @@ export default function KakaoSignup() {
     if (trimmed.length < NICKNAME_MIN || trimmed.length > NICKNAME_MAX)
       return `닉네임은 ${NICKNAME_MIN}~${NICKNAME_MAX}자로 입력해주세요.`;
     if (nicknameStatus === 'unavailable') return '이미 사용 중인 닉네임이에요.';
-    if (!agreedToTerms || !agreedToPrivacy) return '필수 약관에 모두 동의해주세요.';
+    if (!hasRequiredConsents(consents)) return '필수 항목에 모두 동의해주세요.';
     return null;
   }
 
@@ -64,7 +66,7 @@ export default function KakaoSignup() {
       const tokens = await signupSocial({
         signupToken: signup!.signupToken,
         nickname: nickname.trim(),
-        privacyAgreed: agreedToPrivacy,
+        privacyAgreed: consents.privacy,
       });
       signIn(tokens);
       navigate('/signup/complete', { replace: true });
@@ -136,24 +138,7 @@ export default function KakaoSignup() {
                 </label>
               )}
 
-              <div className="auth-checkboxes">
-                <label className="auth-checkbox">
-                  <input
-                    type="checkbox"
-                    checked={agreedToTerms}
-                    onChange={(e) => setAgreedToTerms(e.target.checked)}
-                  />
-                  <span>[필수] 서비스 이용약관 동의</span>
-                </label>
-                <label className="auth-checkbox">
-                  <input
-                    type="checkbox"
-                    checked={agreedToPrivacy}
-                    onChange={(e) => setAgreedToPrivacy(e.target.checked)}
-                  />
-                  <span>[필수] 개인정보 수집·이용 동의</span>
-                </label>
-              </div>
+              <ConsentList value={consents} onChange={setConsents} />
 
               <button type="submit" className="auth-button" disabled={isSubmitting}>
                 {isSubmitting ? '가입 중...' : '가입하기'}
@@ -162,6 +147,7 @@ export default function KakaoSignup() {
           )}
         </div>
       </div>
+      <PolicyFooter />
     </div>
   );
 }
