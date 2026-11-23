@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import Header from '../components/Header';
+import PolicyFooter from '../components/PolicyFooter';
 import { useAuth } from '../app/providers/useAuth';
 import { login, getErrorCode, getFieldErrors, type FieldError } from '../lib/authApi';
 import { beginOAuth } from '../lib/oauth';
@@ -121,6 +122,7 @@ export default function Login() {
           </p>
         </div>
       </div>
+      <PolicyFooter />
     </div>
   );
 }

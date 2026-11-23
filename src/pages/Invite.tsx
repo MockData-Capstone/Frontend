@@ -3,6 +3,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../app/providers/useAuth';
 import Avatar from '../components/Avatar';
 import Header from '../components/Header';
+import PolicyFooter from '../components/PolicyFooter';
 import { getErrorCode, getErrorMessage, getKakaoAuthorizeUrl } from '../lib/authApi';
 import { clearPendingInvite, pendingInvite, rememberInvite } from '../lib/invite';
 import { acceptInvitation, getInvitationPreview } from '../lib/workspaceApi';
@@ -196,6 +197,7 @@ function Invite({ token }: { token: string }) {
           )}
         </section>
       </main>
+      <PolicyFooter />
     </div>
   );
 }
