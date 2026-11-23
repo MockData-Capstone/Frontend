@@ -1,10 +1,13 @@
 import { useState, type FormEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import Header from '../components/Header';
+import PolicyFooter from '../components/PolicyFooter';
 import { useAuth } from '../app/providers/useAuth';
 import { signUp, getKakaoAuthorizeUrl, getErrorCode, getFieldErrors, type FieldError } from '../lib/authApi';
+import { EMPTY_CONSENTS, hasRequiredConsents, type Consents } from '../lib/policy';
 import { useNicknameAvailability } from '../hooks/useNicknameAvailability';
 import NicknameHint from '../components/NicknameHint';
+import ConsentList from './policy/ConsentList';
 import './Auth.css';
 
 // AUTH-01 자체 회원가입 + AUTH-02 카카오 가입
@@ -16,8 +19,7 @@ export default function Signup() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [passwordConfirm, setPasswordConfirm] = useState('');
-  const [agreedToTerms, setAgreedToTerms] = useState(false);
-  const [agreedToPrivacy, setAgreedToPrivacy] = useState(false);
+  const [consents, setConsents] = useState<Consents>(EMPTY_CONSENTS);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<FieldError[]>([]);
@@ -33,8 +35,7 @@ export default function Signup() {
     if (!email.trim()) return '이메일을 입력해주세요.';
     if (password.length < 8) return '비밀번호는 8자 이상이어야 합니다.';
     if (password !== passwordConfirm) return '비밀번호가 일치하지 않습니다.';
-    if (!agreedToTerms || !agreedToPrivacy)
-      return '필수 약관에 모두 동의해주세요.';
+    if (!hasRequiredConsents(consents)) return '필수 항목에 모두 동의해주세요.';
     return null;
   }
 
@@ -55,7 +56,7 @@ export default function Signup() {
         email,
         password,
         nickname,
-        privacyAgreed: agreedToPrivacy,
+        privacyAgreed: consents.privacy,
       });
       signIn(tokens);
       navigate('/signup/complete');
@@ -163,24 +164,7 @@ export default function Signup() {
               />
             </label>
 
-            <div className="auth-checkboxes">
-              <label className="auth-checkbox">
-                <input
-                  type="checkbox"
-                  checked={agreedToTerms}
-                  onChange={(e) => setAgreedToTerms(e.target.checked)}
-                />
-                <span>[필수] 서비스 이용약관 동의</span>
-              </label>
-              <label className="auth-checkbox">
-                <input
-                  type="checkbox"
-                  checked={agreedToPrivacy}
-                  onChange={(e) => setAgreedToPrivacy(e.target.checked)}
-                />
-                <span>[필수] 개인정보 수집·이용 동의</span>
-              </label>
-            </div>
+            <ConsentList value={consents} onChange={setConsents} />
 
             <button type="submit" className="auth-button" disabled={isSubmitting}>
               {isSubmitting ? '가입 중...' : '가입하기'}
@@ -192,6 +176,7 @@ export default function Signup() {
           </p>
         </div>
       </div>
+      <PolicyFooter />
     </div>
   );
 }
