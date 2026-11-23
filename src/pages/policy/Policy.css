@@ -1,0 +1,237 @@
+/* 약관 및 정책 페이지 (/policy/*) */
+.policy-page__main {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 36px 20px 48px;
+}
+
+.policy-page__title {
+  margin: 0 0 18px;
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+  color: var(--text-h);
+}
+
+.policy-tabs {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 20px;
+  border-bottom: 1px solid var(--border);
+}
+
+.policy-tabs__tab {
+  padding: 10px 14px;
+  margin-bottom: -1px;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text);
+  text-decoration: none;
+  border-bottom: 2px solid transparent;
+}
+
+.policy-tabs__tab:hover {
+  color: var(--text-h);
+}
+
+.policy-tabs__tab.active {
+  color: var(--text-h);
+  border-bottom-color: var(--success);
+}
+
+.policy-page__summary {
+  padding: 16px 18px;
+  margin-bottom: 24px;
+  background: var(--info-bg);
+  border-radius: 8px;
+}
+
+.policy-page__summary h2 {
+  margin: 0 0 8px;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-h);
+}
+
+.policy-highlights {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding-left: 18px;
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--text-h);
+}
+
+.policy-page__doc-head {
+  margin-bottom: 8px;
+}
+
+.policy-page__doc-head h2 {
+  margin: 0 0 4px;
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text-h);
+}
+
+.policy-page__doc-head p {
+  margin: 0;
+  font-size: 13px;
+  color: var(--text-sub);
+}
+
+/* 약관 본문 (약관 페이지와 가입 화면 팝업이 같이 쓴다) */
+.policy-doc {
+  font-size: 14px;
+  line-height: 1.65;
+  color: var(--text-h);
+  overflow-wrap: anywhere;
+}
+
+.policy-doc p {
+  margin: 0 0 8px;
+}
+
+.policy-doc ol,
+.policy-doc ul {
+  display: grid;
+  gap: 4px;
+  margin: 0 0 8px;
+  padding-left: 20px;
+}
+
+.policy-doc ul ul {
+  margin: 4px 0 0;
+}
+
+.policy-doc a {
+  color: var(--success);
+  font-weight: 600;
+}
+
+.policy-doc__lead {
+  margin-top: 12px !important;
+}
+
+.policy-doc__article {
+  padding-top: 18px;
+  scroll-margin-top: 16px;
+}
+
+.policy-doc__article h3 {
+  margin: 0 0 8px;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-h);
+}
+
+.policy-doc__table-wrap {
+  margin: 0 0 8px;
+  overflow-x: auto;
+}
+
+/* 휴대폰 폭에서도 칸이 숨지 않게 화면 폭에 맞춰 줄을 바꾼다 */
+.policy-doc__table {
+  width: 100%;
+  font-size: 13px;
+  border-collapse: collapse;
+}
+
+.policy-doc__table th,
+.policy-doc__table td {
+  padding: 8px 10px;
+  text-align: left;
+  vertical-align: top;
+  border: 1px solid var(--border);
+}
+
+.policy-doc__table thead th,
+.policy-doc__table tbody th {
+  font-weight: 600;
+  background: var(--bg-muted);
+}
+
+.policy-doc__table tbody th {
+  width: 30%;
+}
+
+/* 가입 팝업의 2열 표: 머리 칸은 짧게 */
+.policy-doc__table--compact tbody th {
+  width: 64px;
+  white-space: nowrap;
+}
+
+/* 가입 동의 */
+.consent-list {
+  margin: 16px 0;
+  font-size: 14px;
+  color: var(--text-h);
+}
+
+.consent-list__all {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  padding: 10px 12px;
+  font-weight: 700;
+  background: var(--bg-muted);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+}
+
+.consent-list__items {
+  display: grid;
+  gap: 6px;
+  margin: 10px 0 0;
+  padding: 0 12px;
+  list-style: none;
+}
+
+.consent-list__item {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.consent-list__item label {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.consent-list input[type='checkbox'] {
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  accent-color: var(--success);
+}
+
+.consent-list__view {
+  flex: none;
+  padding: 2px 4px;
+  font: inherit;
+  font-size: 13px;
+  color: var(--text);
+  text-decoration: underline;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.consent-list__view:hover {
+  color: var(--text-h);
+}
+
+/* 팝업 안 약관 본문: 버튼이 가려지지 않게 본문만 스크롤 */
+.consent-list__doc {
+  max-height: min(52svh, 440px);
+  padding-right: 6px;
+  overflow-y: auto;
+}
+
+.consent-list__doc .policy-doc__article:first-child {
+  padding-top: 0;
+}

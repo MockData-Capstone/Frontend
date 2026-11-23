@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import Header from '../components/Header';
+import PolicyFooter from '../components/PolicyFooter';
 import { getErrorMessage } from '../lib/authApi';
 import { getMyWorkspaces } from '../lib/workspaceApi';
 import type { WorkspaceSummary } from '../types';
@@ -69,6 +70,7 @@ export default function WorkspaceList() {
           지도 둘러보기
         </Link>
       </main>
+      <PolicyFooter />
     </div>
   );
 }

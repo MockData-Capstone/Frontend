@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import Header from '../components/Header';
+import PolicyFooter from '../components/PolicyFooter';
 import { validateNewPassword } from '../lib/accountValidation';
 import { confirmPasswordReset, getErrorMessage, requestPasswordReset } from '../lib/authApi';
 import './Auth.css';
@@ -18,6 +19,7 @@ export default function PasswordReset() {
       <div className="auth-page__content">
         <div className="auth-card">{token ? <ConfirmForm token={token} /> : <RequestForm />}</div>
       </div>
+      <PolicyFooter />
     </div>
   );
 }
