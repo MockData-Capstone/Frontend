@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../app/providers/useAuth';
 import Avatar from '../components/Avatar';
 import Dialog from '../components/Dialog';
@@ -10,6 +10,7 @@ import { useNicknameAvailability } from '../hooks/useNicknameAvailability';
 import { validateNewPassword, validateProfileImage } from '../lib/accountValidation';
 import { getErrorCode, getErrorMessage } from '../lib/authApi';
 import { beginOAuth } from '../lib/oauth';
+import { POLICY_DOCS, POLICY_INFO } from '../lib/policy';
 import {
   changePassword,
   linkSocialAccount,
@@ -21,7 +22,7 @@ import {
 import './Account.css';
 
 // 12 내 정보 · 탈퇴 (UI v0.4.3, AUTH-04·05·06·08)
-// 프로필(사진·닉네임) / 로그인 방법(연결된 계정, 비밀번호 변경, 카카오 연결, 로그아웃) / 회원 탈퇴
+// 프로필(사진·닉네임) / 로그인 방법(연결된 계정, 비밀번호 변경, 카카오 연결, 로그아웃) / 약관 및 정책 / 회원 탈퇴
 export default function Account() {
   const { me, updateMe, signOut } = useAuth();
   const { showToast } = useToast();
@@ -33,6 +34,8 @@ export default function Account() {
   const [photoBusy, setPhotoBusy] = useState(false);
   const [profileError, setProfileError] = useState<string | null>(null);
   const [withdrawOpen, setWithdrawOpen] = useState(false);
+  // 탈퇴 팝업의 "안내를 확인했어요" 체크 — 체크해야 [탈퇴하기]가 켜진다
+  const [withdrawChecked, setWithdrawChecked] = useState(false);
   const [withdrawing, setWithdrawing] = useState(false);
   const [withdrawError, setWithdrawError] = useState<string | null>(null);
 
@@ -186,17 +189,42 @@ export default function Account() {
 
         <LoginMethods linkState={linkState} />
 
+        <section className="card account-card" aria-labelledby="policy-title">
+          <h2 id="policy-title" className="card__subtitle">
+            약관 및 정책
+          </h2>
+          <Link to={POLICY_DOCS.terms.path} className="button button--outline button--block account-card__row">
+            {POLICY_DOCS.terms.title}
+          </Link>
+          <Link to={POLICY_DOCS.privacy.path} className="button button--outline button--block account-card__row">
+            {POLICY_DOCS.privacy.title}
+          </Link>
+          <p className="account-card__desc account-card__version">
+            버전 {POLICY_INFO.version} · 시행일 {POLICY_INFO.effectiveDate}
+          </p>
+        </section>
+
         <section className="card account-card" aria-labelledby="withdraw-title">
           <h2 id="withdraw-title" className="card__subtitle">
             회원 탈퇴
           </h2>
-          <p className="account-card__desc">탈퇴하면 작성한 대화 원본이 삭제돼요. 호스트인 그룹은 먼저 권한을 넘겨주세요.</p>
+          <p className="account-card__desc">
+            탈퇴하면 계정과 프로필이 바로 지워지고, 보낸 대화는 내용 없이 '탈퇴한 사용자의 메시지'로 남아요. 다른 멤버가 있는
+            그룹의 호스트라면 먼저 호스트를 넘겨주세요.
+          </p>
           {withdrawError && (
             <p className="field__error" role="alert">
               {withdrawError}
             </p>
           )}
-          <button type="button" className="button button--secondary button--block" onClick={() => setWithdrawOpen(true)}>
+          <button
+            type="button"
+            className="button button--secondary button--block"
+            onClick={() => {
+              setWithdrawChecked(false);
+              setWithdrawOpen(true);
+            }}
+          >
             회원 탈퇴
           </button>
         </section>
@@ -205,14 +233,43 @@ export default function Account() {
       <Dialog
         open={withdrawOpen}
         title="정말 탈퇴할까요?"
-        description="탈퇴하면 되돌릴 수 없어요. 작성한 대화는 '탈퇴한 사용자'로 표시되고 내용은 지워져요."
+        description="탈퇴하면 되돌릴 수 없어요."
         confirmLabel="탈퇴하기"
         busyLabel="탈퇴하는 중"
         tone="danger"
         busy={withdrawing}
+        confirmDisabled={!withdrawChecked}
         onConfirm={() => void doWithdraw()}
         onClose={() => setWithdrawOpen(false)}
-      />
+      >
+        {/* 지워지는 정보와 남는 정보 (개인정보 처리방침 제3조와 같은 내용) */}
+        <div className="withdraw-info">
+          <p className="withdraw-info__title">바로 지워져요</p>
+          <ul>
+            <li>계정(이메일·닉네임·비밀번호)과 프로필 사진</li>
+            <li>카카오 연결, 내 투표, 알림</li>
+            <li>나 혼자 있는 그룹과 그 그룹의 모든 기록</li>
+          </ul>
+          <p className="withdraw-info__title">그룹에 남아요</p>
+          <ul>
+            <li>내가 보낸 대화: 내용이 지워지고 '탈퇴한 사용자의 메시지'로 표시돼요</li>
+            <li>내가 추가한 후보지: 추가한 사람 표시 없이 남아요</li>
+            <li>미니게임·집보기 기록의 닉네임: 그룹이 삭제될 때 함께 지워져요</li>
+          </ul>
+          <label className="withdraw-info__check">
+            <input
+              type="checkbox"
+              checked={withdrawChecked}
+              onChange={(event) => setWithdrawChecked(event.target.checked)}
+              disabled={withdrawing}
+            />
+            <span>안내를 확인했고 탈퇴에 동의해요</span>
+          </label>
+          <Link to={`${POLICY_DOCS.privacy.path}#privacy-retention`} className="withdraw-info__link">
+            개인정보 처리방침에서 자세히 보기
+          </Link>
+        </div>
+      </Dialog>
     </div>
   );
 }
