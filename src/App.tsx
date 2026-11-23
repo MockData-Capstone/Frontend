@@ -27,6 +27,7 @@ const TourViewerPage = lazy(() => import('./pages/tour/TourViewer'));
 const TourVisitorPage = lazy(() => import('./pages/tour/TourVisitor'));
 const LinkAccount = lazy(() => import('./pages/LinkAccount'));
 const KakaoSignup = lazy(() => import('./pages/KakaoSignup'));
+const PolicyPage = lazy(() => import('./pages/policy/PolicyPage'));
 
 function App() {
   return (
@@ -45,6 +46,9 @@ function App() {
 
       {/* 01 비밀번호 재설정 요청·새 비밀번호 (AUTH-07, 메일 링크 /password-reset?token=) */}
       <Route path="/password-reset" element={<PasswordReset />} />
+      {/* 약관 및 정책 (이용약관·개인정보 처리방침) — 로그인 없이 볼 수 있다. /policy는 이용약관으로 보낸다 */}
+      <Route path="/policy" element={<PolicyPage />} />
+      <Route path="/policy/:doc" element={<PolicyPage />} />
       {/* 12 내 정보 · 탈퇴 */}
       <Route
         path="/account"

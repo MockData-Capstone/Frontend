@@ -1,0 +1,44 @@
+.policy-footer {
+  padding: 20px 20px 28px;
+  font-size: 12px;
+  color: var(--text);
+  text-align: center;
+  border-top: 1px solid var(--border);
+}
+
+.policy-footer__links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 16px;
+  justify-content: center;
+}
+
+.policy-footer__links a {
+  color: var(--text);
+  text-decoration: none;
+}
+
+.policy-footer__links a:hover {
+  color: var(--text-h);
+  text-decoration: underline;
+}
+
+.policy-footer__links .policy-footer__privacy {
+  font-weight: 700;
+  color: var(--text-h);
+}
+
+.policy-footer__info {
+  margin: 6px 0 0;
+  overflow-wrap: anywhere;
+}
+
+/* 지도 화면 왼쪽 패널 아래: 선·여백 없이 링크만 */
+.policy-footer--compact {
+  padding: 10px 0 0;
+  border-top: none;
+}
+
+.policy-footer--compact .policy-footer__links {
+  justify-content: flex-start;
+}
