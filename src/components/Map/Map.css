@@ -394,40 +394,73 @@
   text-align: center;
 }
 
-/* 지도 위 로드뷰 위치·방향 핀 (CustomOverlay라 전역 클래스). --pan은 로드뷰 시점 방위각 */
+/* 지도 위 로드뷰 자리·방향 표시 (CustomOverlay라 전역 클래스). 상자 가운데가 로드뷰 자리이고 --pan은 로드뷰 시점 방위각.
+   집 모양 캐릭터가 그 자리에 서 있고, 부채꼴이 지금 바라보는 쪽을 가리킨다. */
 .map-roadview-pin {
   position: relative;
-  width: 44px;
-  height: 44px;
+  /* 부채꼴이 캐릭터 머리 위로도 충분히 보이게 반지름 75px */
+  width: 150px;
+  height: 150px;
+  color: var(--brand);
   pointer-events: none;
 }
 
 .map-roadview-pin__cone {
   position: absolute;
   inset: 0;
-  background: conic-gradient(from calc(var(--pan, 0deg) - 30deg), rgba(23, 75, 55, 0.35) 0deg 60deg, transparent 60deg);
+  background: conic-gradient(from calc(var(--pan, 0deg) - 30deg), rgba(62, 119, 114, 0.85) 0deg 60deg, transparent 60deg);
   border-radius: 50%;
+  /* 파란 로드뷰 길 위에서도 보이게 진하게 시작해 끝으로 갈수록 옅게 */
+  -webkit-mask: radial-gradient(closest-side, #000 35%, rgba(0, 0, 0, 0.6) 75%, transparent);
+  mask: radial-gradient(closest-side, #000 35%, rgba(0, 0, 0, 0.6) 75%, transparent);
 }
 
-.map-roadview-pin__dot {
+.map-roadview-pin__ground {
   position: absolute;
   top: 50%;
   left: 50%;
-  width: 14px;
-  height: 14px;
-  background: var(--success);
-  border: 3px solid #fff;
+  width: 22px;
+  height: 8px;
+  background: rgba(23, 75, 55, 0.3);
   border-radius: 50%;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.35);
   transform: translate(-50%, -50%);
+}
+
+.map-roadview-pin__walker {
+  position: absolute;
+  /* 꼬리 끝(viewBox y 43.5)이 상자 가운데에 닿게 */
+  top: calc(50% - 43.5px);
+  left: calc(50% - 18px);
+  width: 36px;
+  height: 46px;
+  overflow: visible;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.35));
+  animation: map-roadview-pin-drop 0.25s ease-out;
+}
+
+@keyframes map-roadview-pin-drop {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .map-roadview-pin__walker {
+    animation: none;
+  }
+}
+
+.map-roadview-pin.is-none {
+  color: var(--danger);
 }
 
 .map-roadview-pin.is-none .map-roadview-pin__cone {
   display: none;
 }
 
-.map-roadview-pin.is-none .map-roadview-pin__dot {
-  background: var(--danger);
+.map-roadview-pin.is-none .map-roadview-pin__ground {
+  background: rgba(170, 101, 87, 0.3);
 }
 
 /* 작은 PiP 창: 상태는 판정만, 단추는 한 줄로 줄여 로드뷰 사진 자리를 지킨다 */
