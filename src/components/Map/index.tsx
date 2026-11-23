@@ -77,6 +77,14 @@ function savePipSize(size: Box) {
   }
 }
 
+// 로드뷰 자리에 세우는 집 모양 캐릭터 (네이버·카카오 지도의 로드뷰 아이콘 역할). 꼬리 끝이 그 자리를 가리키고, 색은 CSS color를 따른다.
+const WALKER_SVG =
+  '<svg class="map-roadview-pin__walker" viewBox="0 0 36 46">' +
+  '<path d="M18 2.5 33 14.5V31a3 3 0 0 1-3 3h-8l-4 9.5-4-9.5H6a3 3 0 0 1-3-3V14.5Z" fill="#fff" stroke="currentColor" stroke-width="2.6" stroke-linejoin="round"/>' +
+  '<circle cx="13" cy="22" r="2.4" fill="currentColor"/><circle cx="23" cy="22" r="2.4" fill="currentColor"/>' +
+  '<path d="M14 27.5q4 3.2 8 0" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>' +
+  '</svg>';
+
 type RoadviewStatus =
   | { kind: 'loading' }
   | { kind: 'none' }
@@ -261,7 +269,7 @@ function KakaoMapView({
     notifyRoadview(roadview !== null);
   }, [roadview]);
 
-  // 로드뷰 창: 반경 안의 가장 가까운 파노라마를 띄우고, 지도에 지금 보는 자리·방향을 핀으로 표시한다.
+  // 로드뷰 창: 반경 안의 가장 가까운 파노라마를 띄우고, 지도에 지금 보는 자리(캐릭터)·방향(부채꼴)을 표시한다.
   // 장소(target.name)가 있으면 그쪽을 바라보게 돌린다.
   useEffect(() => {
     if (!map || !roadview || !roadviewRef.current) return;
@@ -275,7 +283,7 @@ function KakaoMapView({
     const { viewer } = viewerRef.current;
     const pinEl = document.createElement('div');
     pinEl.className = 'map-roadview-pin';
-    pinEl.innerHTML = '<span class="map-roadview-pin__cone"></span><span class="map-roadview-pin__dot"></span>';
+    pinEl.innerHTML = `<span class="map-roadview-pin__cone"></span><span class="map-roadview-pin__ground"></span>${WALKER_SVG}`;
     pinEl.setAttribute('aria-hidden', 'true');
     const pin = new kakao.maps.CustomOverlay({ position: requested, content: pinEl, zIndex: 4 });
     let cancelled = false;
@@ -305,7 +313,7 @@ function KakaoMapView({
       .then((panoId) => {
         if (cancelled) return;
         if (panoId === null) {
-          // 로드뷰가 없는 자리도 어디를 확인했는지 보이게 빨간 점으로 표시한다
+          // 로드뷰가 없는 자리도 어디를 확인했는지 보이게 빨간 캐릭터로 표시한다 (방향 부채꼴은 숨긴다)
           setStatus({ kind: 'none' });
           pinEl.classList.add('is-none');
           pin.setMap(map);
