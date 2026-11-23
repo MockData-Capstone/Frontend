@@ -1,5 +1,6 @@
 // 이용약관·개인정보 처리방침·화면 하단이 함께 쓰는 운영 정보.
-// 문의 이메일과 개인정보 보호책임자는 팀에서 정하면 채운다. 사이트에 올리기(develop 머지) 전에 꼭 채우고, 시행일도 그날로 맞출 것.
+// 문의 이메일과 개인정보 보호책임자는 아직 정하지 않아 비워 둔다. 비어 있으면 하단·처리방침에서 그 줄을 빼고,
+// 정해지면 여기에만 넣으면 하단 운영 정보와 처리방침 제7·10조에 나타난다.
 export const POLICY_INFO = {
   service: 'ZIPFIT',
   operator: 'ZIPFIT 팀(MockData)',
@@ -7,7 +8,7 @@ export const POLICY_INFO = {
   contactEmail: null as string | null,
   privacyOfficer: null as string | null,
   version: '1.0',
-  effectiveDate: '2026년 11월 24일',
+  effectiveDate: '2026년 11월 23일',
 };
 
 export type PolicyDoc = 'terms' | 'privacy';
@@ -34,12 +35,6 @@ export function hasRequiredConsents(consents: Consents): boolean {
   return consents.age && consents.terms && consents.privacy;
 }
 
-export function contactText(): string {
-  return POLICY_INFO.contactEmail ?? '문의 이메일 준비 중';
-}
-
 export function privacyOfficerText(): string {
-  return POLICY_INFO.privacyOfficer
-    ? `${POLICY_INFO.privacyOfficer} (${POLICY_INFO.operator})`
-    : `${POLICY_INFO.operator} (담당자 지정 예정)`;
+  return POLICY_INFO.privacyOfficer ? `${POLICY_INFO.privacyOfficer} (${POLICY_INFO.operator})` : POLICY_INFO.operator;
 }

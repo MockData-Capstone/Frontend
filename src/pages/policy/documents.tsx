@@ -1,11 +1,11 @@
 import type { ReactNode } from 'react';
 import { Link } from 'react-router-dom';
-import { contactText, POLICY_DOCS, POLICY_INFO, privacyOfficerText } from '../../lib/policy';
+import { POLICY_DOCS, POLICY_INFO, privacyOfficerText } from '../../lib/policy';
 
 // 이용약관·개인정보 처리방침 본문. 약관 페이지(/policy/*)와 가입 화면의 [보기] 팝업이 같이 쓴다.
 // 실제 동작(백엔드 develop 기준)과 맞춰 썼다. 수집 항목·보관·탈퇴 처리·외부 서비스가 바뀌면 여기도 고칠 것.
 
-const { operator, effectiveDate } = POLICY_INFO;
+const { operator, effectiveDate, contactEmail } = POLICY_INFO;
 
 function Article({ id, title, children }: { id?: string; title: string; children: ReactNode }) {
   return (
@@ -343,7 +343,8 @@ export function PrivacyPolicy() {
         <ol>
           <li>회원은 언제든지 자신의 개인정보를 열람·정정·삭제하거나 처리 정지를 요구할 수 있습니다.</li>
           <li>
-            [내 정보]에서 닉네임·프로필 사진·비밀번호를 바로 바꾸고 탈퇴할 수 있습니다. 그 밖의 요청은 아래 문의처로 보내 주세요.
+            [내 정보]에서 닉네임·프로필 사진·비밀번호를 바로 바꾸고 탈퇴할 수 있습니다.
+            {contactEmail && ' 그 밖의 요청은 제10조의 문의처로 보내 주세요.'}
           </li>
           <li>만 14세 미만은 가입할 수 없습니다.</li>
         </ol>
@@ -371,10 +372,11 @@ export function PrivacyPolicy() {
           <li>서버와 데이터베이스에 접근할 수 있는 사람을 운영팀으로 제한합니다.</li>
         </ul>
       </Article>
-      <Article title="제10조 (개인정보 보호책임자와 문의처)">
+      {/* 문의 이메일은 정해지면 붙는다 (lib/policy.ts) */}
+      <Article title={contactEmail ? '제10조 (개인정보 보호책임자와 문의처)' : '제10조 (개인정보 보호책임자)'}>
         <ul>
           <li>개인정보 보호책임자: {privacyOfficerText()}</li>
-          <li>문의: {contactText()}</li>
+          {contactEmail && <li>문의: {contactEmail}</li>}
         </ul>
       </Article>
       <Article title="제11조 (권익침해 구제 방법)">

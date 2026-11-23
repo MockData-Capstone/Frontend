@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { contactText, POLICY_DOCS, POLICY_INFO } from '../../lib/policy';
+import { POLICY_DOCS, POLICY_INFO } from '../../lib/policy';
 import './PolicyFooter.css';
 
 // 화면 하단 약관 링크와 운영 정보 (직방·다방 하단 참고). 개인정보 처리방침은 눈에 띄게 굵게 쓴다.
@@ -18,7 +18,9 @@ export default function PolicyFooter({ compact = false }: { compact?: boolean })
     <footer className="policy-footer">
       {links}
       <p className="policy-footer__info">
-        {POLICY_INFO.service} · 운영 {POLICY_INFO.operator} · {POLICY_INFO.operatorNote} · {contactText()}
+        {POLICY_INFO.service} · 운영 {POLICY_INFO.operator} · {POLICY_INFO.operatorNote}
+        {/* 문의 이메일은 정해지면 붙는다 */}
+        {POLICY_INFO.contactEmail && ` · ${POLICY_INFO.contactEmail}`}
       </p>
       <p className="policy-footer__info">© 2026 {POLICY_INFO.service}</p>
     </footer>
