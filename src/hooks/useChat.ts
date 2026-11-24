@@ -12,6 +12,8 @@ import type { ChatMessage } from '../types/search';
 export const CHAT_MAX_LENGTH = 1000;
 // 보낸 뒤 이 시간 안에 서버가 같은 메시지(CHAT_MESSAGE)를 돌려주지 않으면 실패로 보여준다.
 const SEND_TIMEOUT_MS = 10000;
+// 연결이 끊겨 보내지 못한 메시지는 다시 연결될 때까지 이만큼 기다린다.
+const OFFLINE_TIMEOUT_MS = 30000;
 
 // 내가 보냈지만 아직 서버 확인(CHAT_MESSAGE)을 못 받은 메시지
 export interface PendingMessage {
@@ -104,14 +106,20 @@ export function useChat(workspaceId: number, meId: number | null): Chat {
     [settle],
   );
 
-  // 연결이 끊겨 있어 못 보냈으면 다시 붙을 때 보낸다. 그래도 10초 안에 확인이 없으면 실패로 둔다.
+  // 보냈으면 10초 안에 확인이 없을 때 실패로 둔다.
+  // 연결이 끊겨 있어 못 보냈으면 다시 붙을 때(useWorkspaceReconnect) 보내고 그때부터 10초를 센다.
+  // 재접속은 1·2·4·8초 간격이라, 끊긴 동안까지 10초에 넣으면 다시 붙기 전에 실패로 바뀌었다.
+  // 그래도 30초 넘게 붙지 않으면 실패로 보여 [다시 보내기]를 고를 수 있게 한다.
   const transmit = useCallback(
     (clientMessageId: string, content: string) => {
       settle(clientMessageId);
-      sendMessage({ type: 'CHAT_SEND', data: { clientMessageId, content } });
+      const sent = sendMessage({ type: 'CHAT_SEND', data: { clientMessageId, content } });
       timers.current.set(
         clientMessageId,
-        setTimeout(() => fail(clientMessageId, '메시지를 보내지 못했어요.'), SEND_TIMEOUT_MS),
+        setTimeout(
+          () => fail(clientMessageId, sent ? '메시지를 보내지 못했어요.' : '연결이 끊겨 메시지를 보내지 못했어요.'),
+          sent ? SEND_TIMEOUT_MS : OFFLINE_TIMEOUT_MS,
+        ),
       );
     },
     [sendMessage, settle, fail],
