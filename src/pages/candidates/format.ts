@@ -1,5 +1,13 @@
 import type { MapMarker } from '../../components/Map';
-import type { Candidate, SlopeGrade, SlopeInfo, VehicleAccess, VehicleInfo } from '../../types';
+import type { Candidate, SlopeGrade, SlopeInfo, VehicleAccess, VehicleInfo, WorkspaceRole } from '../../types';
+
+// CAND-03 삭제는 후보지를 추가한 멤버와 호스트만 할 수 있다(서버 NOT_CANDIDATE_OWNER).
+// 다른 멤버에게는 확인창 뒤에 거절당하지 않게 버튼을 끄고 이유를 툴팁으로 알린다.
+export const REMOVE_NOT_ALLOWED = '후보지를 추가한 멤버나 호스트만 삭제할 수 있어요.';
+
+export function canRemoveCandidate(candidate: Candidate, myRole: WorkspaceRole, meId: number | null): boolean {
+  return myRole === 'HOST' || (candidate.addedBy !== null && candidate.addedBy.userId === meId);
+}
 
 // 경사 등급 명칭은 PRD 4장, 진입성 판정 명칭은 기능명세서 LOC-02를 따른다.
 export function gradeLabel(grade: SlopeGrade): string {

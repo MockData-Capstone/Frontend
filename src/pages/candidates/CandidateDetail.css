@@ -264,15 +264,6 @@
   gap: 8px;
 }
 
-.candidate-detail__dialog-name {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 10px;
-  font-weight: 700;
-  color: var(--text-h);
-}
-
 .slope-gauge {
   margin: 14px 0 6px;
   padding: 12px 14px;
