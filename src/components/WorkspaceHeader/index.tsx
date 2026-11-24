@@ -45,7 +45,8 @@ export default function WorkspaceHeader({ workspace }: { workspace: WorkspaceDet
           </NavLink>
         </nav>
 
-        <Link to="/" className="site-header__logo">
+        {/* 그룹 안에서는 로고도 그룹 홈(함께 찾기 · 왼쪽에 그룹 대화)으로 간다. 동네 찾기(/)는 그룹 밖 화면이다. */}
+        <Link to={`/workspaces/${workspace.id}/search`} className="site-header__logo" title="함께 찾기로 가기">
           <HomeIcon />
           <span>zipfit</span>
         </Link>
