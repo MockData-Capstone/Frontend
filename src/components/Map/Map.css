@@ -287,10 +287,10 @@
   display: flex;
   flex: none;
   flex-wrap: wrap;
-  gap: 6px 12px;
+  gap: 4px 8px;
   align-items: center;
   justify-content: space-between;
-  padding: 8px 10px 8px 26px;
+  padding: 6px 6px 6px 24px;
   cursor: move;
   touch-action: none;
   user-select: none;
@@ -298,20 +298,27 @@
   border-bottom: 1px solid var(--border);
 }
 
+/* 창 크기와 상관없이 판정만 보여 준다. 거리·방향 설명은 툴팁(title)과 스크린 리더로만 */
 .map-view__roadview-status {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 2px 8px;
-  align-items: baseline;
   min-width: 0;
   margin: 0;
-  font-size: 13px;
+  font-size: 12px;
   color: var(--text);
+  white-space: nowrap;
 }
 
 .map-view__roadview-status b {
-  font-size: 14px;
+  font-size: 13px;
   color: var(--text-h);
+}
+
+.map-view__roadview-detail {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
 }
 
 .map-view__roadview-status.is-found b {
@@ -324,16 +331,16 @@
 
 .map-view__roadview-actions {
   display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
+  flex-wrap: nowrap;
+  gap: 4px;
   align-items: center;
 }
 
 .map-view__roadview-actions button {
-  min-height: 30px;
-  padding: 4px 10px;
+  min-height: 28px;
+  padding: 2px 7px;
   font: inherit;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 600;
   color: var(--text-h);
   background: var(--bg);
@@ -461,59 +468,6 @@
 
 .map-roadview-pin.is-none .map-roadview-pin__ground {
   background: rgba(170, 101, 87, 0.3);
-}
-
-/* 작은 PiP 창: 상태는 판정만, 단추는 한 줄로 줄여 로드뷰 사진 자리를 지킨다 */
-@container (max-width: 460px) {
-  .map-view__roadview-bar {
-    gap: 4px;
-    padding: 6px 6px 6px 24px;
-  }
-
-  .map-view__roadview-status {
-    font-size: 12px;
-  }
-
-  .map-view__roadview-status span {
-    display: none;
-  }
-
-  .map-view__roadview-actions {
-    flex-wrap: nowrap;
-    gap: 4px;
-  }
-
-  .map-view__roadview-actions button {
-    min-height: 28px;
-    padding: 2px 7px;
-    font-size: 12px;
-  }
-}
-
-/* 좁은 화면: 상태 한 줄 + 단추 한 줄로 줄여 로드뷰 사진 자리를 넓힌다 */
-@media (max-width: 600px) {
-  .map-view__roadview-bar {
-    gap: 6px;
-    padding: 8px 8px 8px 26px;
-  }
-
-  .map-view__roadview-status {
-    font-size: 12px;
-  }
-
-  .map-view__roadview-status span {
-    display: none;
-  }
-
-  .map-view__roadview-actions {
-    flex-wrap: nowrap;
-    gap: 4px;
-  }
-
-  .map-view__roadview-actions button {
-    padding: 4px 8px;
-    font-size: 12px;
-  }
 }
 
 @media (max-width: 900px) {
