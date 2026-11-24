@@ -1,5 +1,5 @@
-import { useMemo, useRef, useState, type FormEvent } from 'react';
-import { Link, Navigate } from 'react-router-dom';
+import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
+import { Link, Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../app/providers/useAuth';
 import ConditionChips from '../components/ConditionChips';
 import Header from '../components/Header';
@@ -7,6 +7,7 @@ import MapView, { type MapMarker } from '../components/Map';
 import PolicyFooter from '../components/PolicyFooter';
 import { emptyCondition } from '../lib/conditionApi';
 import { pendingInvite } from '../lib/invite';
+import { getMyWorkspaces } from '../lib/workspaceApi';
 import { searchPlaces, type PlaceResult } from '../lib/kakaoMap';
 import type { HouseCondition } from '../types/search';
 import { badgeLetter } from './candidates/format';
@@ -35,7 +36,35 @@ export default function Home() {
     return <Navigate to={`/invite/${invite}`} replace />;
   }
 
-  return <HomeMap loggedIn={Boolean(accessToken)} />;
+  return <HomeEntry loggedIn={Boolean(accessToken)} />;
+}
+
+// 주소(https://zipfit.duckdns.org/)로 처음 들어왔을 때 그룹에 속해 있으면, 최근 활동한 그룹의 함께 찾기(왼쪽 대화)로 바로 보낸다.
+// 앱 안에서 [동네 찾기]를 눌러 온 경우는 그대로 동네 찾기를 보여 준다(location.key가 'default'면 첫 진입·새로고침).
+function HomeEntry({ loggedIn }: { loggedIn: boolean }) {
+  const location = useLocation();
+  const firstEntry = location.key === 'default';
+  const [target, setTarget] = useState<string | null | undefined>(loggedIn && firstEntry ? undefined : null);
+
+  useEffect(() => {
+    if (target !== undefined) return;
+    let cancelled = false;
+    getMyWorkspaces()
+      .then((items) => {
+        // 목록은 최근 활동순이다
+        if (!cancelled) setTarget(items.length > 0 ? `/workspaces/${items[0].id}/search` : null);
+      })
+      .catch(() => {
+        if (!cancelled) setTarget(null);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [target]);
+
+  if (target === undefined) return null;
+  if (target) return <Navigate to={target} replace />;
+  return <HomeMap loggedIn={loggedIn} />;
 }
 
 function HomeMap({ loggedIn }: { loggedIn: boolean }) {
