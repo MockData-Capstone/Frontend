@@ -73,6 +73,8 @@ export default function WorkspaceSearch({ tab: routeTab }: { tab?: 'candidates' 
   const [later, setLater] = useState<Suggestion['type'][]>([]);
   const [accepting, setAccepting] = useState<Suggestion['type'] | null>(null);
   const [doneOpen, setDoneOpen] = useState(false);
+  // 로드뷰 창이 열려 있으면 지도 위 저장한 후보지 카드를 숨긴다(카드가 지도 밖에 겹쳐 있어 로드뷰 창을 덮는다).
+  const [roadviewOpen, setRoadviewOpen] = useState(false);
   // CAND-03 삭제 확인창을 띄운 후보지
   const [removeTarget, setRemoveTarget] = useState<Candidate | null>(null);
   const [removing, setRemoving] = useState(false);
@@ -415,6 +417,7 @@ export default function WorkspaceSearch({ tab: routeTab }: { tab?: 'candidates' 
               }
             }}
             onMarkerHover={hover}
+            onRoadviewChange={setRoadviewOpen}
             controls
             info={
               items.length > 0 || (count ?? 0) > 0
@@ -426,7 +429,10 @@ export default function WorkspaceSearch({ tab: routeTab }: { tab?: 'candidates' 
             }
           />
           {tab !== 'candidates' && (
-            <section className="saved-card" aria-labelledby="saved-card-title">
+            <section
+              className={`saved-card${roadviewOpen ? ' is-behind-roadview' : ''}`}
+              aria-labelledby="saved-card-title"
+            >
               <h2 id="saved-card-title" className="saved-card__title">
                 {count === undefined ? '저장한 후보지' : `저장한 후보지 ${count}곳`}
               </h2>
