@@ -118,15 +118,10 @@
   cursor: pointer;
 }
 
-.candidate-card__remove:hover:not(:disabled) {
+.candidate-card__remove:hover {
   color: var(--danger);
   background: rgba(170, 101, 87, 0.08);
   border-color: var(--danger);
-}
-
-.candidate-card__remove:disabled {
-  opacity: 0.35;
-  cursor: not-allowed;
 }
 
 .candidate-card__remove:focus-visible {
