@@ -92,6 +92,48 @@
     border-color 0.15s;
 }
 
+/* 카드 전체가 상세로 가는 링크라서, 삭제 단추는 링크 밖에 두고 오른쪽 위에 겹쳐 놓는다 */
+.candidate-panel__item {
+  position: relative;
+}
+
+.candidate-panel__item .candidate-card {
+  padding-right: 52px;
+}
+
+.candidate-card__remove {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  color: var(--text);
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.candidate-card__remove:hover:not(:disabled) {
+  color: var(--danger);
+  background: rgba(170, 101, 87, 0.08);
+  border-color: var(--danger);
+}
+
+.candidate-card__remove:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.candidate-card__remove:focus-visible {
+  outline: 2px solid var(--success);
+  outline-offset: 2px;
+}
+
 .candidate-card:hover,
 .candidate-card.is-active {
   background: var(--selected-bg);
