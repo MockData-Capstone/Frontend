@@ -1,0 +1,8 @@
+.remove-candidate__name {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+  font-weight: 700;
+  color: var(--text-h);
+}
