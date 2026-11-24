@@ -3,7 +3,6 @@ import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../../app/providers/useAuth';
 import { useWorkspace } from '../../app/providers/useWorkspace';
 import { useWorkspaceMessages, useWorkspaceReconnect } from '../../app/providers/useWorkspaceSocket';
-import Dialog from '../../components/Dialog';
 import MapView, { type RoadviewTarget } from '../../components/Map';
 import { useRoadviewAccess } from '../../hooks/useRoadviewAccess';
 import { getErrorMessage } from '../../lib/authApi';
@@ -15,7 +14,16 @@ import {
 } from '../../lib/candidateApi';
 import { vehicleVerdict } from '../../lib/roadview';
 import type { Candidate, CandidateRemovedData } from '../../types';
-import { badgeLetter, formatPercent, gradeLabel, toMarkers, vehicleLabel } from './format';
+import {
+  badgeLetter,
+  canRemoveCandidate,
+  formatPercent,
+  gradeLabel,
+  REMOVE_NOT_ALLOWED,
+  toMarkers,
+  vehicleLabel,
+} from './format';
+import RemoveCandidateDialog from './RemoveCandidateDialog';
 import { applyCandidateMessage, isCandidateMessage } from './realtime';
 import './CandidateDetail.css';
 
@@ -69,7 +77,7 @@ function CandidateDetail({ candidateId }: { candidateId: number }) {
     if (!isCandidateMessage(message)) return;
     const meId = me?.id ?? null;
     setAll((list) => applyCandidateMessage(list, message, meId));
-    // 내가 [후보지 제외]를 누른 중이면(busy) 곧 목록으로 가므로 안내를 띄우지 않는다.
+    // 내가 [후보지 삭제]를 누른 중이면(busy) 곧 목록으로 가므로 안내를 띄우지 않는다.
     if (
       message.type === 'CANDIDATE_REMOVED' &&
       (message.data as CandidateRemovedData).candidateId === candidateId &&
@@ -114,7 +122,7 @@ function CandidateDetail({ candidateId }: { candidateId: number }) {
   if (removed) {
     return (
       <div className="candidate-detail">
-        <p className="candidate-detail__hint">다른 멤버가 이 후보지를 제외했어요.</p>
+        <p className="candidate-detail__hint">다른 멤버가 이 후보지를 삭제했어요.</p>
         <Link to={listPath} className="button button--secondary">
           후보지 목록으로
         </Link>
@@ -184,10 +192,7 @@ function CandidateDetail({ candidateId }: { candidateId: number }) {
     }
   };
 
-  // CAND-03 제외는 후보지를 추가한 멤버와 호스트만 할 수 있다(서버 NOT_CANDIDATE_OWNER).
-  // 다른 멤버에게는 확인창 뒤에 거절당하지 않게 버튼을 끄고 이유를 툴팁으로 알린다.
-  const canRemove =
-    workspace.myRole === 'HOST' || (candidate.addedBy !== null && candidate.addedBy.userId === me?.id);
+  const canRemove = canRemoveCandidate(candidate, workspace.myRole, me?.id ?? null);
 
   const handleRemove = async () => {
     setBusy(true);
@@ -196,7 +201,7 @@ function CandidateDetail({ candidateId }: { candidateId: number }) {
       await removeCandidate(candidate.candidateId);
       navigate(listPath, { replace: true });
     } catch (err) {
-      setActionError(getErrorMessage(err, '후보지를 제외하지 못했어요.'));
+      setActionError(getErrorMessage(err, '후보지를 삭제하지 못했어요.'));
       setConfirmRemove(false);
       setBusy(false);
     }
@@ -352,28 +357,17 @@ function CandidateDetail({ candidateId }: { candidateId: number }) {
                 className="button button--outline-danger"
                 onClick={() => setConfirmRemove(true)}
                 disabled={busy || !canRemove}
-                title={canRemove ? undefined : '후보지를 추가한 멤버나 호스트만 제외할 수 있어요.'}
+                title={canRemove ? undefined : REMOVE_NOT_ALLOWED}
               >
-                후보에서 제외
+                후보지 삭제
               </button>
             </div>
           </div>
         </section>
       </div>
-      <Dialog
-        open={confirmRemove}
-        title="후보에서 제외할까요?"
-        description={
-          <>
-            <span className="candidate-detail__dialog-name">
-              <span className="letter-badge">{letter}</span> {candidate.name}
-            </span>
-            이 후보의 투표도 함께 삭제돼요. 제외한 후보는 후보 목록과 비교표에서 빠져요.
-          </>
-        }
-        confirmLabel="후보에서 제외"
-        busyLabel="제외하는 중"
-        tone="danger"
+      <RemoveCandidateDialog
+        candidate={confirmRemove ? candidate : null}
+        letter={letter}
         busy={busy}
         onConfirm={() => void handleRemove()}
         onClose={() => setConfirmRemove(false)}

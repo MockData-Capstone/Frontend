@@ -39,5 +39,9 @@ export function useWorkspaceCandidates(workspaceId: number, meId: number | null)
       .catch(() => {});
   });
 
-  return { candidates, error };
+  // 내가 삭제한 후보지는 통지를 기다리지 않고 바로 뺀다(통지가 와도 이미 없으니 그대로다).
+  const drop = (candidateId: number) =>
+    setCandidates((list) => list && list.filter((c) => c.candidateId !== candidateId));
+
+  return { candidates, error, drop };
 }

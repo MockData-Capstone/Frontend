@@ -13,13 +13,15 @@ import { useChat } from '../../hooks/useChat';
 import { useGroupConditions } from '../../hooks/useGroupConditions';
 import { useRoadviewAccess } from '../../hooks/useRoadviewAccess';
 import { getErrorMessage } from '../../lib/authApi';
+import { removeCandidate } from '../../lib/candidateApi';
 import { acceptSuggestion, getSuggestions } from '../../lib/conditionApi';
 import { searchPlaces } from '../../lib/kakaoMap';
 import { POLICY_DOCS } from '../../lib/policy';
 import { vehicleVerdict, vehicleVerdictSummary } from '../../lib/roadview';
 import type { Candidate } from '../../types';
 import type { Suggestion } from '../../types/search';
-import { badgeLetter, slopeSummary, toMarkers } from '../candidates/format';
+import { badgeLetter, canRemoveCandidate, REMOVE_NOT_ALLOWED, slopeSummary, toMarkers } from '../candidates/format';
+import RemoveCandidateDialog from '../candidates/RemoveCandidateDialog';
 import AiFeed from './AiFeed';
 import AnalysisDoneDialog from './AnalysisDoneDialog';
 import ConditionBox from './ConditionBox';
@@ -51,7 +53,7 @@ export default function WorkspaceSearch({ tab: routeTab }: { tab?: 'candidates' 
   const chat = useChat(workspace.id, meId);
   const recommendations = useRecommendations(workspace.id);
   const conditions = useGroupConditions(workspace.id);
-  const { candidates, error: candidatesError } = useWorkspaceCandidates(workspace.id, meId);
+  const { candidates, error: candidatesError, drop } = useWorkspaceCandidates(workspace.id, meId);
   // 차량 진입 1차 판단: 후보지 반경 안에 로드뷰가 있는지
   const roadviewStates = useRoadviewAccess(
     (candidates ?? []).map((c) => ({ id: c.candidateId, latitude: c.latitude, longitude: c.longitude })),
@@ -71,6 +73,9 @@ export default function WorkspaceSearch({ tab: routeTab }: { tab?: 'candidates' 
   const [later, setLater] = useState<Suggestion['type'][]>([]);
   const [accepting, setAccepting] = useState<Suggestion['type'] | null>(null);
   const [doneOpen, setDoneOpen] = useState(false);
+  // CAND-03 삭제 확인창을 띄운 후보지
+  const [removeTarget, setRemoveTarget] = useState<Candidate | null>(null);
+  const [removing, setRemoving] = useState(false);
   const searchId = useRef(0);
   const watching = useRef(false);
 
@@ -153,6 +158,40 @@ export default function WorkspaceSearch({ tab: routeTab }: { tab?: 'candidates' 
     } finally {
       setAccepting(null);
     }
+  };
+
+  const remove = async () => {
+    if (!removeTarget) return;
+    const { candidateId, name } = removeTarget;
+    setRemoving(true);
+    try {
+      await removeCandidate(candidateId);
+      drop(candidateId);
+      setSelected((current) => (current === candidateId ? null : current));
+      setActiveMarker((current) => (current === candidateId ? null : current));
+      setRemoveTarget(null);
+      showToast(`${name} 후보지를 삭제했어요.`);
+    } catch (err) {
+      showToast(getErrorMessage(err, '후보지를 삭제하지 못했어요.'));
+    } finally {
+      setRemoving(false);
+    }
+  };
+  const removeButton = (c: Candidate, className: string) => {
+    const allowed = canRemoveCandidate(c, workspace.myRole, meId);
+    return (
+      <button
+        type="button"
+        className={className}
+        onClick={() => setRemoveTarget(c)}
+        disabled={!allowed}
+        title={allowed ? `${c.name} 삭제` : REMOVE_NOT_ALLOWED}
+        aria-label={`${c.name} 후보지 삭제`}
+        aria-haspopup="dialog"
+      >
+        <TrashIcon />
+      </button>
+    );
   };
 
   const hasChat = chat.messages.length > 0;
@@ -313,7 +352,7 @@ export default function WorkspaceSearch({ tab: routeTab }: { tab?: 'candidates' 
                       const { slope, vehicleAccess } = c.location;
                       const estimated = Boolean(slope?.estimated || vehicleAccess?.estimated);
                       return (
-                        <li key={c.candidateId}>
+                        <li key={c.candidateId} className="candidate-panel__item">
                           <Link
                             to={`${base}/candidates/${c.candidateId}`}
                             className={`candidate-card${activeMarker === c.candidateId ? ' is-active' : ''}`}
@@ -338,6 +377,7 @@ export default function WorkspaceSearch({ tab: routeTab }: { tab?: 'candidates' 
                               </span>
                             </span>
                           </Link>
+                          {removeButton(c, 'candidate-card__remove')}
                         </li>
                       );
                     })}
@@ -417,9 +457,12 @@ export default function WorkspaceSearch({ tab: routeTab }: { tab?: 'candidates' 
                             </span>
                           </button>
                           {isChosen && (
-                            <Link to={`${base}/candidates/${c.candidateId}`} className="button button--primary button--sm saved-card__detail">
-                              상세 보기
-                            </Link>
+                            <div className="saved-card__item-actions">
+                              {removeButton(c, 'saved-card__remove')}
+                              <Link to={`${base}/candidates/${c.candidateId}`} className="button button--primary button--sm">
+                                상세 보기
+                              </Link>
+                            </div>
                           )}
                         </div>
                       </li>
@@ -444,6 +487,13 @@ export default function WorkspaceSearch({ tab: routeTab }: { tab?: 'candidates' 
       </div>
       {modal === 'vote' && <VoteModal onClose={() => setModal(null)} />}
       {modal === 'compare' && <ComparisonModal onClose={() => setModal(null)} />}
+      <RemoveCandidateDialog
+        candidate={removeTarget}
+        letter={badgeLetter(Math.max(0, (candidates ?? []).findIndex((c) => c.candidateId === removeTarget?.candidateId)))}
+        busy={removing}
+        onConfirm={() => void remove()}
+        onClose={() => setRemoveTarget(null)}
+      />
       {doneOpen && analysis && (
         <AnalysisDoneDialog
           conditions={analysis.conditions}
@@ -474,6 +524,27 @@ function SearchIcon() {
     >
       <circle cx="10" cy="10" r="7" />
       <path d="m21 21-6-6" />
+    </svg>
+  );
+}
+
+function TrashIcon() {
+  return (
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <path d="M3 6h18" />
+      <path d="M8 6V4h8v2" />
+      <path d="M6 6l1 14h10l1-14" />
+      <path d="M10 11v5M14 11v5" />
     </svg>
   );
 }

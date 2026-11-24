@@ -563,10 +563,43 @@
   color: var(--text);
 }
 
-.saved-card__detail {
+.saved-card__item-actions {
   position: absolute;
   top: 10px;
   right: 10px;
+  display: flex;
+  gap: 6px;
+}
+
+/* 삭제는 아이콘 단추. 상세 보기(34px)와 높이를 맞춘다 */
+.saved-card__remove {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  color: var(--danger);
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.saved-card__remove:hover:not(:disabled) {
+  border-color: var(--danger);
+  background: rgba(170, 101, 87, 0.08);
+}
+
+.saved-card__remove:disabled {
+  color: var(--text);
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.saved-card__remove:focus-visible {
+  outline: 2px solid var(--success);
+  outline-offset: 2px;
 }
 
 .saved-card__actions {
