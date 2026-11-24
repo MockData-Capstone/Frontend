@@ -16,10 +16,8 @@ import { vehicleVerdict } from '../../lib/roadview';
 import type { Candidate, CandidateRemovedData } from '../../types';
 import {
   badgeLetter,
-  canRemoveCandidate,
   formatPercent,
   gradeLabel,
-  REMOVE_NOT_ALLOWED,
   toMarkers,
   vehicleLabel,
 } from './format';
@@ -192,7 +190,6 @@ function CandidateDetail({ candidateId }: { candidateId: number }) {
     }
   };
 
-  const canRemove = canRemoveCandidate(candidate, workspace.myRole, me?.id ?? null);
 
   const handleRemove = async () => {
     setBusy(true);
@@ -356,8 +353,7 @@ function CandidateDetail({ candidateId }: { candidateId: number }) {
                 type="button"
                 className="button button--outline-danger"
                 onClick={() => setConfirmRemove(true)}
-                disabled={busy || !canRemove}
-                title={canRemove ? undefined : REMOVE_NOT_ALLOWED}
+                disabled={busy}
               >
                 후보지 삭제
               </button>
