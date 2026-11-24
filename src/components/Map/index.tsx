@@ -456,6 +456,15 @@ function KakaoMapView({
 
   const open = roadview !== null;
 
+  const statusDetail =
+    status.kind === 'found'
+      ? status.distance === null
+        ? `${ROADVIEW_RADIUS_M}m 안에 로드뷰 길이 있어요 · 사진을 불러오는 중`
+        : `로드뷰 길까지 ${status.distance}m${roadview?.name ? ` · ${roadview.name} 쪽을 보고 있어요` : ''}`
+      : status.kind === 'none'
+        ? `${ROADVIEW_RADIUS_M}m 안에 로드뷰 길이 없어요.${layer === 'roadview' ? ' 파란 길 위를 눌러 보세요.' : ''}`
+        : null;
+
   return (
     <div ref={rootRef} className={`map-view${open ? ' has-roadview' : ''}${full ? ' is-roadview-full' : ''}`}>
       <div ref={containerRef} className="map-view__canvas" />
@@ -538,26 +547,13 @@ function KakaoMapView({
               if (!(e.target as HTMLElement).closest('button')) applyPreset(full ? 'medium' : 'large');
             }}
           >
-            <p className={`map-view__roadview-status is-${status.kind}`} role="status">
+            {/* 창 크기와 상관없이 머리줄은 판정 한 줄 + 단추 한 줄로 같게 둔다.
+                거리·방향 같은 자세한 설명은 화면에는 숨기고 툴팁과 스크린 리더로만 알린다. */}
+            <p className={`map-view__roadview-status is-${status.kind}`} role="status" title={statusDetail ?? undefined}>
               {status.kind === 'loading' && '로드뷰를 찾고 있어요…'}
-              {status.kind === 'found' && (
-                <>
-                  <b>차량 진입 가능</b>
-                  <span>
-                    {status.distance === null
-                      ? `${ROADVIEW_RADIUS_M}m 안에 로드뷰 길이 있어요 · 사진을 불러오는 중`
-                      : `로드뷰 길까지 ${status.distance}m${roadview.name ? ` · ${roadview.name} 쪽을 보고 있어요` : ''}`}
-                  </span>
-                </>
-              )}
-              {status.kind === 'none' && (
-                <>
-                  <b>차량 진입 불가</b>
-                  <span>
-                    {ROADVIEW_RADIUS_M}m 안에 로드뷰 길이 없어요.{layer === 'roadview' ? ' 파란 길 위를 눌러 보세요.' : ''}
-                  </span>
-                </>
-              )}
+              {status.kind === 'found' && <b>차량 진입 가능</b>}
+              {status.kind === 'none' && <b>차량 진입 불가</b>}
+              {statusDetail && <span className="map-view__roadview-detail">{statusDetail}</span>}
             </p>
             <div className="map-view__roadview-actions">
               {roadview.name && status.kind === 'found' && (
