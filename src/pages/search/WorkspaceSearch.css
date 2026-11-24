@@ -794,7 +794,17 @@
   gap: 8px;
 }
 
+/* 데스크톱에서는 카드가 지도 위(오른쪽 아래)에 떠 있어 로드뷰 창을 덮으므로, 로드뷰를 보는 동안 숨긴다 */
+.saved-card.is-behind-roadview {
+  display: none;
+}
+
 @media (max-width: 900px) {
+  /* 좁은 화면에서는 카드가 지도 아래에 있어 겹치지 않는다 */
+  .saved-card.is-behind-roadview {
+    display: flex;
+  }
+
   .saved-card {
     position: static;
     width: auto;
