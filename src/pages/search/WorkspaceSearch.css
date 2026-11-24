@@ -586,15 +586,9 @@
   cursor: pointer;
 }
 
-.saved-card__remove:hover:not(:disabled) {
+.saved-card__remove:hover {
   border-color: var(--danger);
   background: rgba(170, 101, 87, 0.08);
-}
-
-.saved-card__remove:disabled {
-  color: var(--text);
-  opacity: 0.45;
-  cursor: not-allowed;
 }
 
 .saved-card__remove:focus-visible {

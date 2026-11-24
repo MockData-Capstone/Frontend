@@ -20,7 +20,7 @@ import { POLICY_DOCS } from '../../lib/policy';
 import { vehicleVerdict, vehicleVerdictSummary } from '../../lib/roadview';
 import type { Candidate } from '../../types';
 import type { Suggestion } from '../../types/search';
-import { badgeLetter, canRemoveCandidate, REMOVE_NOT_ALLOWED, slopeSummary, toMarkers } from '../candidates/format';
+import { badgeLetter, slopeSummary, toMarkers } from '../candidates/format';
 import RemoveCandidateDialog from '../candidates/RemoveCandidateDialog';
 import AiFeed from './AiFeed';
 import AnalysisDoneDialog from './AnalysisDoneDialog';
@@ -177,22 +177,19 @@ export default function WorkspaceSearch({ tab: routeTab }: { tab?: 'candidates' 
       setRemoving(false);
     }
   };
-  const removeButton = (c: Candidate, className: string) => {
-    const allowed = canRemoveCandidate(c, workspace.myRole, meId);
-    return (
-      <button
-        type="button"
-        className={className}
-        onClick={() => setRemoveTarget(c)}
-        disabled={!allowed}
-        title={allowed ? `${c.name} 삭제` : REMOVE_NOT_ALLOWED}
-        aria-label={`${c.name} 후보지 삭제`}
-        aria-haspopup="dialog"
-      >
-        <TrashIcon />
-      </button>
-    );
-  };
+  // CAND-03 그룹 멤버면 누가 추가한 후보지든 삭제할 수 있다.
+  const removeButton = (c: Candidate, className: string) => (
+    <button
+      type="button"
+      className={className}
+      onClick={() => setRemoveTarget(c)}
+      title={`${c.name} 삭제`}
+      aria-label={`${c.name} 후보지 삭제`}
+      aria-haspopup="dialog"
+    >
+      <TrashIcon />
+    </button>
+  );
 
   const hasChat = chat.messages.length > 0;
   const count = candidates?.length;

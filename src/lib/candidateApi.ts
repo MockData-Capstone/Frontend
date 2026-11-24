@@ -25,7 +25,7 @@ export async function renameCandidate(candidateId: number, name: string): Promis
   return data;
 }
 
-// CAND-03 후보지 제외 (추가한 멤버 또는 호스트만) — DELETE /api/candidates/{candidateId}
+// CAND-03 후보지 삭제 (그룹 멤버 누구나) — DELETE /api/candidates/{candidateId}
 export async function removeCandidate(candidateId: number): Promise<void> {
   await api.delete(`/api/candidates/${candidateId}`);
 }
