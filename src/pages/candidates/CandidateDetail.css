@@ -1,0 +1,334 @@
+/* 넓은 화면에서도 지도를 크게 쓰도록 폭 제한을 넓히고 좌우 여백을 줄인다 */
+.candidate-detail {
+  max-width: 1920px;
+  margin: 0 auto;
+  padding: 24px 24px 48px;
+  box-sizing: border-box;
+}
+
+.candidate-detail__heading {
+  margin-bottom: 20px;
+}
+
+.candidate-detail__title {
+  margin: 0;
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: -0.4px;
+  color: var(--text-h);
+}
+
+.candidate-detail__subtitle {
+  margin: 8px 0 0;
+  font-size: 14px;
+  color: var(--text);
+}
+
+.candidate-detail__rename {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.candidate-detail__rename-input {
+  flex: 1;
+  max-width: 420px;
+  padding: 9px 12px;
+  font: inherit;
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text-h);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+
+.candidate-detail__rename-input:focus-visible {
+  outline: 2px solid var(--success);
+  outline-offset: 1px;
+}
+
+/* 지도 3 : 정보 2. 정보 카드는 360px 아래로 줄지 않는다 */
+.candidate-detail__columns {
+  display: grid;
+  grid-template-columns: minmax(0, 3fr) minmax(360px, 2fr);
+  gap: 24px;
+  align-items: start;
+}
+
+/* 화면 높이에 맞춰 상단바·제목·지도 버튼을 뺀 만큼 채운다 */
+.candidate-detail__map {
+  height: clamp(480px, calc(100vh - 280px), 880px);
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+}
+
+.candidate-detail__map-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 192px));
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.candidate-detail__card {
+  padding: 28px 24px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+}
+
+.candidate-detail__card-title,
+.candidate-detail__section-title {
+  margin: 0 0 16px;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text-h);
+}
+
+.candidate-detail__section-title {
+  margin-top: 32px;
+}
+
+.candidate-detail__destination {
+  margin: 0 0 20px;
+  font-size: 14px;
+  color: var(--text);
+}
+
+.candidate-detail__numbers {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 14px;
+}
+
+.candidate-detail__number-label {
+  margin: 0 0 6px;
+  font-size: 12px;
+  color: var(--text);
+}
+
+.candidate-detail__number {
+  margin: 0;
+  font-size: 30px;
+  font-weight: 700;
+  color: var(--text-h);
+}
+
+.candidate-detail__grade {
+  display: inline-block;
+  padding: 4px 10px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--success);
+  background: var(--selected-bg);
+  border-radius: 6px;
+}
+
+.candidate-detail__estimated {
+  margin: 14px 0 0;
+  padding: 8px 12px;
+  font-size: 12px;
+  color: var(--text);
+  background: var(--info-bg);
+  border-radius: 8px;
+}
+
+.candidate-detail__vehicle {
+  margin: 0 0 10px;
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text-h);
+}
+
+.candidate-detail__vehicle.is-possible {
+  color: var(--success);
+}
+
+.candidate-detail__vehicle.is-impossible {
+  color: var(--danger);
+}
+
+/* 차량 진입 1차(로드뷰)·2차(VLM) 근거. 최종 판정을 정한 단계를 강조한다 */
+.vehicle-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0 0 8px;
+  padding: 0;
+  list-style: none;
+}
+
+.vehicle-steps li {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 10px 12px;
+  background: var(--info-bg);
+  border: 1px solid transparent;
+  border-radius: 8px;
+}
+
+.vehicle-steps li.is-decisive {
+  background: var(--selected-bg);
+  border-color: var(--selected-border);
+}
+
+.vehicle-steps__label {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-h);
+}
+
+.vehicle-steps__text {
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text);
+}
+
+.vehicle-steps__link {
+  align-self: flex-start;
+  margin-top: 2px;
+  padding: 0;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--success);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+
+.candidate-detail__reason,
+.candidate-detail__empty {
+  margin: 0;
+  font-size: 13px;
+  color: var(--text);
+}
+
+.candidate-detail__note {
+  margin: 20px 0 0;
+  font-size: 12px;
+  color: var(--text);
+}
+
+.candidate-detail__card-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.candidate-detail__remove {
+  width: 100%;
+  margin-top: 12px;
+}
+
+.candidate-detail__error {
+  margin: 0 0 16px;
+  font-size: 13px;
+  color: var(--danger);
+}
+
+.candidate-detail__hint {
+  margin: 0;
+  font-size: 14px;
+  color: var(--text);
+}
+
+@media (max-width: 900px) {
+  .candidate-detail {
+    padding: 20px 16px 48px;
+  }
+
+  .candidate-detail__columns {
+    grid-template-columns: 1fr;
+  }
+
+  .candidate-detail__map {
+    height: 280px;
+  }
+
+  /* 로드뷰를 열면 지도와 로드뷰를 위아래로 나눠 쓸 만큼 키운다 */
+  .candidate-detail__map:has(.has-roadview) {
+    height: min(640px, calc(100vh - 140px));
+  }
+}
+
+.candidate-detail__card-actions {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.slope-gauge {
+  margin: 14px 0 6px;
+  padding: 12px 14px;
+  background: var(--info-bg);
+  border-radius: 6px;
+}
+
+.slope-gauge__title {
+  margin: 0 0 10px;
+  font-size: 12px;
+  color: var(--text);
+}
+
+.slope-gauge__bar {
+  position: relative;
+  display: flex;
+  height: 10px;
+}
+
+.slope-gauge__zone {
+  height: 100%;
+}
+
+.slope-gauge__zone--gentle {
+  background: #c9d4d1;
+  border-radius: 999px 0 0 999px;
+}
+
+.slope-gauge__zone--moderate {
+  background: #dfc9b8;
+}
+
+.slope-gauge__zone--steep {
+  flex: 1;
+  background: #d9a99e;
+  border-radius: 0 999px 999px 0;
+}
+
+.slope-gauge__mark {
+  position: absolute;
+  top: 50%;
+  width: 14px;
+  height: 14px;
+  background: var(--success);
+  border: 2px solid #fff;
+  border-radius: 999px;
+  transform: translate(-50%, -50%);
+}
+
+.slope-gauge__mark--max {
+  background: var(--danger);
+  border-radius: 2px;
+  transform: translate(-50%, -50%) rotate(45deg);
+}
+
+.slope-gauge__legend {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 8px;
+  font-size: 11px;
+  color: var(--text);
+}
+
+.slope-gauge__keys {
+  margin: 6px 0 0;
+  font-size: 11px;
+  color: var(--text);
+}

@@ -1,0 +1,185 @@
+.notification-bell {
+  position: relative;
+  display: inline-flex;
+}
+
+.notification-bell__button {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  color: var(--text-h);
+  background: transparent;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.15s;
+}
+
+.notification-bell__button:hover,
+.notification-bell__button.is-open {
+  background: var(--code-bg);
+}
+
+.notification-bell__badge {
+  position: absolute;
+  top: 1px;
+  right: 0;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  box-sizing: border-box;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 14px;
+  letter-spacing: 0;
+  color: var(--bg);
+  background: var(--danger);
+  border: 2px solid var(--bg);
+  border-radius: 999px;
+  text-align: center;
+}
+
+.notification-bell__panel {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: -8px;
+  z-index: 50;
+  display: flex;
+  flex-direction: column;
+  width: 380px;
+  max-height: min(560px, calc(100svh - 120px));
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: var(--shadow);
+}
+
+/* 좁은 화면에서는 종 대신 상단바(.site-header, Header.css에서 position: relative) 기준으로 양옆 16px을 띄워 편다.
+   종 오른쪽에 아바타·로그아웃이 있어 380px 패널이 화면 왼쪽 밖으로 나가기 때문이다. */
+@media (max-width: 640px) {
+  .notification-bell {
+    position: static;
+  }
+
+  .notification-bell__panel {
+    left: 16px;
+    right: 16px;
+    width: auto;
+  }
+}
+
+.notification-panel__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 18px 10px;
+  border-bottom: 1px solid var(--border);
+}
+
+.notification-panel__title {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--text-h);
+}
+
+.notification-panel__read-all {
+  padding: 6px 8px;
+  font: inherit;
+  font-size: 13px;
+  color: var(--success);
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.notification-panel__read-all:disabled {
+  color: var(--text);
+  cursor: default;
+}
+
+.notification-panel__status {
+  margin: 0;
+  padding: 32px 18px;
+  font-size: 14px;
+  color: var(--text);
+  text-align: center;
+}
+
+.notification-panel__status--error {
+  color: var(--danger);
+}
+
+.notification-panel__list {
+  flex: 1;
+  min-height: 0;
+  margin: 0;
+  padding: 6px;
+  overflow-y: auto;
+  list-style: none;
+}
+
+.notification-panel__item {
+  display: grid;
+  gap: 3px;
+  width: 100%;
+  padding: 10px 12px 10px 22px;
+  font: inherit;
+  text-align: left;
+  background: transparent;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  position: relative;
+}
+
+.notification-panel__item:hover {
+  background: var(--bg-muted);
+}
+
+.notification-panel__item.is-unread::before {
+  content: '';
+  position: absolute;
+  top: 16px;
+  left: 9px;
+  width: 7px;
+  height: 7px;
+  background: var(--danger);
+  border-radius: 999px;
+}
+
+.notification-panel__group {
+  font-size: 12px;
+  color: var(--text);
+}
+
+.notification-panel__message {
+  font-size: 14px;
+  color: var(--text-h);
+}
+
+.notification-panel__item:not(.is-unread) .notification-panel__message {
+  color: var(--text);
+}
+
+.notification-panel__time {
+  font-size: 12px;
+  color: var(--text-sub);
+}
+
+.notification-panel__more {
+  margin: 0 12px 12px;
+  min-height: 40px;
+  font: inherit;
+  font-size: 14px;
+  color: var(--text-h);
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  cursor: pointer;
+}

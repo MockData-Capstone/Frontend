@@ -91,8 +91,33 @@ npm run dev
 ```bash
 npm run build      # 타입체크 + 프로덕션 빌드
 npm run lint       # ESLint
+npm test           # 인증·API 클라이언트·투어 재접속 회귀 테스트 (30개)
+npm run test:integration # 별도 H2 서버에서 실제 API 검증 (34개, 아래 문서 참고)
 npm run preview    # 빌드 결과 로컬 미리보기
 ```
+
+### 로그인 유지
+
+기존 UI에서 연결된 기능과 API 클라이언트만 준비된 기능을 구분한 현황, 격리 테스트 실행 방법은 [API 연동 현황](docs/api-integration.md)에 정리했다. API가 존재해도 프론트 화면이 없는 기능은 화면에서 이용 가능한 것으로 간주하지 않는다. Figma에서 승인되지 않은 화면·버튼·스타일을 추가하지 않는다.
+
+접근 토큰은 메모리에만 보관하고, 재발급 토큰은 백엔드의 httpOnly 쿠키로 주고받는다.
+axios 요청은 `withCredentials: true`를 사용하며, 새로고침하면 본문 없는
+`POST /api/auth/token/refresh`로 세션을 복원한 뒤 화면을 연다. 쿠키가 없거나 만료되면 비로그인으로 시작한다.
+로그아웃은 진행 중인 재발급을 기다린 뒤 `POST /api/auth/logout`으로 쿠키를 폐기한다.
+로컬에서는 프론트와 백엔드 모두 `localhost`를 사용한다. `localhost`와 `127.0.0.1`을 섞으면 쿠키가 공유되지 않는다.
+
+### 폰으로 실시간 집보기 시험 (`npm run dev:mobile`)
+
+방문자 카메라(24)는 HTTPS에서만 켜진다. `npm run dev:mobile`은 개발용 인증서로 HTTPS를 켜고, API·소켓 요청을 Vite가 백엔드(`http://localhost:8080`)로 넘겨준다(`.env.mobile`, `vite.config.ts`).
+
+1. 맥에서 백엔드(`feature/signaling` 이후 브랜치)를 띄우고 `npm run dev:mobile` 실행
+2. 같은 와이파이의 폰에서 터미널에 찍힌 `Network: https://<맥 IP>:5173` 주소로 접속 → 인증서 경고에서 "계속" 선택
+3. 시청은 PC의 `npm run dev`(http://localhost:5173)나 같은 https 주소로 접속
+
+**측정용 설정** — 새로고침하면 로그아웃되므로 로그인 화면 주소에 붙여 연다(이 브라우저에 기억, `=0`이면 끔).
+
+- `?debug=1`: 23·24 구석에 연결 방식(P2P/TURN)·연결 시간·끊김 횟수·재연결 시간 표시
+- `?relay=1`: TURN 중계만 사용 (TURN 서버가 설정된 백엔드에서 TURN 강제 시험)
 
 ---
 
@@ -106,6 +131,7 @@ Vite는 `VITE_` 접두사가 붙은 변수만 클라이언트에 노출한다. `
 | `VITE_KAKAO_JS_KEY` | 카카오맵 JavaScript 키 (도메인 제한 설정) | ✅ (REC, LOC) |
 | `VITE_KAKAO_LOGIN_JS_KEY` | 카카오 로그인 JavaScript 키 | ✅ (AUTH-02) |
 | `VITE_WEB_PUSH_VAPID_PUBLIC_KEY` | 웹 푸시 구독용 VAPID 공개 키 | ⬜ (NOTI-04, P2) |
+| `VITE_NOTIFICATIONS` | 기본 활성화. `off`이면 기존 알림 배지와 소켓 갱신을 끈다. 알림함 화면은 아직 미구현이다 | ⬜ (NOTI-01) |
 
 > ⚠️ 카카오 REST API 키, OpenAI 등 외부 LLM 키는 **서버 전용**이라 프론트엔드 환경 변수로 두지 않는다.
 

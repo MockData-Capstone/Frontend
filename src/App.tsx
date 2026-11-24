@@ -1,122 +1,127 @@
-import { useState } from 'react'
-import heroImg from './assets/hero.png'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import './App.css'
+import { lazy, Suspense } from 'react';
+import { Route, Routes } from 'react-router-dom';
+import LoadState from './components/LoadState';
+import Home from './pages/Home';
+import Login from './pages/Login';
+import Signup from './pages/Signup';
+import SignupComplete from './pages/SignupComplete';
+import KakaoCallback from './pages/KakaoCallback';
+import WorkspaceList from './pages/WorkspaceList';
+import WorkspaceCreate from './pages/WorkspaceCreate';
+import WorkspaceInvitePage from './pages/WorkspaceInvite';
+import InvitePage from './pages/Invite';
+import WorkspaceSearch from './pages/search/WorkspaceSearch';
+import CandidateDetail from './pages/candidates/CandidateDetail';
+import RequireAuth from './components/RequireAuth';
+import WorkspaceLayout, { WorkspaceIndexRedirect } from './components/WorkspaceLayout';
+import './App.css';
+
+// 자주 쓰지 않거나 무거운 화면(내 정보·설정·조건 확정·미니게임·집보기 등)은 들어갈 때 불러온다 (첫 화면 번들 크기 줄이기)
+const Account = lazy(() => import('./pages/Account'));
+const Conditions = lazy(() => import('./pages/Conditions'));
+const WorkspaceSettings = lazy(() => import('./pages/WorkspaceSettings'));
+const PasswordReset = lazy(() => import('./pages/PasswordReset'));
+const MiniGamePage = lazy(() => import('./pages/minigame/MiniGamePage'));
+const GameResultPage = lazy(() => import('./pages/minigame/GameResult'));
+const TourViewerPage = lazy(() => import('./pages/tour/TourViewer'));
+const TourVisitorPage = lazy(() => import('./pages/tour/TourVisitor'));
+const LinkAccount = lazy(() => import('./pages/LinkAccount'));
+const KakaoSignup = lazy(() => import('./pages/KakaoSignup'));
+const PolicyPage = lazy(() => import('./pages/policy/PolicyPage'));
 
 function App() {
-  const [count, setCount] = useState(0)
-
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.tsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
+    <Suspense fallback={<LoadState status="loading" />}>
+    <Routes>
+      <Route path="/" element={<Home />} />
+      <Route path="/login" element={<Login />} />
+      <Route path="/login/link-account" element={<LinkAccount />} />
+      <Route path="/signup" element={<Signup />} />
+      <Route path="/signup/complete" element={<SignupComplete />} />
+      <Route path="/signup/kakao" element={<KakaoSignup />} />
+      {/* 카카오 디벨로퍼스·백엔드(oauth.kakao.redirect-uri)에 등록한 Redirect URI와 같아야 한다 */}
+      <Route path="/oauth/kakao/callback" element={<KakaoCallback />} />
+      {/* 04 초대 링크 진입 — 로그인 없이 초대 정보를 보여주고, 로그인 뒤 참여를 이어간다 */}
+      <Route path="/invite/:token" element={<InvitePage />} />
 
-      <div className="ticks"></div>
-
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
-
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
-  )
+      {/* 01 비밀번호 재설정 요청·새 비밀번호 (AUTH-07, 메일 링크 /password-reset?token=) */}
+      <Route path="/password-reset" element={<PasswordReset />} />
+      {/* 약관 및 정책 (이용약관·개인정보 처리방침) — 로그인 없이 볼 수 있다. /policy는 이용약관으로 보낸다 */}
+      <Route path="/policy" element={<PolicyPage />} />
+      <Route path="/policy/:doc" element={<PolicyPage />} />
+      {/* 12 내 정보 · 탈퇴 */}
+      <Route
+        path="/account"
+        element={
+          <RequireAuth>
+            <Account />
+          </RequireAuth>
+        }
+      />
+      {/* 04 내 그룹 목록 */}
+      <Route
+        path="/workspaces"
+        element={
+          <RequireAuth>
+            <WorkspaceList />
+          </RequireAuth>
+        }
+      />
+      {/* 09 새 그룹 만들기 */}
+      <Route
+        path="/workspaces/new"
+        element={
+          <RequireAuth>
+            <WorkspaceCreate />
+          </RequireAuth>
+        }
+      />
+      {/* 10 그룹 생성 완료·친구 초대 — 그룹 헤더(C)가 아니라 내 그룹 쪽 헤더라 레이아웃 밖에 둔다 */}
+      <Route
+        path="/workspaces/:workspaceId/invite"
+        element={
+          <RequireAuth>
+            <WorkspaceInvitePage />
+          </RequireAuth>
+        }
+      />
+      {/* 24 방문자 송출 — 휴대폰 전체 화면이라 그룹 헤더(레이아웃) 없이 띄운다 */}
+      <Route
+        path="/workspaces/:workspaceId/tour/broadcast"
+        element={
+          <RequireAuth>
+            <TourVisitorPage />
+          </RequireAuth>
+        }
+      />
+      {/* 그룹 안 — 들어가면 11 그룹 홈(함께 찾기)으로 보낸다 */}
+      <Route
+        path="/workspaces/:workspaceId"
+        element={
+          <RequireAuth>
+            <WorkspaceLayout />
+          </RequireAuth>
+        }
+      >
+        <Route index element={<WorkspaceIndexRedirect />} />
+        {/* 06 그룹 홈: [대화 | 후보지 | ZIPFIT AI] 탭. 후보지 탭(08)은 주소만 다르고 같은 화면이다 */}
+        <Route path="search" element={<WorkspaceSearch />} />
+        <Route path="candidates" element={<WorkspaceSearch tab="candidates" />} />
+        {/* 10 조건 확정 · 매물 검색 링크 */}
+        <Route path="conditions" element={<Conditions />} />
+        {/* 11 그룹 설정 · 멤버 */}
+        <Route path="settings" element={<WorkspaceSettings />} />
+        <Route path="candidates/:candidateId" element={<CandidateDetail />} />
+        {/* 19 방문자 정하기 → 20 가위바위보 / 21 룰렛 (진행 상태에 따라 같은 주소에서 바뀐다) */}
+        <Route path="minigame" element={<MiniGamePage />} />
+        {/* 22 방문자 선정 결과 */}
+        <Route path="minigame/:gameId" element={<GameResultPage />} />
+        {/* 23 실시간 집보기 시청 */}
+        <Route path="tour" element={<TourViewerPage />} />
+      </Route>
+    </Routes>
+    </Suspense>
+  );
 }
 
-export default App
+export default App;

@@ -1,0 +1,33 @@
+.workspace-header__meta {
+  justify-self: end;
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.workspace-header__name {
+  max-width: 220px;
+  font-size: 15px;
+  color: var(--text-h);
+  text-decoration: none;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.workspace-header__name:hover {
+  text-decoration: underline;
+}
+
+.workspace-header__count {
+  font-size: 15px;
+  color: var(--text);
+  white-space: nowrap;
+}
+
+@media (max-width: 640px) {
+  .workspace-header__name {
+    display: none;
+  }
+}

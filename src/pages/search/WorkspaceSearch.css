@@ -1,0 +1,809 @@
+/* 06 그룹 홈: 검색 줄 + 조건 칩 + [왼쪽 패널 360 | 지도] (UI v0.4.3, 01 첫 화면과 같은 검색 줄) */
+.search-layout {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.search-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 16px;
+  padding: 14px 24px;
+  background: var(--bg-muted);
+  border-bottom: 1px solid var(--border);
+}
+
+.search-toolbar__search {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 350px;
+  max-width: 100%;
+  height: 44px;
+  padding: 0 14px 0 13px;
+  box-sizing: border-box;
+  color: var(--text-h);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+}
+
+.search-toolbar__search:focus-within {
+  border-color: var(--accent);
+}
+
+.search-toolbar__search svg {
+  flex: none;
+}
+
+.search-toolbar__input {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  padding: 0;
+  font: inherit;
+  font-size: 15px;
+  color: var(--text-h);
+  background: none;
+  border: none;
+  outline: none;
+}
+
+.search-toolbar__input::placeholder {
+  color: var(--text);
+}
+
+.search-toolbar__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.search-toolbar__chip {
+  padding: 8px 14px;
+  font: inherit;
+  font-size: 13px;
+  color: var(--text-h);
+  background: var(--code-bg);
+  border: none;
+  border-radius: 999px;
+}
+
+.search-toolbar__chip:disabled {
+  color: var(--text);
+  cursor: not-allowed;
+}
+
+.search-toolbar__note {
+  margin: 0;
+  font-size: 12px;
+  color: var(--text);
+}
+
+.search-layout__body {
+  display: grid;
+  flex: 1;
+  grid-template-columns: 360px minmax(0, 1fr);
+  min-height: 0;
+}
+
+.search-panel__title-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.search-panel__settings {
+  flex: none;
+  padding: 6px 14px;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-h);
+  text-decoration: none;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+}
+
+.search-panel__settings:hover {
+  background: var(--bg-muted);
+}
+
+.search-panel__settings:disabled {
+  color: var(--text);
+  cursor: not-allowed;
+}
+
+/* 대화 목록이 남은 높이를 쓰고, 아래 칸은 패널의 절반까지만 차지한다 */
+.search-panel__bottom {
+  display: flex;
+  flex: 0 1 auto;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 50%;
+  min-height: 0;
+  padding: 8px 20px 0;
+  border-top: 1px solid var(--border);
+}
+
+.search-panel__info {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.search-panel__analyze {
+  display: flex;
+  flex: none;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.search-panel__analyze .button {
+  width: 100%;
+}
+
+.search-panel__hint,
+.search-panel__error {
+  margin: 0;
+  font-size: 12px;
+  color: var(--text);
+}
+
+/* AI 안내의 [자세히] 링크는 줄이 바뀌어도 쪼개지지 않게 */
+.search-panel__more {
+  color: var(--text-h);
+  white-space: nowrap;
+}
+
+.search-panel__error {
+  color: var(--danger);
+}
+
+/* 함께 정한 조건 (안내 박스 색). 기본은 한 줄 띠로 접혀 대화창을 넓게 쓴다 */
+.condition-box {
+  background: var(--info-bg);
+  border-radius: 8px;
+}
+
+.condition-box__head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 40px;
+  padding: 8px 12px;
+  font: inherit;
+  text-align: left;
+  color: inherit;
+  background: none;
+  border: 0;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.condition-box__head:focus-visible {
+  outline: 2px solid var(--success);
+  outline-offset: 2px;
+}
+
+.condition-box__title {
+  flex: none;
+}
+
+.condition-box__tag {
+  flex: none;
+}
+
+/* 한 줄 미리보기가 패널 폭을 밀어내지 않게 폭 0에서 남은 자리만 채운다 */
+.condition-box__preview {
+  flex: 1 1 0;
+  width: 0;
+  min-width: 0;
+  overflow: hidden;
+  font-size: 12px;
+  color: var(--text);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.condition-box__toggle {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.condition-box__head:hover .condition-box__toggle {
+  color: var(--text-h);
+}
+
+/* 접힘: 위로 펼친다는 뜻의 ^, 펼침: v */
+.condition-box__chevron {
+  width: 7px;
+  height: 7px;
+  border-top: 1.5px solid currentColor;
+  border-left: 1.5px solid currentColor;
+  transform: translateY(2px) rotate(45deg);
+}
+
+.condition-box.is-open .condition-box__chevron {
+  transform: translateY(-2px) rotate(225deg);
+}
+
+.condition-box__body {
+  max-height: 160px;
+  padding: 0 12px 12px;
+  overflow-y: auto;
+}
+
+.condition-box__title,
+.recommendations__title {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.4;
+  letter-spacing: 0;
+  color: var(--text-h);
+}
+
+.condition-box__tag {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--success);
+}
+
+.condition-box__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.condition-box__chips li {
+  padding: 4px 10px;
+  font-size: 12px;
+  color: var(--text-h);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+}
+
+.condition-box__empty {
+  margin: 0;
+  font-size: 12px;
+  color: var(--text);
+}
+
+/* 추천 위치 — 후보지 카드 모양, 배지는 지도 마커처럼 회색 번호 */
+.recommendations__title {
+  margin-bottom: 8px;
+}
+
+.recommendations__list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.recommendation-card {
+  display: flex;
+  gap: 10px;
+  padding: 12px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  transition:
+    background-color 0.15s,
+    border-color 0.15s;
+}
+
+.recommendation-card.is-active {
+  background: var(--selected-bg);
+  border-color: var(--success);
+}
+
+.recommendation-card__badge {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #fff;
+  background: var(--accent);
+  border-radius: 999px;
+}
+
+.recommendation-card__body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  min-width: 0;
+}
+
+.recommendation-card__name {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-h);
+  overflow-wrap: anywhere;
+}
+
+.recommendation-card__reason {
+  display: -webkit-box;
+  margin: 0;
+  overflow: hidden;
+  font-size: 12px;
+  color: var(--text);
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.recommendation-card__note {
+  margin: 0;
+  font-size: 11px;
+  color: var(--text);
+}
+
+.recommendation-card__add {
+  margin-top: 8px;
+  padding: 6px 10px;
+  font-size: 12px;
+}
+
+.recommendation-card__added {
+  margin-top: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--success);
+}
+
+.search-layout__map {
+  position: relative;
+  min-width: 0;
+  min-height: 0;
+}
+
+/* 지도 오른쪽 아래 후보지 카드 */
+.search-candidates {
+  position: absolute;
+  right: 16px;
+  bottom: 16px;
+  z-index: 1;
+  width: 280px;
+  padding: 16px;
+  box-sizing: border-box;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  box-shadow: var(--shadow);
+}
+
+.search-candidates__title {
+  margin: 0 0 12px;
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1.4;
+  letter-spacing: 0;
+  color: var(--text-h);
+}
+
+.search-candidates__hint,
+.search-candidates__error {
+  margin: -4px 0 12px;
+  font-size: 12px;
+  color: var(--text);
+}
+
+.search-candidates__error {
+  color: var(--danger);
+}
+
+.search-candidates__actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.search-candidates__actions .button--primary {
+  grid-column: 1 / -1;
+}
+
+/* 좁은 화면: 지도를 위(화면 높이 45%), 패널을 아래에 쌓는다 (후보지 목록 14와 같은 방식) */
+@media (max-width: 768px) {
+  .search-layout {
+    height: auto;
+  }
+
+  .search-toolbar {
+    padding: 12px 16px;
+  }
+
+  .search-toolbar__search {
+    width: 100%;
+  }
+
+  .search-layout__body {
+    grid-template-columns: 1fr;
+    grid-template-rows: 45svh auto;
+  }
+
+  .search-layout__map {
+    order: -1;
+  }
+
+  .search-candidates {
+    right: 12px;
+    bottom: 12px;
+    left: 12px;
+    width: auto;
+  }
+
+  .search-panel .chat-messages {
+    max-height: 50svh;
+  }
+}
+
+/* 오른쪽 위 저장한 후보지 카드 (06 · 06-A) */
+.search-layout__map {
+  position: relative;
+}
+
+.saved-card {
+  position: absolute;
+  right: 16px;
+  bottom: 16px;
+  z-index: 1;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 360px;
+  max-height: calc(100% - 96px);
+  padding: 16px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: var(--shadow);
+}
+
+.saved-card__title {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--text-h);
+}
+
+.saved-card__hint {
+  margin: 0;
+  font-size: 14px;
+  color: var(--text);
+}
+
+.saved-card__list {
+  display: grid;
+  gap: 8px;
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+  overflow-y: auto;
+  list-style: none;
+}
+
+.saved-card__item {
+  position: relative;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+}
+
+.saved-card__item.is-chosen {
+  background: var(--bg-muted);
+  border-color: #cfd6dc;
+}
+
+.saved-card__select {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  width: 100%;
+  padding: 12px;
+  font: inherit;
+  text-align: left;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+}
+
+.saved-card__select .letter-badge {
+  margin-top: 20px;
+}
+
+.saved-card__text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.saved-card__name {
+  font-size: 15px;
+  color: var(--text-h);
+}
+
+.saved-card__slope {
+  font-size: 17px;
+  color: var(--text-h);
+}
+
+.saved-card__vehicle {
+  font-size: 13px;
+  color: var(--text);
+}
+
+.saved-card__item-actions {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  display: flex;
+  gap: 6px;
+}
+
+/* 삭제는 아이콘 단추. 상세 보기(34px)와 높이를 맞춘다 */
+.saved-card__remove {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  color: var(--danger);
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.saved-card__remove:hover {
+  border-color: var(--danger);
+  background: rgba(170, 101, 87, 0.08);
+}
+
+.saved-card__remove:focus-visible {
+  outline: 2px solid var(--success);
+  outline-offset: 2px;
+}
+
+.saved-card__actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.saved-card__wide {
+  grid-column: 1 / -1;
+}
+
+/* 06-A ZIPFIT AI 탭 */
+.ai-feed__list {
+  display: grid;
+  gap: 14px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ai-feed__who {
+  margin: 0 0 6px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-h);
+}
+
+.ai-feed__row {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+}
+
+.ai-feed__bubble {
+  margin: 0;
+  padding: 10px 12px;
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--text-h);
+  background: var(--info-bg);
+  border-radius: 6px;
+}
+
+.ai-feed__bubble.is-ai {
+  background: var(--selected-bg);
+}
+
+.ai-feed__time {
+  flex: none;
+  font-size: 11px;
+  color: var(--text);
+}
+
+.ai-feed__choices {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.ai-feed__shared {
+  margin: 14px 0;
+  font-size: 12px;
+  color: var(--text);
+}
+
+.ai-feed__next {
+  display: grid;
+  gap: 8px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+}
+
+.ai-feed__next-title {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-h);
+}
+
+.ai-feed__next-desc {
+  margin: 0 0 4px;
+  font-size: 13px;
+  color: var(--text);
+}
+
+.ai-state {
+  padding: 18px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+
+.ai-state__title {
+  margin: 0 0 10px;
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--text-h);
+}
+
+.ai-state__line {
+  margin: 0;
+  font-size: 14px;
+  color: var(--text-h);
+}
+
+.ai-state__action {
+  margin-top: 16px;
+}
+
+/* 06-B 대화 분석 완료 팝업 */
+.analysis-done {
+  box-sizing: border-box;
+  width: min(380px, calc(100vw - 32px));
+  max-height: calc(100svh - 48px);
+  padding: 20px;
+  color: var(--text);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  box-shadow: var(--shadow);
+}
+
+.analysis-done::backdrop {
+  background: var(--dim);
+}
+
+.analysis-done__title {
+  margin: 0 0 8px;
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text-h);
+}
+
+.analysis-done__summary {
+  margin: 0 0 14px;
+  font-size: 15px;
+  color: var(--text-h);
+}
+
+.analysis-done__table {
+  display: grid;
+  gap: 8px;
+  margin: 0 0 14px;
+}
+
+.analysis-done__table div {
+  display: grid;
+  grid-template-columns: 96px 1fr;
+  font-size: 14px;
+}
+
+.analysis-done__table dt {
+  color: var(--text);
+}
+
+.analysis-done__table dd {
+  margin: 0;
+  font-weight: 600;
+  color: var(--text-h);
+}
+
+.analysis-done__note,
+.analysis-done__keep {
+  margin: 0 0 12px;
+  font-size: 13px;
+}
+
+.analysis-done__places {
+  display: grid;
+  gap: 6px;
+  margin: 0 0 12px;
+  padding: 12px;
+  list-style: none;
+  background: var(--selected-bg);
+  border-radius: 6px;
+}
+
+.analysis-done__places li {
+  display: grid;
+  gap: 2px;
+  font-size: 13px;
+}
+
+.analysis-done__places strong {
+  color: var(--text-h);
+}
+
+.analysis-done__actions {
+  display: grid;
+  gap: 8px;
+}
+
+/* 데스크톱에서는 카드가 지도 위(오른쪽 아래)에 떠 있어 로드뷰 창을 덮으므로, 로드뷰를 보는 동안 숨긴다 */
+.saved-card.is-behind-roadview {
+  display: none;
+}
+
+@media (max-width: 900px) {
+  /* 좁은 화면에서는 카드가 지도 아래에 있어 겹치지 않는다 */
+  .saved-card.is-behind-roadview {
+    display: flex;
+  }
+
+  .saved-card {
+    position: static;
+    width: auto;
+    max-height: none;
+    margin: 12px;
+    box-shadow: none;
+  }
+}

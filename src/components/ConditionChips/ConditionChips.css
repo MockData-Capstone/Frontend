@@ -1,0 +1,216 @@
+.condition-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.condition-chips__item {
+  position: relative;
+}
+
+.condition-chips__chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 40px;
+  padding: 6px 16px;
+  font: inherit;
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--text-h);
+  white-space: nowrap;
+  background: var(--code-bg);
+  border: 1px solid transparent;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.condition-chips__chip:hover:not(:disabled) {
+  background: #e2e1e1;
+}
+
+.condition-chips__chip.is-on {
+  background: var(--selected-bg);
+  border-color: var(--selected-border);
+}
+
+.condition-chips__chip[aria-expanded='true'] {
+  border-color: var(--success);
+}
+
+.condition-chips__chip:disabled {
+  color: var(--text);
+  cursor: not-allowed;
+}
+
+.condition-pop {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  z-index: 40;
+  box-sizing: border-box;
+  width: 300px;
+  padding: 18px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: var(--shadow);
+}
+
+.condition-chips__item:nth-last-child(-n + 2) .condition-pop {
+  right: 0;
+  left: auto;
+}
+
+.condition-pop__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.condition-pop__head h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text-h);
+}
+
+.condition-pop__close {
+  padding: 4px 8px;
+  font: inherit;
+  font-size: 12px;
+  color: var(--text);
+  background: var(--bg-muted);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.condition-pop__hint {
+  margin: 6px 0 14px;
+  font-size: 13px;
+  color: var(--text);
+}
+
+.condition-pop__note {
+  margin: 10px 0 0;
+  font-size: 12px;
+  color: var(--text);
+}
+
+.condition-pop__options {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.condition-pop__options--stack {
+  grid-template-columns: 1fr;
+}
+
+.condition-pop__actions {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+/* 월세·보증금·면적 두 손잡이 슬라이더. --lo·--hi는 두 손잡이 자리(%) */
+.range-slider__value {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  margin: 0 0 14px;
+  text-align: center;
+}
+
+.range-slider__value strong {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text-h);
+}
+
+.range-slider__value span {
+  font-size: 12px;
+  color: var(--text-sub);
+}
+
+.range-slider__control {
+  position: relative;
+  height: 28px;
+  margin: 0 11px;
+  cursor: pointer;
+  /* 끄는 동안 화면이 움직이지 않게 */
+  touch-action: none;
+}
+
+.range-slider__track {
+  position: absolute;
+  top: 50%;
+  right: 0;
+  left: 0;
+  height: 4px;
+  background: var(--border);
+  border-radius: 2px;
+  transform: translateY(-50%);
+}
+
+.range-slider__fill {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: var(--lo);
+  width: calc(var(--hi) - var(--lo));
+  background: var(--success);
+  border-radius: 2px;
+}
+
+.range-slider__thumb {
+  position: absolute;
+  top: 50%;
+  box-sizing: border-box;
+  width: 22px;
+  height: 22px;
+  background: #fff;
+  border: 2px solid var(--success);
+  border-radius: 50%;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  transform: translate(-50%, -50%);
+  cursor: grab;
+}
+
+.range-slider__thumb:focus-visible {
+  outline: 3px solid var(--selected-border);
+  outline-offset: 2px;
+}
+
+.range-slider__thumb:active {
+  cursor: grabbing;
+}
+
+.range-slider__ticks {
+  position: relative;
+  height: 16px;
+  margin: 6px 11px 0;
+  font-size: 11px;
+  color: var(--text);
+}
+
+.range-slider__ticks span {
+  position: absolute;
+  top: 0;
+  white-space: nowrap;
+  transform: translateX(-50%);
+}
+
+.range-slider__ticks span:first-child {
+  transform: translateX(-11px);
+}
+
+.range-slider__ticks span:last-child {
+  transform: translateX(calc(-100% + 11px));
+}

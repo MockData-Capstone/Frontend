@@ -1,25 +1,55 @@
 :root {
-  --text: #6b6375;
-  --text-h: #08060d;
-  --bg: #fff;
-  --border: #e5e4e7;
-  --code-bg: #f4f3ec;
-  --accent: #aa3bff;
-  --accent-bg: rgba(170, 59, 255, 0.1);
-  --accent-border: rgba(170, 59, 255, 0.5);
-  --social-bg: rgba(244, 243, 236, 0.5);
+  /* ZIPFIT UI v0.4.3 (Figma "ZIPFIT design", 2026-11-17) 팔레트.
+     본문·버튼 16px / 보조 14px, 그룹 화면 주요 버튼 48px, 권한 버튼 44px, A·B·C 마커 규칙 유지. */
+  --text: #666666;
+  --text-h: #222222;
+  --text-sub: #66737d;
+  --bg: #fdfdfc;
+  --bg-muted: #f7f7f5;
+  --panel: #fafbfc;
+  --border: #e5e5e5;
+  --border-strong: #dde2e6;
+  --code-bg: #edecec;
+  --map-bg: #e7ecef;
+
+  /* 주 버튼(진회색 채움) */
+  --accent: #444444;
+  --accent-hover: #2d2f30;
+  --accent-bg: rgba(68, 68, 68, 0.08);
+  --accent-border: rgba(68, 68, 68, 0.35);
+
+  --kakao-bg: #fee500;
+  --kakao-bg-hover: #f5dc00;
+  --kakao-text: #191919;
+
+  /* 테라코타 — 위험 동작·후보지 마커·"집보기 종료" */
+  --danger: #aa6557;
+  /* 강조 초록 — 선택 상태 글씨·체크·그래프 선 */
+  --success: #3e7772;
+  /* 진초록 — zipfit 로고, 경사 수치 글씨 */
+  --brand: #174b37;
+  /* 선택 배경(연초록), 안내 박스, 모달 딤 */
+  --selected-bg: #e6edeb;
+  --selected-border: #bacdcb;
+  --info-bg: #f2f2f0;
+  --dim: rgba(0, 0, 0, 0.28);
+  /* 집보기 영상 화면 (23 영상 영역, 24 송출 화면) */
+  --video-bg: #202224;
+  --video-screen: #2d2f31;
+
   --shadow:
     rgba(0, 0, 0, 0.1) 0 10px 15px -3px, rgba(0, 0, 0, 0.05) 0 4px 6px -2px;
 
-  --sans: system-ui, 'Segoe UI', Roboto, sans-serif;
-  --heading: system-ui, 'Segoe UI', Roboto, sans-serif;
+  --sans: 'Pretendard Variable', Pretendard, system-ui, 'Segoe UI', 'Malgun Gothic', sans-serif;
+  --heading: var(--sans);
   --mono: ui-monospace, Consolas, monospace;
 
-  font: 18px/145% var(--sans);
-  letter-spacing: 0.18px;
-  color-scheme: light dark;
+  font: 16px/150% var(--sans);
+  letter-spacing: -0.1px;
+  /* 캡처본이 라이트 테마만 있어서, 시스템 다크 모드와 무관하게 라이트로 고정한다. */
+  color-scheme: light;
   color: var(--text);
-  background: var(--bg);
+  background: var(--bg-muted);
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
@@ -30,36 +60,10 @@
   }
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --text: #9ca3af;
-    --text-h: #f3f4f6;
-    --bg: #16171d;
-    --border: #2e303a;
-    --code-bg: #1f2028;
-    --accent: #c084fc;
-    --accent-bg: rgba(192, 132, 252, 0.15);
-    --accent-border: rgba(192, 132, 252, 0.5);
-    --social-bg: rgba(47, 48, 58, 0.5);
-    --shadow:
-      rgba(0, 0, 0, 0.4) 0 10px 15px -3px, rgba(0, 0, 0, 0.25) 0 4px 6px -2px;
-  }
-
-  #social .button-icon {
-    filter: invert(1) brightness(2);
-  }
-}
-
 #root {
-  width: 1126px;
-  max-width: 100%;
-  margin: 0 auto;
-  text-align: center;
-  border-inline: 1px solid var(--border);
   min-height: 100svh;
   display: flex;
   flex-direction: column;
-  box-sizing: border-box;
 }
 
 body {
@@ -95,15 +99,11 @@ p {
   margin: 0;
 }
 
-code,
-.counter {
+code {
   font-family: var(--mono);
   display: inline-flex;
   border-radius: 4px;
   color: var(--text-h);
-}
-
-code {
   font-size: 15px;
   line-height: 135%;
   padding: 4px 8px;
