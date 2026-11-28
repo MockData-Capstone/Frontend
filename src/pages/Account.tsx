@@ -5,10 +5,12 @@ import Avatar from '../components/Avatar';
 import Dialog from '../components/Dialog';
 import Header from '../components/Header';
 import NicknameHint from '../components/NicknameHint';
+import ProfileCropDialog from '../components/ProfileCropDialog';
 import { useToast } from '../components/Toast/useToast';
 import { useNicknameAvailability } from '../hooks/useNicknameAvailability';
 import { validateNewPassword, validateProfileImage } from '../lib/accountValidation';
 import { getErrorCode, getErrorMessage } from '../lib/authApi';
+import { cropToBlob, type CropArea } from '../lib/cropImage';
 import { beginOAuth } from '../lib/oauth';
 import { POLICY_DOCS, POLICY_INFO } from '../lib/policy';
 import {
@@ -33,6 +35,9 @@ export default function Account() {
   const [savingProfile, setSavingProfile] = useState(false);
   const [photoBusy, setPhotoBusy] = useState(false);
   const [profileError, setProfileError] = useState<string | null>(null);
+  // 자르기 팝업에 띄울 사진(브라우저 안 임시 주소)과 팝업 안 오류
+  const [cropSrc, setCropSrc] = useState<string | null>(null);
+  const [cropError, setCropError] = useState<string | null>(null);
   const [withdrawOpen, setWithdrawOpen] = useState(false);
   // 탈퇴 팝업의 "안내를 확인했어요" 체크 — 체크해야 [탈퇴하기]가 켜진다
   const [withdrawChecked, setWithdrawChecked] = useState(false);
@@ -67,23 +72,40 @@ export default function Account() {
     }
   };
 
-  const changePhoto = async (file: File | undefined) => {
+  // 사진을 고르면 바로 올리지 않고 자르기 팝업을 연다 (AUTH-05)
+  const changePhoto = (file: File | undefined) => {
+    if (fileRef.current) fileRef.current.value = '';
     if (!file) return;
     const invalid = validateProfileImage(file);
     if (invalid) {
       setProfileError(invalid);
       return;
     }
-    setPhotoBusy(true);
     setProfileError(null);
+    setCropError(null);
+    setCropSrc(URL.createObjectURL(file));
+  };
+
+  const closeCrop = () => {
+    if (cropSrc) URL.revokeObjectURL(cropSrc);
+    setCropSrc(null);
+    setCropError(null);
+  };
+
+  // 고른 영역만 잘라 올린다. 실패하면 팝업을 열어 둔 채 안내해 다시 시도할 수 있게 한다.
+  const uploadCropped = async (area: CropArea) => {
+    if (!cropSrc) return;
+    setPhotoBusy(true);
+    setCropError(null);
     try {
-      updateMe(await updateProfileImage(file));
+      const blob = await cropToBlob(cropSrc, area);
+      updateMe(await updateProfileImage(blob));
+      closeCrop();
       showToast('프로필 사진을 바꿨어요.');
     } catch (err) {
-      setProfileError(getErrorMessage(err, '사진을 올리지 못했어요.'));
+      setCropError(getErrorMessage(err, '사진을 올리지 못했어요.'));
     } finally {
       setPhotoBusy(false);
-      if (fileRef.current) fileRef.current.value = '';
     }
   };
 
@@ -158,7 +180,7 @@ export default function Account() {
                 accept="image/jpeg,image/png,image/webp"
                 hidden
                 aria-label="프로필 사진 파일"
-                onChange={(event) => void changePhoto(event.target.files?.[0])}
+                onChange={(event) => changePhoto(event.target.files?.[0])}
               />
             </div>
             <label className="field account-card__field">
@@ -229,6 +251,14 @@ export default function Account() {
           </button>
         </section>
       </main>
+
+      <ProfileCropDialog
+        imageSrc={cropSrc}
+        busy={photoBusy}
+        error={cropError}
+        onConfirm={(area) => void uploadCropped(area)}
+        onClose={closeCrop}
+      />
 
       <Dialog
         open={withdrawOpen}

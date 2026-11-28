@@ -23,9 +23,10 @@ export async function changePassword(currentPassword: string, newPassword: strin
 const MULTIPART = { headers: { 'Content-Type': 'multipart/form-data' } };
 
 // 프로필 사진 변경 — PATCH /api/users/me/profile-image (multipart/form-data, 파일 필드 image)
-export async function updateProfileImage(file: File): Promise<MeResponse> {
+// 내 정보 화면은 자른 사진(Blob)을 올린다. 서버는 파일 내용으로 형식을 판별하므로 이름은 표시용이다.
+export async function updateProfileImage(file: Blob): Promise<MeResponse> {
   const form = new FormData();
-  form.append('image', file);
+  form.append('image', file, file instanceof File ? file.name : 'profile.jpg');
   const { data } = await api.patch<MeResponse>('/api/users/me/profile-image', form, MULTIPART);
   return data;
 }
